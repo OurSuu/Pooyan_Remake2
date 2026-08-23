@@ -1,0 +1,47 @@
+# โฟลเดอร์ระบบและไฟล์ชั่วคราวของ Unity ที่ไม่ต้องอัปโหลด
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+
+# ไฟล์แคชและบันทึกข้อมูลหน่วยความจำ
+/[Mm]emoryCaptures/
+/[Rr]ecordings/
+
+# ไฟล์ระบบของ Visual Studio / Rider (โปรแกรมเขียนโค้ด)
+.vs/
+.gradle/
+ExportedObj/
+.consulo/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# ไฟล์ Meta ของไฟล์ที่โดน Ignore
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+
+# ไฟล์ Build และแพ็กเกจ (เช่น .apk, .app)
+*.apk
+*.aab
+*.unitypackage
+*.app
+
+# ไฟล์แครชและอื่นๆ
+sysinfo.txt
+crashlytics-build.properties
