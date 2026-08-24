@@ -106,7 +106,8 @@ public class LadderSystem : MonoBehaviour
         float wolfY = wolf.transform.position.y;
         float playerY = player.transform.position.y;
 
-        if (Mathf.Abs(playerY - wolfY) <= stepHeight * 0.5f)
+        // Increased hit window so it's easier to get bitten if the player is near
+        if (Mathf.Abs(playerY - wolfY) <= 1.2f)
         {
             wolf.TriggerBite();
         }
