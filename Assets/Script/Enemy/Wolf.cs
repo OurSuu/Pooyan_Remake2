@@ -254,16 +254,35 @@ public class Wolf : MonoBehaviour
     /// <summary>
     /// Pause Animator and show the appropriate static sprite for floating.
     /// </summary>
+    [SerializeField] protected string floatDownAnimName = "Drop";
+    [SerializeField] protected string floatUpAnimName = "Drop";
+
     protected void SetFloatingVisual()
     {
-        if (animator != null) animator.enabled = false;
-        Sprite target = isDescendingStage ? spriteDrop : spriteFly;
-        if (target != null && cachedSR != null)
+        if (animator != null)
         {
-            cachedSR.sprite = target;
+            animator.enabled = true;
+            animator.Play(isDescendingStage ? floatDownAnimName : floatUpAnimName);
+        }
+        else 
+        {
+            Sprite target = isDescendingStage ? spriteDrop : spriteFly;
+            if (target != null && cachedSR != null)
+            {
+                cachedSR.sprite = target;
+            }
         }
         // Reset flip for floating (face left towards player)
         if (cachedSR != null) cachedSR.flipX = false;
+    }
+
+    protected void SetFallingVisual()
+    {
+        if (animator != null) animator.enabled = false;
+        if (spriteFall != null && cachedSR != null)
+        {
+            cachedSR.sprite = spriteFall;
+        }
     }
 
     protected virtual void UpdateFloating()
@@ -301,15 +320,6 @@ public class Wolf : MonoBehaviour
             rockTimer = rockThrowInterval;
             var rock = Instantiate(rockPrefab, transform.position, Quaternion.identity);
             rock.GetComponent<WolfProjectile>()?.LaunchAtPlayer(WolfProjectileType.Rock);
-        }
-    }
-
-    protected void SetFallingVisual()
-    {
-        if (animator != null) animator.enabled = false;
-        if (spriteFall != null && cachedSR != null)
-        {
-            cachedSR.sprite = spriteFall;
         }
     }
 
@@ -353,11 +363,22 @@ public class Wolf : MonoBehaviour
         }
     }
 
+    [SerializeField] protected string runAnimName = "Run";
+
+    protected void SetRunningVisual()
+    {
+        if (animator != null)
+        {
+            animator.enabled = true;
+            animator.Play(runAnimName);
+        }
+    }
+
     protected virtual void OnReachedGround()
     {
         state = WolfState.WalkingToLadder;
         if (balloon != null) balloon.gameObject.SetActive(false);
-
+        SetRunningVisual();
         MarkAsEscaped();
     }
 
@@ -365,7 +386,7 @@ public class Wolf : MonoBehaviour
     {
         state = WolfState.ReachedCliff;
         if (balloon != null) balloon.gameObject.SetActive(false);
-
+        SetRunningVisual();
         MarkAsEscaped();
 
         BoulderSystem.Instance?.RegisterWolfOnCliff(this);

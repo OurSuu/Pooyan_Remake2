@@ -1,0 +1,546 @@
+fileFormatVersion: 2
+guid: 7e050108e0ca8dc46880c79ba48a837d
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 8911780343248172692
+    second: Drop_Wolf_0
+  - first:
+      213: -2667573190125102070
+    second: Drop_Wolf_1
+  - first:
+      213: -2282200276156411614
+    second: Drop_Wolf_2
+  - first:
+      213: -3881925208043357573
+    second: Drop_Wolf_3
+  - first:
+      213: -8773445484482508523
+    second: Drop_Wolf_4
+  - first:
+      213: -7281895729554977770
+    second: Drop_Wolf_5
+  - first:
+      213: 6818143315172222526
+    second: Drop_Wolf_6
+  - first:
+      213: 5031151738984669646
+    second: Drop_Wolf_7
+  - first:
+      213: -6409828733461170421
+    second: Drop_Wolf_8
+  - first:
+      213: -7533026119578589176
+    second: Drop_Wolf_9
+  - first:
+      213: 420741117454919720
+    second: Drop_Wolf_10
+  - first:
+      213: 5936471024055942084
+    second: Drop_Wolf_11
+  - first:
+      213: -6089870153434227030
+    second: Drop_Wolf_12
+  - first:
+      213: 5828815532152265478
+    second: Drop_Wolf_13
+  - first:
+      213: 2032890128649415589
+    second: Drop_Wolf_14
+  - first:
+      213: 8016810115067013359
+    second: Drop_Wolf_15
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Drop_Wolf_0
+      rect:
+        serializedVersion: 2
+        x: 175
+        y: 1922
+        width: 345
+        height: 498
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 496bd9b61010dab70800000000000000
+      internalID: 8911780343248172692
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Drop_Wolf_1
+      rect:
+        serializedVersion: 2
+        x: 803
+        y: 1934
+        width: 335
+        height: 495
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a0cdc362150eafad0800000000000000
+      internalID: -2667573190125102070
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Drop_Wolf_2
+      rect:
+        serializedVersion: 2
+        x: 1412
+        y: 1932
+        width: 326
+        height: 497
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2211661c0fef350e0800000000000000
+      internalID: -2282200276156411614
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Drop_Wolf_3
+      rect:
+        serializedVersion: 2
+        x: 2073
+        y: 1939
+        width: 290
+        height: 500
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b7af0f13791a02ac0800000000000000
+      internalID: -3881925208043357573
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Drop_Wolf_4
+      rect:
+        serializedVersion: 2
+        x: 210
+        y: 1313
+        width: 219
+        height: 507
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5194a29c0d57e3680800000000000000
+      internalID: -8773445484482508523
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Drop_Wolf_5
+      rect:
+        serializedVersion: 2
+        x: 845
+        y: 1311
+        width: 281
+        height: 508
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 61c01744a6281fa90800000000000000
+      internalID: -7281895729554977770
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Drop_Wolf_6
+      rect:
+        serializedVersion: 2
+        x: 1478
+        y: 1325
+        width: 319
+        height: 500
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e366b889839ee9e50800000000000000
+      internalID: 6818143315172222526
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Drop_Wolf_7
+      rect:
+        serializedVersion: 2
+        x: 2091
+        y: 1335
+        width: 337
+        height: 498
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ec12545b9dd32d540800000000000000
+      internalID: 5031151738984669646
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Drop_Wolf_8
+      rect:
+        serializedVersion: 2
+        x: 222
+        y: 709
+        width: 346
+        height: 492
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b0774f64ab6bb07a0800000000000000
+      internalID: -6409828733461170421
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Drop_Wolf_9
+      rect:
+        serializedVersion: 2
+        x: 852
+        y: 699
+        width: 337
+        height: 498
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 80867cae7a0557790800000000000000
+      internalID: -7533026119578589176
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Drop_Wolf_10
+      rect:
+        serializedVersion: 2
+        x: 1532
+        y: 710
+        width: 319
+        height: 500
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8282d4031d5c6d500800000000000000
+      internalID: 420741117454919720
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Drop_Wolf_11
+      rect:
+        serializedVersion: 2
+        x: 2138
+        y: 714
+        width: 281
+        height: 508
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4cbf04091f4926250800000000000000
+      internalID: 5936471024055942084
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Drop_Wolf_12
+      rect:
+        serializedVersion: 2
+        x: 270
+        y: 83
+        width: 219
+        height: 507
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aae9c486c5f6c7ba0800000000000000
+      internalID: -6089870153434227030
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Drop_Wolf_13
+      rect:
+        serializedVersion: 2
+        x: 822
+        y: 76
+        width: 290
+        height: 500
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 60b173718dc14e050800000000000000
+      internalID: 5828815532152265478
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Drop_Wolf_14
+      rect:
+        serializedVersion: 2
+        x: 1466
+        y: 75
+        width: 326
+        height: 497
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5abeb812dc6463c10800000000000000
+      internalID: 2032890128649415589
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Drop_Wolf_15
+      rect:
+        serializedVersion: 2
+        x: 2066
+        y: 80
+        width: 335
+        height: 495
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fe8e354235e614f60800000000000000
+      internalID: 8016810115067013359
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Drop_Wolf_0: 8911780343248172692
+      Drop_Wolf_1: -2667573190125102070
+      Drop_Wolf_10: 420741117454919720
+      Drop_Wolf_11: 5936471024055942084
+      Drop_Wolf_12: -6089870153434227030
+      Drop_Wolf_13: 5828815532152265478
+      Drop_Wolf_14: 2032890128649415589
+      Drop_Wolf_15: 8016810115067013359
+      Drop_Wolf_2: -2282200276156411614
+      Drop_Wolf_3: -3881925208043357573
+      Drop_Wolf_4: -8773445484482508523
+      Drop_Wolf_5: -7281895729554977770
+      Drop_Wolf_6: 6818143315172222526
+      Drop_Wolf_7: 5031151738984669646
+      Drop_Wolf_8: -6409828733461170421
+      Drop_Wolf_9: -7533026119578589176
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
