@@ -166,17 +166,19 @@ MonoBehaviour:
   rockPrefab: {fileID: 1926483307685132397, guid: 34cd0122affc40848b25901f10d3ba12, type: 3}
   spriteDrop: {fileID: 1781254230411818056, guid: cee994d7dfef3054da12b5cd76a71975, type: 3}
   spriteFly: {fileID: 1415970837381038977, guid: cee994d7dfef3054da12b5cd76a71975, type: 3}
-  spriteFall: {fileID: 4195142512051705965, guid: 9501a211bc272d9418cf089080a5593f, type: 3}
+  spriteFall: {fileID: -638794047502580265, guid: 4ded41380a8901849a0f0ab120d24106, type: 3}
   fallSpeed: 5
   walkSpeed: 5
   climbSpeed: 1.5
   shieldToggleInterval: 1.5
   rockThrowInterval: 3
   walkGroundY: -3.2
-  deadGroundY: -3.5
+  deadGroundY: -4.5
   cliffHitY: 4
   floatDownAnimName: Drop
   floatUpAnimName: Drop
+  fallAnimName: Fall
+  deadAnimName: Death
   runAnimName: Run
 --- !u!61 &8144282525274212976
 BoxCollider2D:

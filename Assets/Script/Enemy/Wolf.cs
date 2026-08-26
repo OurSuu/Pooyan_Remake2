@@ -276,10 +276,16 @@ public class Wolf : MonoBehaviour
         if (cachedSR != null) cachedSR.flipX = false;
     }
 
+    [SerializeField] protected string fallAnimName = "Fall";
+
     protected void SetFallingVisual()
     {
-        if (animator != null) animator.enabled = false;
-        if (spriteFall != null && cachedSR != null)
+        if (animator != null)
+        {
+            animator.enabled = true;
+            animator.Play(fallAnimName);
+        }
+        else if (spriteFall != null && cachedSR != null)
         {
             cachedSR.sprite = spriteFall;
         }
@@ -323,6 +329,8 @@ public class Wolf : MonoBehaviour
         }
     }
 
+    [SerializeField] protected string deadAnimName = "Dead";
+
     protected virtual void UpdateFalling()
     {
         transform.position += Vector3.down * (fallSpeed * Time.deltaTime);
@@ -330,6 +338,13 @@ public class Wolf : MonoBehaviour
         {
             transform.position = new Vector3(transform.position.x, deadGroundY, 0f);
             state = WolfState.Dead;
+            
+            if (animator != null)
+            {
+                animator.enabled = true;
+                animator.Play(deadAnimName);
+            }
+            
             StartCoroutine(FadeAndDestroyRoutine());
         }
     }
