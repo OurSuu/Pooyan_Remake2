@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public enum PlayerState
 {
@@ -32,6 +32,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float idleFrameRate = 12f;
     [SerializeField] private Sprite spriteShoot;  // MamaPig_1
     [SerializeField] private float shootSpriteTime = 0.15f;
+    [SerializeField] private string shootAnimName = "Shoot";
+    [SerializeField] private string deadAnimName = "Dead";
+    [SerializeField] private string idleAnimName = "Idle";
 
     public PlayerState State { get; private set; } = PlayerState.Normal;
     public float MinY => minY;
@@ -108,19 +111,34 @@ public class PlayerController : MonoBehaviour
 
     private void PlayShootSprite()
     {
+        if (animator != null)
+        {
+            if (shootSpriteRoutine != null) StopCoroutine(shootSpriteRoutine);
+            shootSpriteRoutine = StartCoroutine(ShootAnimRoutine());
+            return;
+        }
+
         if (mamaPigRenderer == null || spriteShoot == null) return;
         if (shootSpriteRoutine != null) StopCoroutine(shootSpriteRoutine);
         shootSpriteRoutine = StartCoroutine(ShootSpriteRoutine());
     }
 
+    private System.Collections.IEnumerator ShootAnimRoutine()
+    {
+        animator.Play(shootAnimName, -1, 0f);
+        yield return new WaitForSeconds(shootSpriteTime);
+        animator.Play(idleAnimName);
+        shootSpriteRoutine = null;
+    }
+
     private System.Collections.IEnumerator ShootSpriteRoutine()
     {
-        if (animator != null) animator.enabled = false; // Pause Animator so it doesn't overwrite the Shoot sprite
+        if (animator != null) animator.enabled = false;
         
         mamaPigRenderer.sprite = spriteShoot;
         yield return new WaitForSeconds(shootSpriteTime);
         
-        if (animator != null) animator.enabled = true; // Resume Animator
+        if (animator != null) animator.enabled = true;
         shootSpriteRoutine = null;
     }
 
@@ -132,8 +150,6 @@ public class PlayerController : MonoBehaviour
         pos.y = Mathf.Clamp(pos.y, minY, maxY);
         transform.position = pos;
 
-        // --- ลอจิกใหม่: หยิบเนื้ออัตโนมัติแบบตู้ Arcade ---
-        // เช็กว่าถ้าผู้เล่นอยู่สถานะปกติ มีเนื้อให้เก็บ และกระเช้าดันขึ้นไปถึงจุดสูงสุด (IsAtTop) แล้ว
         if (State == PlayerState.Normal && meatAvailable && IsAtTop)
         {
             PickUpMeat();
@@ -160,7 +176,7 @@ public class PlayerController : MonoBehaviour
         meatAvailable = false;
         meatIndicator?.SetAvailable(false);
         
-        if (meatPrefab == null) return; // Prevent picking up if no prefab assigned
+        if (meatPrefab == null) return; 
 
         State = PlayerState.HoldingMeat;
         arrowShooter.SetCanShoot(false);
@@ -196,14 +212,30 @@ public class PlayerController : MonoBehaviour
         if (State == PlayerState.Dead) return;
 
         State = PlayerState.Dead;
+        
+        if (animator != null)
+        {
+            animator.Play(deadAnimName);
+        }
+
         GameManager.Instance?.LoseLife(diedFromBoulder);
     }
 
     public void Respawn()
     {
         State = PlayerState.Normal;
+        
         if (heldMeatVisual != null) heldMeatVisual.SetActive(false);
-        arrowShooter.SetCanShoot(true);
+        
+        if (animator != null)
+        {
+            animator.Play(idleAnimName);
+        }
+        
+        if (arrowShooter != null)
+        {
+            arrowShooter.SetCanShoot(true);
+        }
     }
 
     public void OnProjectileHit()

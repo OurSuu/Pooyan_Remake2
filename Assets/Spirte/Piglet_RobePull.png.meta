@@ -1,55 +1,43 @@
 fileFormatVersion: 2
-guid: 7e050108e0ca8dc46880c79ba48a837d
+guid: 859bc02f87183bd40b9695ac11bd3500
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 8911780343248172692
-    second: Drop_Wolf_0
+      213: 3614254943427166642
+    second: Piglet_RobePull_0
   - first:
-      213: -2667573190125102070
-    second: Drop_Wolf_1
+      213: -1462900654594270953
+    second: Piglet_RobePull_1
   - first:
-      213: -2282200276156411614
-    second: Drop_Wolf_2
+      213: 4140343366691863008
+    second: Piglet_RobePull_2
   - first:
-      213: -3881925208043357573
-    second: Drop_Wolf_3
+      213: -1607877840292633039
+    second: Piglet_RobePull_3
   - first:
-      213: -8773445484482508523
-    second: Drop_Wolf_4
+      213: -4910115948074509651
+    second: Piglet_RobePull_4
   - first:
-      213: -7281895729554977770
-    second: Drop_Wolf_5
+      213: -5045688291696445933
+    second: Piglet_RobePull_5
   - first:
-      213: 6818143315172222526
-    second: Drop_Wolf_6
+      213: -605236044085160617
+    second: Piglet_RobePull_6
   - first:
-      213: 5031151738984669646
-    second: Drop_Wolf_7
+      213: 926067697802628454
+    second: Piglet_RobePull_7
   - first:
-      213: -6409828733461170421
-    second: Drop_Wolf_8
+      213: -2641441405040774784
+    second: Piglet_RobePull_8
   - first:
-      213: -7533026119578589176
-    second: Drop_Wolf_9
+      213: -7463541400749097807
+    second: Piglet_RobePull_9
   - first:
-      213: 420741117454919720
-    second: Drop_Wolf_10
+      213: 7854672612296021268
+    second: Piglet_RobePull_10
   - first:
-      213: 5936471024055942084
-    second: Drop_Wolf_11
-  - first:
-      213: -6089870153434227030
-    second: Drop_Wolf_12
-  - first:
-      213: 5828815532152265478
-    second: Drop_Wolf_13
-  - first:
-      213: 2032890128649415589
-    second: Drop_Wolf_14
-  - first:
-      213: 8016810115067013359
-    second: Drop_Wolf_15
+      213: -1223819968751941114
+    second: Piglet_RobePull_11
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -69,7 +57,7 @@ TextureImporter:
     heightScale: 0.25
     normalMapFilter: 0
     flipGreenChannel: 0
-  isReadable: 0
+  isReadable: 1
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
@@ -158,124 +146,14 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Drop_Wolf_0
+      name: Piglet_RobePull_0
       rect:
         serializedVersion: 2
-        x: 175
-        y: 1925
-        width: 390
-        height: 498
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 496bd9b61010dab70800000000000000
-      internalID: 8911780343248172692
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Drop_Wolf_1
-      rect:
-        serializedVersion: 2
-        x: 803
-        y: 1937
-        width: 374
-        height: 495
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: a0cdc362150eafad0800000000000000
-      internalID: -2667573190125102070
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Drop_Wolf_2
-      rect:
-        serializedVersion: 2
-        x: 1412
-        y: 1932
-        width: 365
-        height: 497
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 2211661c0fef350e0800000000000000
-      internalID: -2282200276156411614
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Drop_Wolf_3
-      rect:
-        serializedVersion: 2
-        x: 2073
-        y: 1939
-        width: 327
-        height: 500
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: b7af0f13791a02ac0800000000000000
-      internalID: -3881925208043357573
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Drop_Wolf_4
-      rect:
-        serializedVersion: 2
-        x: 210
-        y: 1316
-        width: 219
-        height: 507
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 5194a29c0d57e3680800000000000000
-      internalID: -8773445484482508523
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Drop_Wolf_5
-      rect:
-        serializedVersion: 2
-        x: 794
+        x: 145
         y: 1311
-        width: 332
-        height: 508
-      alignment: 0
+        width: 300
+        height: 435
+      alignment: 7
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
@@ -283,21 +161,21 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 61c01744a6281fa90800000000000000
-      internalID: -7281895729554977770
+      spriteID: 2b10daec8b9682230800000000000000
+      internalID: 3614254943427166642
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Drop_Wolf_6
+      name: Piglet_RobePull_1
       rect:
         serializedVersion: 2
-        x: 1406
-        y: 1325
-        width: 391
-        height: 500
-      alignment: 0
+        x: 761
+        y: 1307
+        width: 300
+        height: 435
+      alignment: 7
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
@@ -305,21 +183,21 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: e366b889839ee9e50800000000000000
-      internalID: 6818143315172222526
+      spriteID: 719d83dfa9bb2bbe0800000000000000
+      internalID: -1462900654594270953
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Drop_Wolf_7
+      name: Piglet_RobePull_2
       rect:
         serializedVersion: 2
-        x: 2059
-        y: 1338
-        width: 369
-        height: 498
-      alignment: 0
+        x: 1362
+        y: 1306
+        width: 323
+        height: 435
+      alignment: 7
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
@@ -327,21 +205,21 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: ec12545b9dd32d540800000000000000
-      internalID: 5031151738984669646
+      spriteID: 0e930d30b54757930800000000000000
+      internalID: 4140343366691863008
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Drop_Wolf_8
+      name: Piglet_RobePull_3
       rect:
         serializedVersion: 2
-        x: 189
-        y: 709
-        width: 379
-        height: 492
-      alignment: 0
+        x: 1954
+        y: 1306
+        width: 325
+        height: 435
+      alignment: 7
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
@@ -349,21 +227,21 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: b0774f64ab6bb07a0800000000000000
-      internalID: -6409828733461170421
+      spriteID: 136a2278f9bafa9e0800000000000000
+      internalID: -1607877840292633039
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Drop_Wolf_9
+      name: Piglet_RobePull_4
       rect:
         serializedVersion: 2
-        x: 800
-        y: 699
-        width: 389
-        height: 498
-      alignment: 0
+        x: 114
+        y: 718
+        width: 331
+        height: 435
+      alignment: 7
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
@@ -371,21 +249,21 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 80867cae7a0557790800000000000000
-      internalID: -7533026119578589176
+      spriteID: daad9056f83cbdbb0800000000000000
+      internalID: -4910115948074509651
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Drop_Wolf_10
+      name: Piglet_RobePull_5
       rect:
         serializedVersion: 2
-        x: 1503
-        y: 710
-        width: 348
-        height: 500
-      alignment: 0
+        x: 743
+        y: 715
+        width: 315
+        height: 434
+      alignment: 7
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
@@ -393,21 +271,21 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 8282d4031d5c6d500800000000000000
-      internalID: 420741117454919720
+      spriteID: 316f51e5b3d1af9b0800000000000000
+      internalID: -5045688291696445933
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Drop_Wolf_11
+      name: Piglet_RobePull_6
       rect:
         serializedVersion: 2
-        x: 2109
-        y: 714
-        width: 310
-        height: 508
-      alignment: 0
+        x: 1386
+        y: 715
+        width: 293
+        height: 434
+      alignment: 7
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
@@ -415,21 +293,21 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 4cbf04091f4926250800000000000000
-      internalID: 5936471024055942084
+      spriteID: 7559a0b4605c997f0800000000000000
+      internalID: -605236044085160617
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Drop_Wolf_12
+      name: Piglet_RobePull_7
       rect:
         serializedVersion: 2
-        x: 270
-        y: 83
-        width: 219
-        height: 507
-      alignment: 0
+        x: 1974
+        y: 712
+        width: 301
+        height: 435
+      alignment: 7
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
@@ -437,21 +315,21 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: aae9c486c5f6c7ba0800000000000000
-      internalID: -6089870153434227030
+      spriteID: 66d4d752aad0adc00800000000000000
+      internalID: 926067697802628454
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Drop_Wolf_13
+      name: Piglet_RobePull_8
       rect:
         serializedVersion: 2
-        x: 822
-        y: 76
-        width: 337
-        height: 500
-      alignment: 0
+        x: 131
+        y: 84
+        width: 315
+        height: 435
+      alignment: 7
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
@@ -459,21 +337,21 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 60b173718dc14e050800000000000000
-      internalID: 5828815532152265478
+      spriteID: 081398d7907b75bd0800000000000000
+      internalID: -2641441405040774784
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Drop_Wolf_14
+      name: Piglet_RobePull_9
       rect:
         serializedVersion: 2
-        x: 1466
-        y: 75
-        width: 358
-        height: 497
-      alignment: 0
+        x: 744
+        y: 82
+        width: 313
+        height: 435
+      alignment: 7
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
@@ -481,21 +359,21 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 5abeb812dc6463c10800000000000000
-      internalID: 2032890128649415589
+      spriteID: 1bcbde9b3ac2c6890800000000000000
+      internalID: -7463541400749097807
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Drop_Wolf_15
+      name: Piglet_RobePull_10
       rect:
         serializedVersion: 2
-        x: 2066
-        y: 80
-        width: 366
-        height: 495
-      alignment: 0
+        x: 1345
+        y: 84
+        width: 318
+        height: 435
+      alignment: 7
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
@@ -503,8 +381,30 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: fe8e354235e614f60800000000000000
-      internalID: 8016810115067013359
+      spriteID: 415d4e20027610d60800000000000000
+      internalID: 7854672612296021268
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Piglet_RobePull_11
+      rect:
+        serializedVersion: 2
+        x: 1972
+        y: 84
+        width: 313
+        height: 435
+      alignment: 7
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 60ac285f83e140fe0800000000000000
+      internalID: -1223819968751941114
       vertices: []
       indices: 
       edges: []
@@ -513,7 +413,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 88c685c87a32cb9409e15ab81a10e692
+    spriteID: bc57c821965ca3447b8baf161f83ebc7
     internalID: 0
     vertices: []
     indices: 
@@ -521,24 +421,22 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      Drop_Wolf_0: 8911780343248172692
-      Drop_Wolf_1: -2667573190125102070
-      Drop_Wolf_10: 420741117454919720
-      Drop_Wolf_11: 5936471024055942084
-      Drop_Wolf_12: -6089870153434227030
-      Drop_Wolf_13: 5828815532152265478
-      Drop_Wolf_14: 2032890128649415589
-      Drop_Wolf_15: 8016810115067013359
-      Drop_Wolf_2: -2282200276156411614
-      Drop_Wolf_3: -3881925208043357573
-      Drop_Wolf_4: -8773445484482508523
-      Drop_Wolf_5: -7281895729554977770
-      Drop_Wolf_6: 6818143315172222526
-      Drop_Wolf_7: 5031151738984669646
-      Drop_Wolf_8: -6409828733461170421
-      Drop_Wolf_9: -7533026119578589176
+      Piglet_RobePull_0: 3614254943427166642
+      Piglet_RobePull_1: -1462900654594270953
+      Piglet_RobePull_10: 7854672612296021268
+      Piglet_RobePull_11: -1223819968751941114
+      Piglet_RobePull_2: 4140343366691863008
+      Piglet_RobePull_3: -1607877840292633039
+      Piglet_RobePull_4: -4910115948074509651
+      Piglet_RobePull_5: -5045688291696445933
+      Piglet_RobePull_6: -605236044085160617
+      Piglet_RobePull_7: 926067697802628454
+      Piglet_RobePull_8: -2641441405040774784
+      Piglet_RobePull_9: -7463541400749097807
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

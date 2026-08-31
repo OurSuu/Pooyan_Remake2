@@ -172,7 +172,7 @@ MonoBehaviour:
   climbSpeed: 1.5
   shieldToggleInterval: 1.5
   rockThrowInterval: 3
-  walkGroundY: -3.2
+  walkGroundY: -4.5
   deadGroundY: -4.5
   cliffHitY: 4
   floatDownAnimName: Drop

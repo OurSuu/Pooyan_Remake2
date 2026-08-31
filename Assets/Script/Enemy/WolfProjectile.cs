@@ -55,21 +55,26 @@ public class WolfProjectile : MonoBehaviour
     {
         if (destroyed) return;
 
+        if (other.CompareTag(GameConstants.TagShield))
+        {
+            // ถ้าโดนกระเช้า (ที่ติด Tag Shield ไว้) ให้กันหินได้
+            var player = other.GetComponentInParent<PlayerController>();
+            if (player != null)
+            {
+                AudioManager.Instance?.PlayShieldBlock();
+                Destroy(gameObject);
+                return;
+            }
+        }
+
         if (other.CompareTag(GameConstants.TagPlayer))
         {
-            // เช็คว่าโดนตรงขอบบน/ล่างของกระเช้าหรือไม่
-            float diffY = transform.position.y - other.transform.position.y;
-            if (Mathf.Abs(diffY) > 0.45f)
+            // หินโดนผู้เล่น (แม่หมู) ตายทันที
+            var player = other.GetComponent<PlayerController>() ?? other.GetComponentInParent<PlayerController>();
+            if (player != null)
             {
-                // โดนกระเช้า กันได้
-                AudioManager.Instance?.PlayShieldBlock();
+                player.OnProjectileHit();
             }
-            else
-            {
-                // โดนแม่หมูเต็มๆ
-                other.GetComponent<PlayerController>()?.OnProjectileHit();
-            }
-            
             Destroy(gameObject);
             return;
         }
