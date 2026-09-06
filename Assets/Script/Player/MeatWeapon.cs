@@ -1,7 +1,7 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 /// <summary>
-/// Meat weapon — lobbed in a parabolic arc (matching original Pooyan arcade).
+/// Meat weapon â€” lobbed in a parabolic arc (matching original Pooyan arcade).
 /// Piercing, bypasses shields, meat combo scoring.
 /// </summary>
 [RequireComponent(typeof(Rigidbody2D))]
@@ -55,9 +55,11 @@ public class MeatWeapon : MonoBehaviour
 
             // Cascade combo chain: reduce horizontal velocity so it falls steeper, small bump up
             var rbHit = GetComponent<Rigidbody2D>();
-            if (rbHit != null) rbHit.linearVelocity = new Vector2(rbHit.linearVelocity.x * 0.4f, 0.5f);
+            // ไม่มีการเด้งหรือลดความเร็วใดๆ เนื้อจะร่วงตกลงมาตามแรงโน้มถ่วงเป็นเส้นโค้งปกติ (Piercing Arc)
 
             wolf.OnMeatHit();
         }
     }
 }
+
+

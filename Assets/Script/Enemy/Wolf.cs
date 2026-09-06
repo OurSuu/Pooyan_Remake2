@@ -101,6 +101,11 @@ public class Wolf : MonoBehaviour
         }
     }
 
+    public void DisableTeaseBounces()
+    {
+        teaseBounces = 0;
+    }
+
     public virtual void Initialize(LevelConfig config, bool descending, float speed, bool shield, bool rockThrow, float dropX = 0f, float[] lanes = null, int laneIndex = 0)
     {
         isDescendingStage = descending;
@@ -638,4 +643,5 @@ public class Wolf : MonoBehaviour
         }
     }
 }
+
 
