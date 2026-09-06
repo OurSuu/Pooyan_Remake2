@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 /// <summary>
-/// Horizontal projectile — no gravity. Handles balloon/shield/projectile collisions.
+/// Horizontal projectile â€” no gravity. Handles balloon/shield/projectile collisions.
 /// </summary>
 [RequireComponent(typeof(Collider2D))]
 public class Arrow : MonoBehaviour
@@ -68,10 +68,13 @@ public class Arrow : MonoBehaviour
         if (other.CompareTag(GameConstants.TagShield))
         {
             if (isDeflected) return;
-            isDeflected = true;
+                        isDeflected = true;
+            
+            // หันหัวลูกธนูดิ่งลงพื้น (หมุน 90 องศา)
+            transform.rotation = Quaternion.Euler(0, 0, 90f);
             
             AudioManager.Instance?.PlayShieldBlock();
-            // สะท้อนลงล่างเหมือนกัน
+            // à¸ªà¸°à¸—à¹‰à¸­à¸™à¸¥à¸‡à¸¥à¹ˆà¸²à¸‡à¹€à¸«à¸¡à¸·à¸­à¸™à¸à¸±à¸™
             speed = 0;
             direction = 0;
             var rb = GetComponent<Rigidbody2D>();
@@ -86,7 +89,10 @@ public class Arrow : MonoBehaviour
         if (other.CompareTag(GameConstants.TagEnemy))
         {
             if (isDeflected) return; // Ignore wolf bodies if already deflected, allowing it to hit the balloon below!
-            isDeflected = true;
+                        isDeflected = true;
+            
+            // หันหัวลูกธนูดิ่งลงพื้น (หมุน 90 องศา)
+            transform.rotation = Quaternion.Euler(0, 0, 90f);
 
             other.SendMessage("PlayDeflectAnimation", SendMessageOptions.DontRequireReceiver);
 
@@ -95,7 +101,7 @@ public class Arrow : MonoBehaviour
             var rb = GetComponent<Rigidbody2D>();
             if (rb != null)
             {
-                // สะท้อนลงเพื่อให้ไปโดนลูกโป่งตัวล่างได้
+                // à¸ªà¸°à¸—à¹‰à¸­à¸™à¸¥à¸‡à¹€à¸žà¸·à¹ˆà¸­à¹ƒà¸«à¹‰à¹„à¸›à¹‚à¸”à¸™à¸¥à¸¹à¸à¹‚à¸›à¹ˆà¸‡à¸•à¸±à¸§à¸¥à¹ˆà¸²à¸‡à¹„à¸”à¹‰
                 rb.linearVelocity = new Vector2(0f, -3f);
                 rb.gravityScale = 1.5f;
             }
@@ -127,3 +133,4 @@ public class Arrow : MonoBehaviour
         }
     }
 }
+

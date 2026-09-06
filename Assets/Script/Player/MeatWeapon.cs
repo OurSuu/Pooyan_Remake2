@@ -9,8 +9,8 @@
 public class MeatWeapon : MonoBehaviour
 {
     [Header("Parabolic Arc")]
-    [SerializeField] private float lobSpeedX = -8f;        // Horizontal speed (forward)
-    [SerializeField] private float lobSpeedY = 4f;         // Upward lob force
+    [SerializeField] private float lobSpeedX = -13f;        // Horizontal speed (forward)
+    [SerializeField] private float lobSpeedY = 5f;         // Upward lob force
     [SerializeField] private float gravityScale = 1.5f;    // How fast it curves down
     [SerializeField] private float destroyY = -6f;
 
@@ -61,5 +61,6 @@ public class MeatWeapon : MonoBehaviour
         }
     }
 }
+
 
 
