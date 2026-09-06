@@ -1,14 +1,14 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class ElevatorRope : MonoBehaviour
 {
     [Header("Line Settings")]
     [SerializeField] private LineRenderer lineRenderer;
-    [SerializeField] private Transform pigletHand; // จุดมือลูกหมู (ปลายเชือกด้านขวา)
-    [SerializeField] private float pulleyY = 4.5f; // ความสูงของรอก (จุดหักศอก)
-    [SerializeField] private float gondolaOffset = 0.5f; // ออฟเซ็ตจากแม่หมู
+    [SerializeField] private Transform pigletHand; // à¸ˆà¸¸à¸”à¸¡à¸·à¸­à¸¥à¸¹à¸à¸«à¸¡à¸¹ (à¸›à¸¥à¸²à¸¢à¹€à¸Šà¸·à¸­à¸à¸”à¹‰à¸²à¸™à¸‚à¸§à¸²)
+    [SerializeField] private float pulleyY = 4.5f; // à¸„à¸§à¸²à¸¡à¸ªà¸¹à¸‡à¸‚à¸­à¸‡à¸£à¸­à¸ (à¸ˆà¸¸à¸”à¸«à¸±à¸à¸¨à¸­à¸)
+    [SerializeField] private float gondolaOffset = 0.5f; // à¸­à¸­à¸Ÿà¹€à¸‹à¹‡à¸•à¸ˆà¸²à¸à¹à¸¡à¹ˆà¸«à¸¡à¸¹
     [SerializeField] private float ropeWidth = 0.05f;
-    [SerializeField] private float scrollSpeed = 0.5f; // ความเร็วการเลื่อนลายเชือก
+    [SerializeField] private float scrollSpeed = 0.5f; // à¸„à¸§à¸²à¸¡à¹€à¸£à¹‡à¸§à¸à¸²à¸£à¹€à¸¥à¸·à¹ˆà¸­à¸™à¸¥à¸²à¸¢à¹€à¸Šà¸·à¸­à¸
 
     [Header("Piglet Animators (Optional)")]
     [SerializeField] private Animator piglet1;
@@ -40,13 +40,13 @@ public class ElevatorRope : MonoBehaviour
     {
         if (lineRenderer == null) return;
 
-        // จุดที่ 1: ตะกร้าแม่หมู
+        // à¸ˆà¸¸à¸”à¸—à¸µà¹ˆ 1: à¸•à¸°à¸à¸£à¹‰à¸²à¹à¸¡à¹ˆà¸«à¸¡à¸¹
         Vector3 point0 = new Vector3(transform.position.x, transform.position.y + gondolaOffset, 0f);
         
-        // จุดที่ 2: รอกด้านบน (หักศอกตัว L)
+        // à¸ˆà¸¸à¸”à¸—à¸µà¹ˆ 2: à¸£à¸­à¸à¸”à¹‰à¸²à¸™à¸šà¸™ (à¸«à¸±à¸à¸¨à¸­à¸à¸•à¸±à¸§ L)
         Vector3 point1 = new Vector3(transform.position.x, pulleyY, 0f);
 
-        // จุดที่ 3: มือลูกหมู (ถ้าไม่ได้ตั้งไว้ ให้หักขวาไปเฉยๆ)
+        // à¸ˆà¸¸à¸”à¸—à¸µà¹ˆ 3: à¸¡à¸·à¸­à¸¥à¸¹à¸à¸«à¸¡à¸¹ (à¸–à¹‰à¸²à¹„à¸¡à¹ˆà¹„à¸”à¹‰à¸•à¸±à¹‰à¸‡à¹„à¸§à¹‰ à¹ƒà¸«à¹‰à¸«à¸±à¸à¸‚à¸§à¸²à¹„à¸›à¹€à¸‰à¸¢à¹†)
         Vector3 point2 = pigletHand != null ? pigletHand.position : new Vector3(transform.position.x + 3f, pulleyY, 0f);
 
         lineRenderer.positionCount = 3;
@@ -57,7 +57,7 @@ public class ElevatorRope : MonoBehaviour
         lineRenderer.startWidth = ropeWidth;
         lineRenderer.endWidth = ropeWidth;
 
-        // คำนวณการเลื่อนลายเชือก (Texture Scrolling)
+        // à¸„à¸³à¸™à¸§à¸“à¸à¸²à¸£à¹€à¸¥à¸·à¹ˆà¸­à¸™à¸¥à¸²à¸¢à¹€à¸Šà¸·à¸­à¸ (Texture Scrolling)
         if (ropeMaterial != null)
         {
             float deltaY = transform.position.y - lastPosition.y;
@@ -70,7 +70,7 @@ public class ElevatorRope : MonoBehaviour
     [SerializeField] private string pullStateName = "Piglet_RobePull";
     private bool isPulling = false;
 
-    private void UpdatePigletAnimations()
+        private void UpdatePigletAnimations()
     {
         float deltaY = transform.position.y - lastPosition.y;
         float speed = deltaY / Time.deltaTime;
@@ -86,11 +86,17 @@ public class ElevatorRope : MonoBehaviour
             if (piglet2 != null) piglet2.Play(stateToPlay);
         }
 
+        // Adjust animation speed based on movement speed
+        float animSpeed = currentlyMoving ? Mathf.Abs(speed) * 0.2f : 1f; // 0.2f is a multiplier to make it look natural
+        if (animSpeed < 0.1f && currentlyMoving) animSpeed = 0.1f;
+        
+        if (piglet1 != null) piglet1.speed = animSpeed;
+        if (piglet2 != null) piglet2.speed = animSpeed;
+
         if (piglet1 != null) piglet1.SetFloat(pullAnimParam, speed);
         if (piglet2 != null) piglet2.SetFloat(pullAnimParam, speed);
     }
-
-    [ContextMenu("Setup L-Shape Rope (LineRenderer)")]
+[ContextMenu("Setup L-Shape Rope (LineRenderer)")]
     private void SetupLineRenderer()
     {
         if (lineRenderer != null) return;
@@ -102,11 +108,12 @@ public class ElevatorRope : MonoBehaviour
         lineRenderer.useWorldSpace = true;
         lineRenderer.sortingOrder = -5;
         
-        // ทำให้ Texture ลากยาวตามเส้น (ต้องใช้ Material ที่มีลายเชือก)
+        // à¸—à¸³à¹ƒà¸«à¹‰ Texture à¸¥à¸²à¸à¸¢à¸²à¸§à¸•à¸²à¸¡à¹€à¸ªà¹‰à¸™ (à¸•à¹‰à¸­à¸‡à¹ƒà¸Šà¹‰ Material à¸—à¸µà¹ˆà¸¡à¸µà¸¥à¸²à¸¢à¹€à¸Šà¸·à¸­à¸)
         lineRenderer.textureMode = LineTextureMode.Tile;
         lineRenderer.material = new Material(Shader.Find("Unlit/Transparent"));
         lineRenderer.startColor = new Color(0.85f, 0.65f, 0.45f);
         lineRenderer.endColor = new Color(0.85f, 0.65f, 0.45f);
     }
 }
+
 

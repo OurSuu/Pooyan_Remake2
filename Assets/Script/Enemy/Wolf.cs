@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public enum WolfState
 {
@@ -6,7 +6,7 @@ public enum WolfState
     Floating,
     Falling,
     WalkingToLadder,
-    WaitingForStep,     // เพิ่มสถานะใหม่
+    WaitingForStep,     // à¹€à¸žà¸´à¹ˆà¸¡à¸ªà¸–à¸²à¸™à¸°à¹ƒà¸«à¸¡à¹ˆ
     Climbing,
     WaitingOnLadder,
     Biting,
@@ -15,7 +15,7 @@ public enum WolfState
 }
 
 /// <summary>
-/// Normal wolf — floating, shield, rock throw, ladder/cliff behavior.
+/// Normal wolf â€” floating, shield, rock throw, ladder/cliff behavior.
 /// </summary>
 [RequireComponent(typeof(Collider2D))]
 public class Wolf : MonoBehaviour
@@ -62,7 +62,7 @@ public class Wolf : MonoBehaviour
     protected float rockTimer;
     protected bool shieldUp;
 
-    // จดจำว่าตัวเองจอง step หรือยัง (จำ index หรือ ref ที่ ReserveStep คืนมา)
+    // à¸ˆà¸”à¸ˆà¸³à¸§à¹ˆà¸²à¸•à¸±à¸§à¹€à¸­à¸‡à¸ˆà¸­à¸‡ step à¸«à¸£à¸·à¸­à¸¢à¸±à¸‡ (à¸ˆà¸³ index à¸«à¸£à¸·à¸­ ref à¸—à¸µà¹ˆ ReserveStep à¸„à¸·à¸™à¸¡à¸²)
     protected int? reservedStepIndex = null;
 
     public WolfState State => state;
@@ -409,6 +409,7 @@ public class Wolf : MonoBehaviour
 
     protected void UpdateWalkToLadder()
     {
+        if (animator != null && animator.enabled) animator.Play("Run");
         var ladder = LadderSystem.Instance;
         if (ladder == null) { DestroyWolf(); return; }
 
@@ -417,7 +418,7 @@ public class Wolf : MonoBehaviour
 
         if (Mathf.Abs(transform.position.x - targetX) < 0.05f)
         {
-            // ถึงบันไดแล้ว — ขอจองขั้น
+            // à¸–à¸¶à¸‡à¸šà¸±à¸™à¹„à¸”à¹à¸¥à¹‰à¸§ â€” à¸‚à¸­à¸ˆà¸­à¸‡à¸‚à¸±à¹‰à¸™
             var stepIndex = ladder.TryReserveStepForWolf(this);
             if (stepIndex.HasValue)
             {
@@ -427,13 +428,13 @@ public class Wolf : MonoBehaviour
             }
             else
             {
-                // ยังไม่มีขั้นว่าง ให้รอ
+                // à¸¢à¸±à¸‡à¹„à¸¡à¹ˆà¸¡à¸µà¸‚à¸±à¹‰à¸™à¸§à¹ˆà¸²à¸‡ à¹ƒà¸«à¹‰à¸£à¸­
                 state = WolfState.WaitingForStep;
             }
         }
     }
 
-    // Update ขณะรอคิวขึ้นบันได ถ้ายังไม่มีขั้นว่าง จะวนเช็คซ้ำ
+    // Update à¸‚à¸“à¸°à¸£à¸­à¸„à¸´à¸§à¸‚à¸¶à¹‰à¸™à¸šà¸±à¸™à¹„à¸” à¸–à¹‰à¸²à¸¢à¸±à¸‡à¹„à¸¡à¹ˆà¸¡à¸µà¸‚à¸±à¹‰à¸™à¸§à¹ˆà¸²à¸‡ à¸ˆà¸°à¸§à¸™à¹€à¸Šà¹‡à¸„à¸‹à¹‰à¸³
     protected void UpdateWaitingForStep()
     {
         var ladder = LadderSystem.Instance;
@@ -449,6 +450,7 @@ public class Wolf : MonoBehaviour
 
     protected void UpdateClimbing()
     {
+        if (animator != null && animator.enabled) animator.Play("Climb");
         var ladder = LadderSystem.Instance;
         if (ladder == null) { DestroyWolf(); return; }
 
@@ -471,6 +473,7 @@ public class Wolf : MonoBehaviour
 
     protected void UpdateWaitingOnLadder()
     {
+        if (animator != null && animator.enabled && !isBiting) animator.Play("Idle");
         biteTimer += Time.deltaTime;
         SpriteRenderer sr = cachedSR;
         
@@ -564,8 +567,8 @@ public class Wolf : MonoBehaviour
 
     public virtual void OnBalloonPopped()
     {
-        // 1. เปลี่ยนวิธีเช็ค: ถ้ายืนอยู่บนพื้น เกาะบันได ถึงหน้าผา หรือตายไปแล้ว ถึงจะทำลายลูกโป่งไม่ได้ (return ทิ้ง)
-        // ถ้าไม่อยู่ใน State เหล่านี้ แปลว่าอยู่กลางอากาศ = ร่วงได้หมด!
+        // 1. à¹€à¸›à¸¥à¸µà¹ˆà¸¢à¸™à¸§à¸´à¸˜à¸µà¹€à¸Šà¹‡à¸„: à¸–à¹‰à¸²à¸¢à¸·à¸™à¸­à¸¢à¸¹à¹ˆà¸šà¸™à¸žà¸·à¹‰à¸™ à¹€à¸à¸²à¸°à¸šà¸±à¸™à¹„à¸” à¸–à¸¶à¸‡à¸«à¸™à¹‰à¸²à¸œà¸² à¸«à¸£à¸·à¸­à¸•à¸²à¸¢à¹„à¸›à¹à¸¥à¹‰à¸§ à¸–à¸¶à¸‡à¸ˆà¸°à¸—à¸³à¸¥à¸²à¸¢à¸¥à¸¹à¸à¹‚à¸›à¹ˆà¸‡à¹„à¸¡à¹ˆà¹„à¸”à¹‰ (return à¸—à¸´à¹‰à¸‡)
+        // à¸–à¹‰à¸²à¹„à¸¡à¹ˆà¸­à¸¢à¸¹à¹ˆà¹ƒà¸™ State à¹€à¸«à¸¥à¹ˆà¸²à¸™à¸µà¹‰ à¹à¸›à¸¥à¸§à¹ˆà¸²à¸­à¸¢à¸¹à¹ˆà¸à¸¥à¸²à¸‡à¸­à¸²à¸à¸²à¸¨ = à¸£à¹ˆà¸§à¸‡à¹„à¸”à¹‰à¸«à¸¡à¸”!
         if (state == WolfState.WalkingToLadder ||
             state == WolfState.Climbing ||
             state == WolfState.WaitingOnLadder ||
@@ -575,13 +578,13 @@ public class Wolf : MonoBehaviour
             return;
         }
 
-        // 2. เปลี่ยน State เป็นตกพื้น และเล่นเสียง
+        // 2. à¹€à¸›à¸¥à¸µà¹ˆà¸¢à¸™ State à¹€à¸›à¹‡à¸™à¸•à¸à¸žà¸·à¹‰à¸™ à¹à¸¥à¸°à¹€à¸¥à¹ˆà¸™à¹€à¸ªà¸µà¸¢à¸‡
         state = WolfState.Falling;
         SetFallingVisual();
         AudioManager.Instance?.PlayWolfFall();
 
-        // 3. สิ่งสำคัญที่ต้องเพิ่ม: ปิดระบบปาหินและกางโล่ทิ้งทันทีที่ลูกโป่งแตก! 
-        // ป้องกันบั๊ก "หมาป่าร่วงอยู่แต่ดันปาหินสวนกลับมาได้"
+        // 3. à¸ªà¸´à¹ˆà¸‡à¸ªà¸³à¸„à¸±à¸à¸—à¸µà¹ˆà¸•à¹‰à¸­à¸‡à¹€à¸žà¸´à¹ˆà¸¡: à¸›à¸´à¸”à¸£à¸°à¸šà¸šà¸›à¸²à¸«à¸´à¸™à¹à¸¥à¸°à¸à¸²à¸‡à¹‚à¸¥à¹ˆà¸—à¸´à¹‰à¸‡à¸—à¸±à¸™à¸—à¸µà¸—à¸µà¹ˆà¸¥à¸¹à¸à¹‚à¸›à¹ˆà¸‡à¹à¸•à¸! 
+        // à¸›à¹‰à¸­à¸‡à¸à¸±à¸™à¸šà¸±à¹Šà¸ "à¸«à¸¡à¸²à¸›à¹ˆà¸²à¸£à¹ˆà¸§à¸‡à¸­à¸¢à¸¹à¹ˆà¹à¸•à¹ˆà¸”à¸±à¸™à¸›à¸²à¸«à¸´à¸™à¸ªà¸§à¸™à¸à¸¥à¸±à¸šà¸¡à¸²à¹„à¸”à¹‰"
         canThrowRock = false;
         hasShield = false;
         if (shieldTransform != null)
@@ -617,12 +620,22 @@ public class Wolf : MonoBehaviour
     /// </summary>
     public void TriggerBite()
     {
+        if (animator != null) animator.Play("Bite");
         if (state != WolfState.WaitingOnLadder) return;
         state = WolfState.Biting;
         AudioManager.Instance?.PlayWolfBite();
         FindAnyObjectByType<PlayerController>()?.TakeDamage();
         DestroyWolf();
     }
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (state == WolfState.Falling)
+        {
+            if (other.CompareTag(GameConstants.TagPlayer))
+            {
+                other.GetComponentInParent<PlayerController>()?.TakeDamage();
+            }
+        }
+    }
 }
-
 
