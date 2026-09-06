@@ -21,7 +21,7 @@ public class WolfSpawner : MonoBehaviour
 
     [Header("Meat Spawn")]
     [SerializeField] private float meatSpawnDelay = 2f;
-    [SerializeField] private int killsPerMeat = 8; // Number of kills required to spawn next meat
+    [SerializeField]  // Number of kills required to spawn next meat
 
             [Header("Debug Formations (รูปแบบแถว)")]
     [Tooltip("เปิดระบบจำลองรูปแบบการจัดแถว (Wave Pattern)")]
@@ -111,7 +111,7 @@ public class WolfSpawner : MonoBehaviour
             int remainingToKill = WolfTracker.Instance != null ? WolfTracker.Instance.RemainingKills : wolvesToSpawn - wolvesSpawned;
             if (remainingToKill <= 0) break;
 
-            int activeWolves = FindObjectsByType<Wolf>(FindObjectsInactive.Exclude, FindObjectsSortMode.None).Length;
+            int activeWolves = FindObjectsByType<Wolf>(FindObjectsInactive.Exclude).Length;
             if (activeWolves > 10) 
             {
                 yield return new WaitForSeconds(config.spawnInterval);
@@ -395,6 +395,7 @@ public class WolfSpawner : MonoBehaviour
         // Hook for stage clear when all wolves dead â€” extend with active wolf counter if needed
     }
 }
+
 
 
 

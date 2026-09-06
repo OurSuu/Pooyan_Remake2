@@ -93,8 +93,8 @@ public class ElevatorRope : MonoBehaviour
         if (piglet1 != null) piglet1.speed = animSpeed;
         if (piglet2 != null) piglet2.speed = animSpeed;
 
-        if (piglet1 != null) piglet1.SetFloat(pullAnimParam, speed);
-        if (piglet2 != null) piglet2.SetFloat(pullAnimParam, speed);
+        // if (piglet1 != null) piglet1.SetFloat(pullAnimParam, speed);
+        // if (piglet2 != null) piglet2.SetFloat(pullAnimParam, speed);
     }
 [ContextMenu("Setup L-Shape Rope (LineRenderer)")]
     private void SetupLineRenderer()
@@ -115,5 +115,7 @@ public class ElevatorRope : MonoBehaviour
         lineRenderer.endColor = new Color(0.85f, 0.65f, 0.45f);
     }
 }
+
+
 
 

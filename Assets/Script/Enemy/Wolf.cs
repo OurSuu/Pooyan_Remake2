@@ -209,7 +209,7 @@ public class Wolf : MonoBehaviour
         {
             bool laneClear = true;
             // Check if there is another wolf currently dropping right below us in the same lane
-            var wolves = FindObjectsByType<Wolf>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            var wolves = FindObjectsByType<Wolf>(FindObjectsInactive.Exclude);
             foreach (var w in wolves)
             {
                 if (w == this) continue;
@@ -643,5 +643,6 @@ public class Wolf : MonoBehaviour
         }
     }
 }
+
 
 
