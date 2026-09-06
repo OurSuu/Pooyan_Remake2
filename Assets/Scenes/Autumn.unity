@@ -251,6 +251,7 @@ GameObject:
   m_Component:
   - component: {fileID: 80487647}
   - component: {fileID: 80487648}
+  - component: {fileID: 80487650}
   - component: {fileID: 80487649}
   m_Layer: 0
   m_Name: MamaPig
@@ -300,7 +301,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 2aa1860721a69ca44a0270100fb663cd, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -355,6 +356,21 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &80487650
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 80487646}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9dbcf998a24f1d34b9f35e669332395e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DropShadow2D
+  shadowOffset: {x: 0.15, y: -0.15}
+  shadowColor: {r: 0, g: 0, b: 0, a: 0.5}
+  sortingOrderOffset: -1
 --- !u!1 &81950460
 GameObject:
   m_ObjectHideFlags: 0
@@ -1943,7 +1959,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: -2
   m_MaskInteraction: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0, g: 0, b: 0, a: 0.53333336}
@@ -1966,6 +1982,7 @@ GameObject:
   - component: {fileID: 897501168}
   - component: {fileID: 897501167}
   - component: {fileID: 897501169}
+  - component: {fileID: 897501170}
   m_Layer: 0
   m_Name: Piglet1_0
   m_TagString: Untagged
@@ -1999,7 +2016,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 2aa1860721a69ca44a0270100fb663cd, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2069,6 +2086,21 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &897501170
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 897501166}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9dbcf998a24f1d34b9f35e669332395e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DropShadow2D
+  shadowOffset: {x: 0.15, y: -0.15}
+  shadowColor: {r: 0, g: 0, b: 0, a: 0.5}
+  sortingOrderOffset: -1
 --- !u!1 &926053715
 GameObject:
   m_ObjectHideFlags: 0
@@ -2811,6 +2843,7 @@ GameObject:
   - component: {fileID: 1316737528}
   - component: {fileID: 1316737527}
   - component: {fileID: 1316737529}
+  - component: {fileID: 1316737530}
   m_Layer: 0
   m_Name: Piglet1_0 (1)
   m_TagString: Untagged
@@ -2844,7 +2877,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 2aa1860721a69ca44a0270100fb663cd, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2915,6 +2948,21 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1316737530
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1316737526}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9dbcf998a24f1d34b9f35e669332395e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DropShadow2D
+  shadowOffset: {x: 0.15, y: -0.15}
+  shadowColor: {r: 0, g: 0, b: 0, a: 0.5}
+  sortingOrderOffset: -1
 --- !u!1 &1367539169
 GameObject:
   m_ObjectHideFlags: 0
