@@ -450,11 +450,11 @@ MonoBehaviour:
   spawnXMax: 1.7
   meatSpawnDelay: 2
   killsPerMeat: 8
-  useDebugFormations: 1
-  allowSingle: 0
-  allowDoubleSameLane: 0
+  useDebugFormations: 0
+  allowSingle: 1
+  allowDoubleSameLane: 1
   allowDiagonal: 1
-  allowHorizontal: 0
+  allowHorizontal: 1
   useDebugPatterns: 0
   allowNormalWolf: 1
   allowShieldWolf: 1
