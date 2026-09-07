@@ -1,36 +1,36 @@
 ﻿using UnityEngine;
 
 /// <summary>
-/// Per-stage difficulty config â€” assign via ScriptableObject assets.
+/// คอนฟิกความยากของแต่ละด่าน — สร้างเป็น ScriptableObject asset ไว้ใช้สะดวกๆ
 /// </summary>
 [CreateAssetMenu(fileName = "LevelConfig", menuName = "Pooyan/Level Config")]
 public class LevelConfig : ScriptableObject
 {
     [Header("Wolves")]
-    public int wolfCount = 32;
-    public Vector2 wolfSpeedRange = new(1.5f, 3f);
-    [Range(0f, 1f)] public float shieldRatio = 0.2f;
-    [Range(0f, 1f)] public float rockThrowRatio = 0.15f;
-    public float spawnInterval = 1f;
+    public int wolfCount = 32;                     // จำนวนหมาป่าในด่านนี้
+    public Vector2 wolfSpeedRange = new(1.5f, 3f); // สปีดการเคลื่อนที่ สุ่มตั้งแต่-ถึง
+    [Range(0f, 1f)] public float shieldRatio = 0.2f;      // โอกาสที่หมาป่าจะถือโล่
+    [Range(0f, 1f)] public float rockThrowRatio = 0.15f;  // โอกาสที่หมาป่าจะปาหิน
+    public float spawnInterval = 1f;               // ระยะเวลาห่างในการเกิดตัวถัดไป
 
     [Header("Balloon")]
-    [Min(1)] public int balloonHP = 1;
+    [Min(1)] public int balloonHP = 1;             // เลือดลูกโป่ง ยิงกี่ทีแตก
 
     [Header("Boss")]
-    public bool hasBossWolf = true;
-    public bool hasTreeTopBoss;
-    [Min(1)] public int bossShieldHP = GameConstants.BossShieldHits;
+    public bool hasBossWolf = true;                // ด่านนี้มีบอสไหม
+    public bool hasTreeTopBoss;                    // มีบอสบนต้นไม้หรือเปล่า
+    [Min(1)] public int bossShieldHP = GameConstants.BossShieldHits; // โล่บอสอึดแค่ไหน
 }
 
 /// <summary>
-/// Provides difficulty parameters per stage and wave timing.
+/// ตัวจัดการเรื่องความยากของด่านและจังหวะการเกิดเวฟต่างๆ
 /// </summary>
 public class LevelManager : MonoBehaviour
 {
     public static LevelManager Instance { get; private set; }
 
     [SerializeField] private LevelConfig defaultConfig;
-    [SerializeField] private LevelConfig[] stageOverrides;
+    [SerializeField] private LevelConfig[] stageOverrides; // ถ้าอยากเซ็ตเฉพาะด่าน ใส่ตรงนี้
 
     public LevelConfig CurrentConfig { get; private set; }
 
@@ -43,6 +43,7 @@ public class LevelManager : MonoBehaviour
         }
         Instance = this;
 
+        // ผูก Event พอเปลี่ยนด่านปุ๊บ ให้โหลด Config รอเลย
         if (GameManager.Instance != null)
             GameManager.Instance.OnStageChanged += LoadConfigForStage;
     }
@@ -58,11 +59,14 @@ public class LevelManager : MonoBehaviour
         CurrentConfig = GetConfigForStage(stage);
     }
 
+    // ดึง Config ของด่านนั้นๆ มา
     public LevelConfig GetConfigForStage(int stage)
     {
+        // ถ้ามีเซ็ตไว้ล่วงหน้า (Override) ก็เอาอันนั้นมาใช้
         if (stageOverrides != null && stage >= 1 && stage <= stageOverrides.Length && stageOverrides[stage - 1] != null)
             return stageOverrides[stage - 1];
 
+        // ถ้าไม่มี Default เลย ก็สร้างใหม่แล้วคำนวณความยากเอา
         if (defaultConfig == null)
         {
             CurrentConfig = ScriptableObject.CreateInstance<LevelConfig>();
@@ -70,23 +74,24 @@ public class LevelManager : MonoBehaviour
             return CurrentConfig;
         }
 
+        // ดึงจาก Default มาเพิ่มระดับความยากตามเลขด่าน (Scaling)
         var config = Instantiate(defaultConfig);
         ApplyScaling(config, stage);
         CurrentConfig = config;
         return config;
     }
 
+    // ยิ่งเล่นลึกยิ่งยาก ระบบอัพสเกลความโหด
     private static void ApplyScaling(LevelConfig config, int stage)
     {
         int tier = Mathf.Max(0, stage - 1);
-        config.wolfCount = Mathf.Min(99, config.wolfCount + tier * 8); // Arcade max = 99
-        config.wolfSpeedRange += new Vector2(0.1f, 0.2f) * tier;
-        config.shieldRatio = Mathf.Min(0.7f, config.shieldRatio + tier * 0.05f);
-        config.rockThrowRatio = Mathf.Min(0.5f, config.rockThrowRatio + tier * 0.03f);
-        config.balloonHP = Mathf.Min(3, 1 + (tier / 2));
-        config.spawnInterval = Mathf.Max(0.5f, config.spawnInterval - tier * 0.05f);
-        config.hasTreeTopBoss = stage >= 3;
-        config.hasBossWolf = stage % 2 == 0;
+        config.wolfCount = Mathf.Min(99, config.wolfCount + tier * 8); // หมาป่าเยอะขึ้น (สูงสุด 99 แบบตู้)
+        config.wolfSpeedRange += new Vector2(0.1f, 0.2f) * tier;       // วิ่งไวขึ้น
+        config.shieldRatio = Mathf.Min(0.7f, config.shieldRatio + tier * 0.05f);     // ถือโล่กันเยอะขึ้น
+        config.rockThrowRatio = Mathf.Min(0.5f, config.rockThrowRatio + tier * 0.03f); // ปาหินรัวๆ
+        config.balloonHP = Mathf.Min(3, 1 + (tier / 2));               // ลูกโป่งอึดขึ้นด้วย
+        config.spawnInterval = Mathf.Max(0.5f, config.spawnInterval - tier * 0.05f); // เกิดไวขึ้น
+        config.hasTreeTopBoss = stage >= 3;                            // หลังด่าน 3 มีบอสบนต้นไม้แล้ว
+        config.hasBossWolf = stage % 2 == 0;                           // ด่านคู่จะมีบอสโผล่มา
     }
 }
-

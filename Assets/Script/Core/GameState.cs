@@ -1,4 +1,5 @@
-﻿public enum GameState
+﻿// เก็บ Enum ต่างๆ สำหรับสถานะในเกม
+public enum GameState
 {
     MainMenu,
     Playing,
@@ -7,15 +8,16 @@
     GameOver
 }
 
+// ทิศทางของด่าน ลงหรือขึ้น
 public enum StageDirection
 {
-    Descending,
-    Ascending
+    Descending, // หมาป่าโรยตัวลงมา (ด่าน 1, 3, 5...)
+    Ascending   // หมาป่าลอยลูกโป่งขึ้น (ด่าน 2, 4, 6...)
 }
 
+// ชนิดของของรางวัลในฉากโบนัส
 public enum BonusType
 {
-    Fruit,
-    Meat
+    Fruit, // ผลไม้
+    Meat   // เนื้อ
 }
-

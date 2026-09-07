@@ -2,26 +2,27 @@
 using UnityEngine;
 
 /// <summary>
-/// HUD â€” score, lives, stage, cliff counter, game over / stage clear screens.
+/// ไฟล์นี้โคตรพ่อโคตรแม่จัดการ UI บนหน้าจอเลยเพื่อน ทั้งคะแนน เลือด ฉากจบ หน้าเกมโอเวอร์ อยู่ในนี้หมด
 /// </summary>
 public class UIManager : MonoBehaviour
 {
     [Header("HUD")]
-    [SerializeField] private TextMeshProUGUI scoreText;
-    [SerializeField] private TextMeshProUGUI highScoreText;
-    [SerializeField] private TextMeshProUGUI livesText;
-    [SerializeField] private TextMeshProUGUI stageText;
-    [SerializeField] private TextMeshProUGUI remainingWolvesText; // Add this!
-    [SerializeField] private GameObject cliffCounterPanel;
-    [SerializeField] private TextMeshProUGUI cliffCounterText;
+    [SerializeField] private TextMeshProUGUI scoreText; // ช่องแสดงแต้ม
+    [SerializeField] private TextMeshProUGUI highScoreText; // สถิติแต้มสูงสุด
+    [SerializeField] private TextMeshProUGUI livesText; // จำนวนชีวิตหมู
+    [SerializeField] private TextMeshProUGUI stageText; // ตอนนี้เล่นอยู่ฉากไหน
+    [SerializeField] private TextMeshProUGUI remainingWolvesText; // ตัวเลขหมาป่าที่ต้องตบให้หมด
+    [SerializeField] private GameObject cliffCounterPanel; // แผงนับจำนวนหมาป่าที่ขึ้นหน้าผาไปได้
+    [SerializeField] private TextMeshProUGUI cliffCounterText; // Text ข้างในแผงบนอีกที
 
     [Header("Screens")]
-    [SerializeField] private GameObject stageClearScreen;
-    [SerializeField] private GameObject gameOverScreen;
-    [SerializeField] private GameObject bonusResultPanel;
+    [SerializeField] private GameObject stageClearScreen; // หน้าจอแสดงผลตอนผ่านด่าน
+    [SerializeField] private GameObject gameOverScreen; // เกมโอเวอร์โว้ย
+    [SerializeField] private GameObject bonusResultPanel; // สรุปผลคะแนนด่านโบนัส
 
     private void Start()
     {
+        // สมัครรับข่าวสารตอนคะแนนเปลี่ยน
         if (ScoreManager.Instance != null)
         {
             ScoreManager.Instance.OnScoreChanged += UpdateScore;
@@ -30,6 +31,7 @@ public class UIManager : MonoBehaviour
             UpdateHighScore(ScoreManager.Instance.HighScore);
         }
 
+        // สมัครรับข่าวสารตอนเลือดลดหรือเปลี่ยนฉาก
         if (GameManager.Instance != null)
         {
             GameManager.Instance.OnLivesChanged += UpdateLives;
@@ -42,20 +44,24 @@ public class UIManager : MonoBehaviour
             UpdateStage(GameManager.Instance.CurrentStage);
         }
 
+        // นับจำนวนหมาป่าบนหน้าผาด้วย
         if (BoulderSystem.Instance != null)
             BoulderSystem.Instance.OnCliffCountChanged += UpdateCliffCounter;
 
+        // อัปเดตตัวเลขหมาป่าที่ต้องล่าให้หมด
         if (WolfTracker.Instance != null)
         {
             WolfTracker.Instance.OnKillCountChanged += UpdateRemainingWolves;
             UpdateRemainingWolves(WolfTracker.Instance.RemainingKills);
         }
 
+        // เริ่มเกมมาต้องปิดพวกหน้าจอบังๆ ให้หมดก่อน
         HideAllScreens();
     }
 
     private void OnDestroy()
     {
+        // ย้ายซีนแล้วก็ลืมๆ ข่าวสารไปซะ ไม่งั้นเกมแครช
         if (ScoreManager.Instance != null)
         {
             ScoreManager.Instance.OnScoreChanged -= UpdateScore;
@@ -110,6 +116,7 @@ public class UIManager : MonoBehaviour
 
     private void UpdateCliffCounter(int count, int threshold)
     {
+        // ด่านเลขคู่ถึงจะโชว์ตัวเลขหน้าผานะเฟ้ย
         if (cliffCounterPanel != null)
             cliffCounterPanel.SetActive(GameManager.Instance != null && !GameManager.Instance.IsOddStage);
 
@@ -135,30 +142,30 @@ public class UIManager : MonoBehaviour
 
     private void ShowStageClear()
     {
+        // ด่านเคลียร์!! เปิด UI โชว์รัวๆ
         if (stageClearScreen != null) stageClearScreen.SetActive(true);
-        Invoke(nameof(AdvanceAfterClear), 2f);
+        Invoke(nameof(AdvanceAfterClear), 2f); // หน่วงไว้แป๊บนึงค่อยไปด่านถัดไป
     }
 
     private void AdvanceAfterClear()
     {
         HideAllScreens();
-
         if (GameManager.Instance == null) return;
-
         
-        GameManager.Instance.AdvanceStage();
+        GameManager.Instance.AdvanceStage(); // สั่งย้ายด่าน
     }
 
     private void ShowGameOver()
     {
+        // จบเห่ ขึ้นหน้าจอเลยเพื่อน
         if (gameOverScreen != null) gameOverScreen.SetActive(true);
     }
 
     private void HideAllScreens()
     {
+        // สับสวิตช์ปิดหน้าจอใหญ่ๆ ทั้งหมด
         if (stageClearScreen != null) stageClearScreen.SetActive(false);
         if (gameOverScreen != null) gameOverScreen.SetActive(false);
         if (bonusResultPanel != null) bonusResultPanel.SetActive(false);
     }
 }
-

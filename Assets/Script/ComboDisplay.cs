@@ -3,33 +3,32 @@ using TMPro;
 using UnityEngine;
 
 /// <summary>
-/// Floating combo score popup when meat hits wolves.
+/// อันนี้ทำตัวเลขคอมโบเด้งๆ นะเพื่อน เวลาโยนเนื้อไปโดนหมาป่าหลายๆ ตัว คะแนนมันจะลอยขึ้นมาโชว์!
 /// </summary>
 [RequireComponent(typeof(Canvas))]
 public class ComboDisplay : MonoBehaviour
 {
-    [SerializeField] private GameObject popupPrefab;
-    [SerializeField] private float floatSpeed = 1.5f;
-    [SerializeField] private float lifetime = 1f;
-    [SerializeField] private Canvas canvas;
+    [SerializeField] private GameObject popupPrefab; // ตัวหนังสือที่มันจะเด้งลอยๆ
+    [SerializeField] private float floatSpeed = 1.5f; // ความเร็วตอนลอยขึ้น
+    [SerializeField] private float lifetime = 1f; // อยู่ได้กี่วิก่อนหาย
+    [SerializeField] private Canvas canvas; // ตัว Canvas หลัก
 
     private Camera mainCamera;
 
     private void Awake()
     {
-        // Ensure the Canvas reference is set
+        // ลาก Canvas มาใส่ให้หน่อยถ้าลืม
         if (canvas == null) canvas = GetComponent<Canvas>();
 
-        // Enforce correct Canvas render mode
         if (canvas != null)
         {
-            // Only allow Screen Space - Overlay or Screen Space - Camera
+            // บังคับให้ใช้ Overlay หรือ Camera เท่านั้น ไม่งั้นบั๊กแสดงผล
             if (canvas.renderMode != RenderMode.ScreenSpaceOverlay &&
                 canvas.renderMode != RenderMode.ScreenSpaceCamera)
             {
                 Debug.LogWarning(
-                    $"[ComboDisplay] Canvas RenderMode must be 'Screen Space - Overlay' or 'Screen Space - Camera'." +
-                    $" It is currently set to '{canvas.renderMode}'. Changing to ScreenSpaceOverlay.");
+                    $"[ComboDisplay] เห้ย Canvas RenderMode ต้องเป็น 'Screen Space - Overlay' หรือ 'Screen Space - Camera' น้า" +
+                    $" ตอนนี้มันเป็น '{canvas.renderMode}' ขอจับเปลี่ยนเป็น ScreenSpaceOverlay เลยละกัน");
                 canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             }
         }
@@ -39,12 +38,14 @@ public class ComboDisplay : MonoBehaviour
     {
         mainCamera = Camera.main;
 
+        // โยงกับ ScoreManager รอจับตัวเลขเด้ง
         if (ScoreManager.Instance != null)
             ScoreManager.Instance.OnScoreFloating += ShowCombo;
     }
 
     private void OnDestroy()
     {
+        // เก็บกวาด event ด้วยนะเพื่อน
         if (ScoreManager.Instance != null)
             ScoreManager.Instance.OnScoreFloating -= ShowCombo;
     }
@@ -53,9 +54,10 @@ public class ComboDisplay : MonoBehaviour
     {
         if (popupPrefab == null) return;
 
+        // เสกตัวหนังสือขึ้นมา
         var popup = Instantiate(popupPrefab, canvas != null ? canvas.transform : transform);
         var text = popup.GetComponent<TextMeshProUGUI>() ?? popup.GetComponentInChildren<TextMeshProUGUI>();
-        if (text != null) text.text = $"+{points}";
+        if (text != null) text.text = $"+{points}"; // ใส่แต้มเข้าไป
 
         StartCoroutine(AnimatePopup(popup, worldPosition));
     }
@@ -66,7 +68,7 @@ public class ComboDisplay : MonoBehaviour
         var canvasGroup = popup.GetComponent<CanvasGroup>();
         if (canvasGroup == null) canvasGroup = popup.AddComponent<CanvasGroup>();
 
-        // Use WorldToScreenPoint ONY when Canvas is Screen Space - Overlay or Screen Space - Camera
+        // แปลงพิกัดโลกมาลงจอภาพ (ใช้กับ Canvas Overlay/Camera ได้พอดี)
         Vector3 screenPos = worldPosition;
         if (canvas != null)
         {
@@ -83,13 +85,15 @@ public class ComboDisplay : MonoBehaviour
         while (elapsed < lifetime)
         {
             elapsed += Time.deltaTime;
+            // ให้มันลอยขึ้นเรื่อยๆ
             if (rect != null)
                 rect.position += Vector3.up * (floatSpeed * 50f * Time.deltaTime);
+            // เฟดให้ค่อยๆ หายไปอย่างเท่ๆ
             canvasGroup.alpha = 1f - (elapsed / lifetime);
             yield return null;
         }
 
+        // จบงานก็เผาทิ้งซะ
         Destroy(popup);
     }
 }
-

@@ -3,38 +3,38 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Ascending stage â€” 7 wolves on cliff triggers boulder death.
+/// เฮ้ยเพื่อน ไฟล์นี้สำหรับระบบหินกลิ้ง ในด่านที่หมาป่าไต่ขึ้นมา ถ้ามันขึ้นมาถึงหน้าผาครบ 7 ตัวเมื่อไหร่ หินจะกลิ้งทับเราตาย!
 /// </summary>
 public class BoulderSystem : MonoBehaviour
 {
     public static BoulderSystem Instance { get; private set; }
 
-    [SerializeField] private Transform boulder;
-    [SerializeField] private float cliffY = 3.5f;
-    [SerializeField] private Transform[] cliffWolfSlots;
+    [SerializeField] private Transform boulder; // ตัวหิน
+    [SerializeField] private float cliffY = 3.5f; // ความสูงหน้าผา
+    [SerializeField] private Transform[] cliffWolfSlots; // จุดที่ให้หมาป่ายืนเรียงคิว
 
-    private readonly List<Wolf> wolvesOnCliff = new();
-    private int virtualWolvesOnCliff = 0;
-    private bool boulderFalling;
+    private readonly List<Wolf> wolvesOnCliff = new(); // ลิสต์รายชื่อหมาที่รอดขึ้นผาได้
+    private int virtualWolvesOnCliff = 0; 
+    private bool boulderFalling; // เช็คว่าหินกำลังร่วงอยู่รึเปล่า
 
-    public int WolvesOnCliff => wolvesOnCliff.Count;
-    public int WolfThreshold => GameConstants.BoulderWolfThreshold;
+    public int WolvesOnCliff => wolvesOnCliff.Count; 
+    public int WolfThreshold => GameConstants.BoulderWolfThreshold; // จำนวนตัวสูงสุดก่อนหินถล่ม
 
-    public event System.Action<int, int> OnCliffCountChanged;
+    public event System.Action<int, int> OnCliffCountChanged; // ส่งอีเวนต์บอกคนอื่นเรื่องจำนวนหมา
 
-    private Vector3 initialBoulderPos;
-    private Vector3 boulderOffset;
-    private float moveSpeed = 2f;
+    private Vector3 initialBoulderPos; // จุดเริ่มของหิน
+    private Vector3 boulderOffset; 
+    private float moveSpeed = 2f; 
 
     private void Awake()
     {
-        Instance = this;
+        Instance = this; 
         if (boulder != null)
         {
             initialBoulderPos = boulder.position;
             if (cliffWolfSlots != null && cliffWolfSlots.Length > 0)
             {
-                // Calculate offset relative to the starting slot (furthest from edge, i.e., index length-1)
+                // หาระยะห่างของหินไว้ จะได้ดันหินเนียนๆ
                 boulderOffset = initialBoulderPos - cliffWolfSlots[cliffWolfSlots.Length - 1].position;
             }
             else
@@ -48,6 +48,7 @@ public class BoulderSystem : MonoBehaviour
     {
         if (GameManager.Instance != null)
         {
+            // ดักรอตอนเปลี่ยนด่าน
             GameManager.Instance.OnStageChanged += HandleStageChanged;
             HandleStageChanged(GameManager.Instance.CurrentStage);
         }
@@ -62,6 +63,7 @@ public class BoulderSystem : MonoBehaviour
 
     private void HandleStageChanged(int stage)
     {
+        // เปิดใช้ก้อนหินเฉพาะในด่านหน้าผา
         if (boulder != null)
         {
             bool isStage2 = GameManager.Instance != null && !GameManager.Instance.IsOddStage;
@@ -76,20 +78,19 @@ public class BoulderSystem : MonoBehaviour
         int maxSlots = cliffWolfSlots != null ? cliffWolfSlots.Length : 5;
         int totalWolves = wolvesOnCliff.Count + virtualWolvesOnCliff;
         
-        // Front-most wolf occupies the slot (maxSlots - totalWolves)
-        // If 0 wolves, boulder stays at the starting slot (maxSlots - 1)
+        // ยิ่งหมาเยอะ หินยิ่งโดนดันเข้าใกล้เรา
         int frontSlotIndex = maxSlots - Mathf.Max(1, totalWolves);
         frontSlotIndex = Mathf.Clamp(frontSlotIndex, 0, maxSlots - 1);
         
         Vector3 targetBoulderPos = GetCliffSlotPosition(frontSlotIndex) + boulderOffset;
         
-        // Smoothly move boulder to target position
+        // ขยับหินมาเรื่อยๆ
         boulder.position = Vector3.MoveTowards(boulder.position, targetBoulderPos, moveSpeed * Time.deltaTime);
     }
 
     public void RegisterWolfOnCliff(Wolf wolf)
     {
-        if (boulderFalling) return;
+        if (boulderFalling) return; // ถ้าหินตกไปแล้ว ไม่ต้องนับเพิ่มละ
 
         if (!wolvesOnCliff.Contains(wolf))
         {
@@ -97,6 +98,7 @@ public class BoulderSystem : MonoBehaviour
             int total = wolvesOnCliff.Count + virtualWolvesOnCliff;
             OnCliffCountChanged?.Invoke(total, WolfThreshold);
 
+            // ซวยแล้ว หมาครบ หินถล่ม!!
             if (total >= WolfThreshold)
             {
                 TriggerBoulder();
@@ -106,23 +108,22 @@ public class BoulderSystem : MonoBehaviour
 
     private void TriggerBoulder()
     {
-        boulderFalling = true;
-        AudioManager.Instance?.PlayBoulderFall();
+        boulderFalling = true; // ล็อคไว้ว่าหินกำลังหล่น
+        AudioManager.Instance?.PlayBoulderFall(); // เสียงหินถล่มต้องมา
         StartCoroutine(DropBoulderRoutine());
     }
 
     public Vector3 GetCliffTargetPosition(Wolf wolf)
     {
+        // หาว่าหมาต้องไปยืนตรงไหน
         int maxSlots = cliffWolfSlots != null ? cliffWolfSlots.Length : 5;
         int totalWolves = wolvesOnCliff.Count + virtualWolvesOnCliff;
         
         int wolfIndexInList = wolvesOnCliff.IndexOf(wolf);
-        if (wolfIndexInList == -1) wolfIndexInList = wolvesOnCliff.Count; // fallback if walking up
+        if (wolfIndexInList == -1) wolfIndexInList = wolvesOnCliff.Count;
         
         int overallIndex = virtualWolvesOnCliff + wolfIndexInList;
         
-        // 0th wolf goes to (maxSlots - totalWolves) + 0
-        // 1st wolf goes to (maxSlots - totalWolves) + 1
         int targetSlotIndex = (maxSlots - totalWolves) + overallIndex;
         targetSlotIndex = Mathf.Clamp(targetSlotIndex, 0, maxSlots - 1);
         
@@ -145,25 +146,25 @@ public class BoulderSystem : MonoBehaviour
         Vector3 startPos = boulder.position;
         
         var player = FindAnyObjectByType<PlayerController>();
-        Vector3 targetPos = startPos + Vector3.down * 10f; // fallback
+        Vector3 targetPos = startPos + Vector3.down * 10f;
         
         if (player != null)
         {
-            // Drop slightly below player to ensure it passes them
+            // ให้มันตกทะลุตัวหมูไปหน่อย
             targetPos = player.transform.position + Vector3.down * 2f; 
         }
 
         float elapsed = 0f;
-        float duration = 1.5f; // speed of fall
+        float duration = 1.5f;
         
-        // Arc parameters
+        // จุดสูงสุดตอนหินเด้งนิดนึงก่อนตก
         Vector3 midPoint = (startPos + targetPos) / 2f;
-        midPoint.y = startPos.y + 1.5f; // curve upwards initially like being tossed
+        midPoint.y = startPos.y + 1.5f;
 
+        // อนิเมชันร่วงแบบโค้งๆ
         while (elapsed < duration)
         {
             float t = elapsed / duration;
-            // Quadratic bezier curve
             Vector3 m1 = Vector3.Lerp(startPos, midPoint, t);
             Vector3 m2 = Vector3.Lerp(midPoint, targetPos, t);
             boulder.position = Vector3.Lerp(m1, m2, t);
@@ -174,8 +175,8 @@ public class BoulderSystem : MonoBehaviour
 
         if (player != null)
         {
-            player.SetDiedFromBoulder(true); // Signal to GameManager
-            player.TakeDamage();
+            player.SetDiedFromBoulder(true); // เซ็ตสถานะให้ตายเพราะหิน
+            player.TakeDamage(); // เรียบร้อย ตายชัวร์
         }
         else
         {
@@ -185,6 +186,7 @@ public class BoulderSystem : MonoBehaviour
 
     public void ResetCliff(int keepCount = 0)
     {
+        // โละหมา เคลียร์หิน
         wolvesOnCliff.Clear();
         virtualWolvesOnCliff = keepCount;
         boulderFalling = false;
@@ -194,7 +196,7 @@ public class BoulderSystem : MonoBehaviour
             bool isStage2 = GameManager.Instance != null && !GameManager.Instance.IsOddStage;
             boulder.gameObject.SetActive(isStage2);
             
-            // Instantly snap boulder to position
+            // จับหินกลับเข้าที่
             int maxSlots = cliffWolfSlots != null ? cliffWolfSlots.Length : 5;
             int frontSlotIndex = maxSlots - Mathf.Max(1, keepCount);
             frontSlotIndex = Mathf.Clamp(frontSlotIndex, 0, maxSlots - 1);
@@ -204,4 +206,3 @@ public class BoulderSystem : MonoBehaviour
         OnCliffCountChanged?.Invoke(virtualWolvesOnCliff, WolfThreshold);
     }
 }
-

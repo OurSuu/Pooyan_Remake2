@@ -3,45 +3,46 @@ using System.Linq;
 using UnityEngine;
 
 /// <summary>
-/// Descending stage â€” wolves climb ladder and bite when gondola aligns.
+/// อันนี้ระบบบันไดนะ จัดการหมาป่าที่กำลังปีนบันได ถ้ามันปีนมาถึงจุดที่กัดเราได้ เราเจ็บตัวแน่นอน!
 /// </summary>
 public class LadderSystem : MonoBehaviour
 {
     public static LadderSystem Instance { get; private set; }
 
-    [SerializeField] private float ladderX = 3.5f;
-    [SerializeField] private float ladderBottomY = -3.5f;
-    [SerializeField] private float stepHeight = 0.6f;
-    [SerializeField] private int maxSteps = 12;
+    [SerializeField] private float ladderX = 3.5f; // แกน X ของบันได
+    [SerializeField] private float ladderBottomY = -3.5f; // ฐานบันได
+    [SerializeField] private float stepHeight = 0.6f; // ความสูงแต่ละขั้น
+    [SerializeField] private int maxSteps = 12; // มีบันไดกี่ขั้น
 
     [Header("Manual Steps (Optional)")]
-    [SerializeField] private Transform[] stepTransforms;
+    [SerializeField] private Transform[] stepTransforms; // ขั้นบันไดแบบลากใส่เอง (เผื่ออยากตั้งจุดแบบเป๊ะๆ)
 
     [Header("Fatal Settings")]
-    [SerializeField] private int fatalWolfCount = 5;
+    [SerializeField] private int fatalWolfCount = 5; // ถ้าหมาปีนเกินจำนวนนี้เมื่อไหร่ ซวยแน่
 
-    private readonly Dictionary<Wolf, int> wolfSteps = new();
-    private readonly HashSet<int> occupiedSteps = new();
+    private readonly Dictionary<Wolf, int> wolfSteps = new(); // เก็บว่าหมาตัวไหนอยู่ขั้นไหน
+    private readonly HashSet<int> occupiedSteps = new(); // เช็คว่าขั้นไหนโดนยึดไปแล้วบ้าง
 
     public float LadderX => ladderX;
 
     private void Awake()
     {
-        Instance = this;
+        Instance = this; // สร้าง Singleton โง่ๆ ใช้งานง่าย
     }
 
     private void OnDestroy()
     {
-        if (Instance == this) Instance = null;
+        if (Instance == this) Instance = null; // อย่าลืมเคลียร์
     }
 
     public int? TryReserveStepForWolf(Wolf wolf)
     {
+        // เช็คก่อนว่ามีที่ให้ยืนมั้ย
         if (wolfSteps.ContainsKey(wolf)) return wolfSteps[wolf];
 
         int stepCount = (stepTransforms != null && stepTransforms.Length > 0) ? stepTransforms.Length : maxSteps;
 
-        // Arcade rule: Fill from BOTTOM to TOP!
+        // ไล่หาขั้นที่ว่างอยู่
         for (int i = 0; i < stepCount; i++)
         {
             if (!occupiedSteps.Contains(i))
@@ -49,6 +50,7 @@ public class LadderSystem : MonoBehaviour
                 occupiedSteps.Add(i);
                 wolfSteps[wolf] = i;
 
+                // ถ้าหมาปีนมาเยอะเกิน ล่มสลายจ้า
                 if (occupiedSteps.Count >= fatalWolfCount)
                 {
                     TriggerLadderOverrun();
@@ -62,11 +64,12 @@ public class LadderSystem : MonoBehaviour
 
     private void TriggerLadderOverrun()
     {
+        // หมามาเยอะไป ปีนกัดเลย
         var player = FindAnyObjectByType<PlayerController>();
         if (player != null && player.State != PlayerState.Dead)
         {
-            AudioManager.Instance?.PlayWolfBite(); // Use bite sound for now until rope cut animation is added
-            player.TakeDamage();
+            AudioManager.Instance?.PlayWolfBite(); // เสียงงับๆ
+            player.TakeDamage(); // ตายจ้า
         }
     }
 
@@ -78,14 +81,14 @@ public class LadderSystem : MonoBehaviour
             {
                 return stepTransforms[stepIndex.Value].position.y;
             }
-            return ladderBottomY + stepIndex.Value * stepHeight;
+            return ladderBottomY + stepIndex.Value * stepHeight; // คำนวณแบบสเกลปกติ
         }
         return ladderBottomY;
     }
 
-    
     public void ReleaseStepByIndex(int index, Wolf wolf)
     {
+        // ปล่อยขั้นบันได เผื่อหมาตายละ
         occupiedSteps.Remove(index);
         wolfSteps.Remove(wolf);
     }
@@ -106,7 +109,7 @@ public class LadderSystem : MonoBehaviour
         float wolfY = wolf.transform.position.y;
         float playerY = player.transform.position.y;
 
-        // Increased hit window so it's easier to get bitten if the player is near
+        // ถ้าระยะห่างหมากับหมูใกล้กันเกินไป มันจะงับเรา!
         if (Mathf.Abs(playerY - wolfY) <= 1.2f)
         {
             wolf.TriggerBite();
@@ -115,14 +118,13 @@ public class LadderSystem : MonoBehaviour
 
     public void OnWolfReachedStep(Wolf wolf, int stepIndex)
     {
-        // Just reached the step. Bite check is handled continuously in Wolf.cs
-        // We do not instantly kill the player here. The player only dies if they move in front of the wolf.
+        // ปล่อยว่างไว้ก่อน เผื่อใช้เพิ่มลูกเล่นทีหลัง
     }
 
     public void ResetLadder()
     {
+        // ล้างข้อมูลบันไดเตรียมเล่นใหม่
         wolfSteps.Clear();
         occupiedSteps.Clear();
     }
 }
-

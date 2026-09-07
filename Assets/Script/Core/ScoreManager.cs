@@ -2,26 +2,28 @@
 using UnityEngine;
 
 /// <summary>
-/// Manages score, high score, and meat combo scoring.
+/// จัดการเรื่องคะแนน, ไฮสกอร์, และคะแนนจากการทำคอมโบด้วยเนื้อ
 /// </summary>
 public class ScoreManager : MonoBehaviour
 {
     public static ScoreManager Instance { get; private set; }
 
+    // Key สำหรับเซฟไฮสกอร์ลงเครื่อง
     private const string HighScoreKey = "Pooyan_HighScore";
 
     [SerializeField] private int score;
     [SerializeField] private int highScore;
 
-    private int meatComboCounter;
+    private int meatComboCounter; // ตัวนับคอมโบเวลาปาเนื้อ
 
     public int Score => score;
     public int HighScore => highScore;
     public int MeatComboCounter => meatComboCounter;
 
+    // Events สำหรับอัปเดต UI 
     public event Action<int> OnScoreChanged;
     public event Action<int> OnHighScoreChanged;
-    public event Action<int, Vector3> OnScoreFloating;
+    public event Action<int, Vector3> OnScoreFloating; // ทำเลขคะแนนเด้งๆ ตรงที่เกิดอีเวนต์
 
     private void Awake()
     {
@@ -31,6 +33,7 @@ public class ScoreManager : MonoBehaviour
             return;
         }
         Instance = this;
+        // โหลดไฮสกอร์ที่เคยทำไว้ขึ้นมา
         highScore = PlayerPrefs.GetInt(HighScoreKey, 0);
     }
 
@@ -42,8 +45,9 @@ public class ScoreManager : MonoBehaviour
         OnScoreChanged?.Invoke(score);
     }
 
-    private int nextExtraLifeIndex = 0;
+    private int nextExtraLifeIndex = 0; // เอาไว้เช็คว่าจะได้ 1-Up ครั้งต่อไปเมื่อไหร่
 
+    // บวกคะแนนหลัก
     public void AddScore(int points)
     {
         if (points <= 0) return;
@@ -51,15 +55,16 @@ public class ScoreManager : MonoBehaviour
         score += points;
         OnScoreChanged?.Invoke(score);
 
-        // Extra Life check (arcade: 30,000 / 70,000)
+        // เช็คว่าถึงเป้า Extra Life หรือยัง (อิงตามตู้ อาเขต: 30,000 / 70,000)
         while (nextExtraLifeIndex < GameConstants.ExtraLifeThresholds.Length
             && oldScore < GameConstants.ExtraLifeThresholds[nextExtraLifeIndex]
             && score >= GameConstants.ExtraLifeThresholds[nextExtraLifeIndex])
         {
-            GameManager.Instance?.AddLife();
+            GameManager.Instance?.AddLife(); // แจกชีวิต!
             nextExtraLifeIndex++;
         }
 
+        // ทุบสถิติใหม่!
         if (score > highScore)
         {
             highScore = score;
@@ -69,6 +74,7 @@ public class ScoreManager : MonoBehaviour
         }
     }
 
+    // พวกฟังก์ชันเพิ่มคะแนนยิบย่อย พร้อมลอยเลขกลางจอ
     public void AddMeatPickupScore(Vector3 pos)
     {
         AddScore(GameConstants.ScoreMeatPickup);
@@ -93,17 +99,20 @@ public class ScoreManager : MonoBehaviour
         OnScoreFloating?.Invoke(GameConstants.ScoreFruitDestroy, pos);
     }
 
+    // คิดคะแนนคอมโบเนื้อ ยิ่งโดนหลายตัวยิ่งคูณเยอะ
     public void AddMeatComboScore(Vector3 worldPosition)
     {
         meatComboCounter++;
-        // Arcade rule: 400 * 2^(n-1) â†’ 400, 800, 1600, 3200, 6400...
+        // กฎตู้เกม: 400 * 2^(n-1) -> 400, 800, 1600, 3200, 6400... ทวีคูณไปเรื่อยๆ!
         int points = GameConstants.ScoreMeatComboBase * (1 << (meatComboCounter - 1));
         AddScore(points);
         OnScoreFloating?.Invoke(points, worldPosition);
     }
 
+    // พลาดแล้วก็รีเซ็ตคอมโบเริ่มใหม่นะ
     public void ResetMeatCombo() => meatComboCounter = 0;
 
+    // ได้ผลไม้โบนัส
     public void AddBonusFruitScore(BonusFruitType fruitType, Vector3 pos)
     {
         int points = fruitType switch
@@ -118,10 +127,10 @@ public class ScoreManager : MonoBehaviour
     }
 }
 
+// ชนิดผลไม้จ้า
 public enum BonusFruitType
 {
     Strawberry,
     Cherry,
     Peach
 }
-
