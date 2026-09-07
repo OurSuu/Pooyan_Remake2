@@ -7,7 +7,7 @@ public enum WolfState
     Floating,
     Falling,
     WalkingToLadder,
-    WaitingForStep,     // à¹€à¸žà¸´à¹ˆà¸¡à¸ªà¸–à¸²à¸™à¸°à¹ƒà¸«à¸¡à¹ˆ
+    WaitingForStep,     
     Climbing,
     WaitingOnLadder,
     Biting,
@@ -65,7 +65,7 @@ public class Wolf : MonoBehaviour
     protected float rockTimer;
     protected bool shieldUp;
 
-    // à¸ˆà¸”à¸ˆà¸³à¸§à¹ˆà¸²à¸•à¸±à¸§à¹€à¸­à¸‡à¸ˆà¸­à¸‡ step à¸«à¸£à¸·à¸­à¸¢à¸±à¸‡ (à¸ˆà¸³ index à¸«à¸£à¸·à¸­ ref à¸—à¸µà¹ˆ ReserveStep à¸„à¸·à¸™à¸¡à¸²)
+    
     protected int? reservedStepIndex = null;
 
     public WolfState State => state;
@@ -494,7 +494,7 @@ public class Wolf : MonoBehaviour
 
         if (Mathf.Abs(transform.position.x - targetX) < 0.05f)
         {
-            // à¸–à¸¶à¸‡à¸šà¸±à¸™à¹„à¸”à¹à¸¥à¹‰à¸§ â€” à¸‚à¸­à¸ˆà¸­à¸‡à¸‚à¸±à¹‰à¸™
+            
             var stepIndex = ladder.TryReserveStepForWolf(this);
             if (stepIndex.HasValue)
             {
@@ -504,13 +504,13 @@ public class Wolf : MonoBehaviour
             }
             else
             {
-                // à¸¢à¸±à¸‡à¹„à¸¡à¹ˆà¸¡à¸µà¸‚à¸±à¹‰à¸™à¸§à¹ˆà¸²à¸‡ à¹ƒà¸«à¹‰à¸£à¸­
+                
                 state = WolfState.WaitingForStep;
             }
         }
     }
 
-    // Update à¸‚à¸“à¸°à¸£à¸­à¸„à¸´à¸§à¸‚à¸¶à¹‰à¸™à¸šà¸±à¸™à¹„à¸” à¸–à¹‰à¸²à¸¢à¸±à¸‡à¹„à¸¡à¹ˆà¸¡à¸µà¸‚à¸±à¹‰à¸™à¸§à¹ˆà¸²à¸‡ à¸ˆà¸°à¸§à¸™à¹€à¸Šà¹‡à¸„à¸‹à¹‰à¸³
+    
     protected void UpdateWaitingForStep()
     {
         var ladder = LadderSystem.Instance;
@@ -663,8 +663,8 @@ public class Wolf : MonoBehaviour
 
     public virtual void OnBalloonPopped()
     {
-        // 1. à¹€à¸›à¸¥à¸µà¹ˆà¸¢à¸™à¸§à¸´à¸˜à¸µà¹€à¸Šà¹‡à¸„: à¸–à¹‰à¸²à¸¢à¸·à¸™à¸­à¸¢à¸¹à¹ˆà¸šà¸™à¸žà¸·à¹‰à¸™ à¹€à¸à¸²à¸°à¸šà¸±à¸™à¹„à¸” à¸–à¸¶à¸‡à¸«à¸™à¹‰à¸²à¸œà¸² à¸«à¸£à¸·à¸­à¸•à¸²à¸¢à¹„à¸›à¹à¸¥à¹‰à¸§ à¸–à¸¶à¸‡à¸ˆà¸°à¸—à¸³à¸¥à¸²à¸¢à¸¥à¸¹à¸à¹‚à¸›à¹ˆà¸‡à¹„à¸¡à¹ˆà¹„à¸”à¹‰ (return à¸—à¸´à¹‰à¸‡)
-        // à¸–à¹‰à¸²à¹„à¸¡à¹ˆà¸­à¸¢à¸¹à¹ˆà¹ƒà¸™ State à¹€à¸«à¸¥à¹ˆà¸²à¸™à¸µà¹‰ à¹à¸›à¸¥à¸§à¹ˆà¸²à¸­à¸¢à¸¹à¹ˆà¸à¸¥à¸²à¸‡à¸­à¸²à¸à¸²à¸¨ = à¸£à¹ˆà¸§à¸‡à¹„à¸”à¹‰à¸«à¸¡à¸”!
+        
+        
         if (state == WolfState.WalkingToLadder ||
             state == WolfState.Climbing ||
             state == WolfState.WaitingOnLadder ||
@@ -674,13 +674,13 @@ public class Wolf : MonoBehaviour
             return;
         }
 
-        // 2. à¹€à¸›à¸¥à¸µà¹ˆà¸¢à¸™ State à¹€à¸›à¹‡à¸™à¸•à¸à¸žà¸·à¹‰à¸™ à¹à¸¥à¸°à¹€à¸¥à¹ˆà¸™à¹€à¸ªà¸µà¸¢à¸‡
+        
         state = WolfState.Falling;
         SetFallingVisual();
         AudioManager.Instance?.PlayWolfFall();
 
-        // 3. à¸ªà¸´à¹ˆà¸‡à¸ªà¸³à¸„à¸±à¸à¸—à¸µà¹ˆà¸•à¹‰à¸­à¸‡à¹€à¸žà¸´à¹ˆà¸¡: à¸›à¸´à¸”à¸£à¸°à¸šà¸šà¸›à¸²à¸«à¸´à¸™à¹à¸¥à¸°à¸à¸²à¸‡à¹‚à¸¥à¹ˆà¸—à¸´à¹‰à¸‡à¸—à¸±à¸™à¸—à¸µà¸—à¸µà¹ˆà¸¥à¸¹à¸à¹‚à¸›à¹ˆà¸‡à¹à¸•à¸! 
-        // à¸›à¹‰à¸­à¸‡à¸à¸±à¸™à¸šà¸±à¹Šà¸ "à¸«à¸¡à¸²à¸›à¹ˆà¸²à¸£à¹ˆà¸§à¸‡à¸­à¸¢à¸¹à¹ˆà¹à¸•à¹ˆà¸”à¸±à¸™à¸›à¸²à¸«à¸´à¸™à¸ªà¸§à¸™à¸à¸¥à¸±à¸šà¸¡à¸²à¹„à¸”à¹‰"
+        
+        
         canThrowRock = false;
         hasShield = false;
         if (shieldTransform != null)
@@ -767,6 +767,7 @@ public class Wolf : MonoBehaviour
         }
     }
 }
+
 
 
 

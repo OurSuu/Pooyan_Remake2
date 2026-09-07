@@ -1,8 +1,8 @@
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 
 /// <summary>
-/// HUD — score, lives, stage, cliff counter, game over / stage clear screens.
+/// HUD â€” score, lives, stage, cliff counter, game over / stage clear screens.
 /// </summary>
 public class UIManager : MonoBehaviour
 {
@@ -145,7 +145,7 @@ public class UIManager : MonoBehaviour
 
         if (GameManager.Instance == null) return;
 
-        // สั่ง AdvanceStage อย่างเดียวพอครับ เพราะ GameManager ฉลาดพอที่จะพาเข้า Bonus Stage เองถ้าถึงเวลา
+        
         GameManager.Instance.AdvanceStage();
     }
 
@@ -161,3 +161,4 @@ public class UIManager : MonoBehaviour
         if (bonusResultPanel != null) bonusResultPanel.SetActive(false);
     }
 }
+

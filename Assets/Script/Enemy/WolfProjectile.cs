@@ -59,7 +59,7 @@ public class WolfProjectile : MonoBehaviour
 
         if (other.CompareTag(GameConstants.TagShield))
         {
-            // à¸–à¹‰à¸²à¹‚à¸”à¸™à¸à¸£à¸°à¹€à¸Šà¹‰à¸² (à¸—à¸µà¹ˆà¸•à¸´à¸” Tag Shield à¹„à¸§à¹‰) à¹ƒà¸«à¹‰à¸à¸±à¸™à¸«à¸´à¸™à¹„à¸”à¹‰
+            
             var player = other.GetComponentInParent<PlayerController>();
             if (player != null)
             {
@@ -71,7 +71,7 @@ public class WolfProjectile : MonoBehaviour
 
         if (other.CompareTag(GameConstants.TagPlayer))
         {
-            // à¸«à¸´à¸™à¹‚à¸”à¸™à¸œà¸¹à¹‰à¹€à¸¥à¹ˆà¸™ (à¹à¸¡à¹ˆà¸«à¸¡à¸¹) à¸•à¸²à¸¢à¸—à¸±à¸™à¸—à¸µ
+            
             var player = other.GetComponent<PlayerController>() ?? other.GetComponentInParent<PlayerController>();
             if (player != null)
             {
@@ -96,6 +96,7 @@ public class WolfProjectile : MonoBehaviour
         Destroy(gameObject);
     }
 }
+
 
 
 

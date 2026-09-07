@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 /// <summary>
 /// Visual indicator when meat is available at the top of the rail.
@@ -33,3 +33,4 @@ public class MeatPickupIndicator : MonoBehaviour
             indicatorObject.SetActive(available);
     }
 }
+

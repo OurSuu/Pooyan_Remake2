@@ -1,7 +1,7 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 /// <summary>
-/// Per-stage difficulty config — assign via ScriptableObject assets.
+/// Per-stage difficulty config â€” assign via ScriptableObject assets.
 /// </summary>
 [CreateAssetMenu(fileName = "LevelConfig", menuName = "Pooyan/Level Config")]
 public class LevelConfig : ScriptableObject
@@ -89,3 +89,4 @@ public class LevelManager : MonoBehaviour
         config.hasBossWolf = stage % 2 == 0;
     }
 }
+

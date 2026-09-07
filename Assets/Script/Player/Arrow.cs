@@ -74,7 +74,7 @@ public class Arrow : MonoBehaviour
             transform.rotation = Quaternion.Euler(0, 0, 90f);
             
             AudioManager.Instance?.PlayShieldBlock();
-            // à¸ªà¸°à¸—à¹‰à¸­à¸™à¸¥à¸‡à¸¥à¹ˆà¸²à¸‡à¹€à¸«à¸¡à¸·à¸­à¸™à¸à¸±à¸™
+            
             speed = 0;
             direction = 0;
             var rb = GetComponent<Rigidbody2D>();
@@ -101,7 +101,7 @@ public class Arrow : MonoBehaviour
             var rb = GetComponent<Rigidbody2D>();
             if (rb != null)
             {
-                // à¸ªà¸°à¸—à¹‰à¸­à¸™à¸¥à¸‡à¹€à¸žà¸·à¹ˆà¸­à¹ƒà¸«à¹‰à¹„à¸›à¹‚à¸”à¸™à¸¥à¸¹à¸à¹‚à¸›à¹ˆà¸‡à¸•à¸±à¸§à¸¥à¹ˆà¸²à¸‡à¹„à¸”à¹‰
+                
                 rb.linearVelocity = new Vector2(0f, -3f);
                 rb.gravityScale = 1.5f;
             }
@@ -133,5 +133,6 @@ public class Arrow : MonoBehaviour
         }
     }
 }
+
 
 

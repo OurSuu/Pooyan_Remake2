@@ -1,7 +1,7 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 /// <summary>
-/// Coordinates stage start/end — resets stage systems, activates tree-top boss.
+/// Coordinates stage start/end â€” resets stage systems, activates tree-top boss.
 /// </summary>
 public class StageFlowController : MonoBehaviour
 {
@@ -46,7 +46,7 @@ public class StageFlowController : MonoBehaviour
 
     private void OnStateChanged(GameState state)
     {
-        // จะรีเซ็ตหน้าผา/บันได และสปอว์นหมาป่า ก็ต่อเมื่อ State เป็น Playing เท่านั้น
+        
         if (state == GameState.Playing)
         {
             OnStageStart(GameManager.Instance.CurrentStage);
@@ -108,3 +108,4 @@ public class StageFlowController : MonoBehaviour
         }
     }
 }
+

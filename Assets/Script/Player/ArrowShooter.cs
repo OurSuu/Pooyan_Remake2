@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -55,3 +55,4 @@ public class ArrowShooter : MonoBehaviour
         activeArrows.RemoveAll(a => a == null);
     }
 }
+

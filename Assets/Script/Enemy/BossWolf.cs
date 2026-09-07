@@ -1,7 +1,7 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 /// <summary>
-/// Ascending stage boss — flashing balloon, 5-hit shield, instant stage clear on kill.
+/// Ascending stage boss â€” flashing balloon, 5-hit shield, instant stage clear on kill.
 /// </summary>
 public class BossWolf : Wolf
 {
@@ -54,8 +54,9 @@ public class BossWolf : Wolf
     protected override void OnReachedCliff()
     {
         base.OnReachedCliff();
-        // ถ้าบอสหนีรอดไปได้ จะเรียกกำลังเสริม (เพิ่มโควตาเป้าหมาย 4 ตัว)
+        
         WolfTracker.Instance?.AddTargetKills(4);
     }
 }
+
 

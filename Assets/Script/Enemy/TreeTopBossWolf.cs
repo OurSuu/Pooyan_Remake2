@@ -1,7 +1,7 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 /// <summary>
-/// Stage 3+ tree-top boss — walks and throws fruit downward.
+/// Stage 3+ tree-top boss â€” walks and throws fruit downward.
 /// </summary>
 public class TreeTopBossWolf : MonoBehaviour
 {
@@ -54,3 +54,4 @@ public class TreeTopBossWolf : MonoBehaviour
         gameObject.SetActive(active);
     }
 }
+

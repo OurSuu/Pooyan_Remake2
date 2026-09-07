@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 /// <summary>
 /// Centralized audio playback for SE and BGM.
@@ -117,3 +117,4 @@ public class AudioManager : MonoBehaviour
         sfxSource.PlayOneShot(clip);
     }
 }
+

@@ -1,5 +1,5 @@
-/// <summary>
-/// Shared constants for Pooyan Remake — tags, layers, scoring, gameplay values.
+﻿/// <summary>
+/// Shared constants for Pooyan Remake â€” tags, layers, scoring, gameplay values.
 /// </summary>
 public static class GameConstants
 {
@@ -14,11 +14,11 @@ public static class GameConstants
     public const string TagPickup = "Pickup";
 
     // Scoring (arcade-accurate values)
-    public const int ScoreBalloonPop = 200;       // Was 100 — arcade is 200
-    public const int ScoreRockDestroy = 100;       // Was 200 — arcade is 100
+    public const int ScoreBalloonPop = 200;       // Was 100 â€” arcade is 200
+    public const int ScoreRockDestroy = 100;       // Was 200 â€” arcade is 100
     public const int ScoreFruitDestroy = 200;
     public const int ScoreMeatPickup = 200;
-    // Meat combo: 400 * 2^(n-1) — no cap! Calculated in ScoreManager.
+    // Meat combo: 400 * 2^(n-1) â€” no cap! Calculated in ScoreManager.
     public const int ScoreMeatComboBase = 400;
     public const int ScoreBonusStrawberry = 100;
     public const int ScoreBonusCherry = 200;
@@ -39,3 +39,4 @@ public static class GameConstants
     // Extra Life thresholds (arcade DIP switch defaults)
     public static readonly int[] ExtraLifeThresholds = { 30000, 70000 };
 }
+

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 /// <summary>
@@ -59,7 +59,7 @@ public class WolfTracker : MonoBehaviour
     public void NotifyKilled()
     {
         if (suppressNotifications || stageCleared) return;
-        // ป้องกันบั๊ก: ถ้ากำลังรีเซ็ตฉาก (ผู้เล่นตาย) หมาป่าที่ถูกลบออกจากฉากจะไม่นับเป็นผลงาน
+        
         if (GameManager.Instance != null && GameManager.Instance.DeathFreeze) return;
 
         kills++;
@@ -110,3 +110,4 @@ public class WolfDeathNotifier : MonoBehaviour
         tracker?.NotifyKilled();
     }
 }
+

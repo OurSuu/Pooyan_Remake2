@@ -1,9 +1,9 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 /// <summary>
-/// Descending stage — wolves climb ladder and bite when gondola aligns.
+/// Descending stage â€” wolves climb ladder and bite when gondola aligns.
 /// </summary>
 public class LadderSystem : MonoBehaviour
 {
@@ -83,7 +83,7 @@ public class LadderSystem : MonoBehaviour
         return ladderBottomY;
     }
 
-    // อัปเดตฟังก์ชัน Release ให้รับ Index ด้วยตามที่ Wolf.cs เรียก
+    
     public void ReleaseStepByIndex(int index, Wolf wolf)
     {
         occupiedSteps.Remove(index);
@@ -125,3 +125,4 @@ public class LadderSystem : MonoBehaviour
         occupiedSteps.Clear();
     }
 }
+

@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Collections;
 using UnityEngine;
 
 /// <summary>
-/// Singleton — controls game state, lives, stage progression.
+/// Singleton â€” controls game state, lives, stage progression.
 /// </summary>
 public class GameManager : MonoBehaviour
 {
@@ -136,15 +136,15 @@ public class GameManager : MonoBehaviour
 
     public void AdvanceStage()
     {
-        // เช็คก่อนว่าด่านที่เพิ่งเคลียร์ไป (ด่านปัจจุบัน) เป็นด่านเลขคู่หรือไม่
+        
         if (currentStage % 2 == 0)
         {
-            // ถ้าเคลียร์ด่าน 2 ให้เข้า Bonus เลย โดยยังไม่ต้องบวกเลขด่าน
+            
             EnterBonusStage();
         }
         else
         {
-            // ถ้าเคลียร์ด่าน 1 (เลขคี่) ให้บวกเลขเป็นด่าน 2 แล้วเริ่มเล่นต่อได้เลย
+            
             currentStage++;
             OnStageChanged?.Invoke(currentStage);
             SetState(GameState.Playing);
@@ -158,7 +158,7 @@ public class GameManager : MonoBehaviour
 
     public void CompleteBonusStage()
     {
-        // หลังจากเล่น Bonus Stage จบแล้ว ถึงจะบวกเลขด่าน (เช่น จาก 2 ไป 3)
+        
         currentStage++;
         OnStageChanged?.Invoke(currentStage);
         SetState(GameState.Playing);
@@ -173,3 +173,4 @@ public class GameManager : MonoBehaviour
     public bool IsPlaying => CurrentState == GameState.Playing;
     public bool IsBonus => CurrentState == GameState.BonusStage;
 }
+

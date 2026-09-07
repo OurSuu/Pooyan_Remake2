@@ -1,4 +1,4 @@
-public enum GameState
+﻿public enum GameState
 {
     MainMenu,
     Playing,
@@ -18,3 +18,4 @@ public enum BonusType
     Fruit,
     Meat
 }
+

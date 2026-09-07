@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -162,7 +162,7 @@ public class BonusStageManager : MonoBehaviour
 }
 
 /// <summary>
-/// Falling bonus fruit — destroyed by arrow for points.
+/// Falling bonus fruit â€” destroyed by arrow for points.
 /// </summary>
 [RequireComponent(typeof(Collider2D))]
 public class BonusFruit : MonoBehaviour
@@ -196,3 +196,4 @@ public class BonusFruit : MonoBehaviour
         Destroy(gameObject);
     }
 }
+

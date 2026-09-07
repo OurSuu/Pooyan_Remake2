@@ -329,7 +329,7 @@ public class WolfSpawner : MonoBehaviour
 
         float dropX = laneXCoords[laneIndex];
 
-        // à¹€à¸à¸´à¸”à¸—à¸µà¹ˆà¸‚à¸­à¸šà¸ˆà¸­ (startX) à¹€à¸”à¸´à¸™à¹€à¸‚à¹‰à¸²à¸¡à¸²
+        
         Vector3 pos = new Vector3(startX, baseY, 0f);
 
         float speed = forcedSpeed.HasValue ? forcedSpeed.Value : Random.Range(config.wolfSpeedRange.x, config.wolfSpeedRange.y);
@@ -395,6 +395,7 @@ public class WolfSpawner : MonoBehaviour
         // Hook for stage clear when all wolves dead â€” extend with active wolf counter if needed
     }
 }
+
 
 
 

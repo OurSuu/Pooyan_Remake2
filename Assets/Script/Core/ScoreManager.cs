@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 /// <summary>
@@ -96,7 +96,7 @@ public class ScoreManager : MonoBehaviour
     public void AddMeatComboScore(Vector3 worldPosition)
     {
         meatComboCounter++;
-        // Arcade rule: 400 * 2^(n-1) → 400, 800, 1600, 3200, 6400...
+        // Arcade rule: 400 * 2^(n-1) â†’ 400, 800, 1600, 3200, 6400...
         int points = GameConstants.ScoreMeatComboBase * (1 << (meatComboCounter - 1));
         AddScore(points);
         OnScoreFloating?.Invoke(points, worldPosition);
@@ -124,3 +124,4 @@ public enum BonusFruitType
     Cherry,
     Peach
 }
+

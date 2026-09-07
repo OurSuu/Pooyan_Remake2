@@ -44,3 +44,4 @@ public class DropShadow2D : MonoBehaviour
         shadowRenderer.flipY = parentRenderer.flipY;
     }
 }
+

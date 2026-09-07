@@ -1,9 +1,9 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Ascending stage — 7 wolves on cliff triggers boulder death.
+/// Ascending stage â€” 7 wolves on cliff triggers boulder death.
 /// </summary>
 public class BoulderSystem : MonoBehaviour
 {
@@ -204,3 +204,4 @@ public class BoulderSystem : MonoBehaviour
         OnCliffCountChanged?.Invoke(virtualWolvesOnCliff, WolfThreshold);
     }
 }
+
