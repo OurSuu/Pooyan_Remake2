@@ -2203,7 +2203,7 @@ GameObject:
   m_Layer: 0
   m_Name: Laddle4
   m_TagString: Untagged
-  m_Icon: {fileID: 419385456094870383, guid: 0000000000000000d000000000000000, type: 0}
+  m_Icon: {fileID: -5938655980376293919, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -2216,7 +2216,7 @@ Transform:
   m_GameObject: {fileID: 926053715}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.76, y: 3.99, z: 0}
+  m_LocalPosition: {x: 5.79, y: 3.99, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4025,7 +4025,7 @@ GameObject:
   m_Layer: 0
   m_Name: Laddle5
   m_TagString: Untagged
-  m_Icon: {fileID: 419385456094870383, guid: 0000000000000000d000000000000000, type: 0}
+  m_Icon: {fileID: -5938655980376293919, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -4038,7 +4038,7 @@ Transform:
   m_GameObject: {fileID: 1732181070}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.8, y: 5.21, z: 0}
+  m_LocalPosition: {x: 5.83, y: 5.21, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4091,6 +4091,7 @@ GameObject:
   - component: {fileID: 1762214927}
   - component: {fileID: 1762214926}
   - component: {fileID: 1762214930}
+  - component: {fileID: 1762214931}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -4177,7 +4178,8 @@ MonoBehaviour:
   spriteShoot: {fileID: 4195142512051705965, guid: 9501a211bc272d9418cf089080a5593f, type: 3}
   shootSpriteTime: 0.3
   shootAnimName: Shoot
-  deadAnimName: Dead
+  deadAnimName: Fall
+  deathFloorY: -6
   idleAnimName: Idle
 --- !u!4 &1762214929
 Transform:
@@ -4220,6 +4222,33 @@ MonoBehaviour:
   pullAnimParam: PullSpeed
   idleStateName: Piglet_Idle
   pullStateName: Piglet_PullRobe
+--- !u!50 &1762214931
+Rigidbody2D:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1762214925}
+  m_BodyType: 1
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
 --- !u!1 &1764863368
 GameObject:
   m_ObjectHideFlags: 0
@@ -4437,7 +4466,7 @@ GameObject:
   m_Layer: 0
   m_Name: Laddle1
   m_TagString: Untagged
-  m_Icon: {fileID: 419385456094870383, guid: 0000000000000000d000000000000000, type: 0}
+  m_Icon: {fileID: -5938655980376293919, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -4450,7 +4479,7 @@ Transform:
   m_GameObject: {fileID: 1845826917}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.9, y: 0.42, z: 0}
+  m_LocalPosition: {x: 5.93, y: 0.42, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5082,7 +5111,7 @@ GameObject:
   m_Layer: 0
   m_Name: Laddle3
   m_TagString: Untagged
-  m_Icon: {fileID: 419385456094870383, guid: 0000000000000000d000000000000000, type: 0}
+  m_Icon: {fileID: -5938655980376293919, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -5095,7 +5124,7 @@ Transform:
   m_GameObject: {fileID: 2119734465}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.83, y: 2.8, z: 0}
+  m_LocalPosition: {x: 5.8599997, y: 2.8, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5113,7 +5142,7 @@ GameObject:
   m_Layer: 0
   m_Name: Laddle2
   m_TagString: Untagged
-  m_Icon: {fileID: 419385456094870383, guid: 0000000000000000d000000000000000, type: 0}
+  m_Icon: {fileID: -5938655980376293919, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -5126,7 +5155,7 @@ Transform:
   m_GameObject: {fileID: 2127121022}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.86, y: 1.66, z: 0}
+  m_LocalPosition: {x: 5.89, y: 1.66, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

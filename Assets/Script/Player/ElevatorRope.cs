@@ -31,6 +31,17 @@ public class ElevatorRope : MonoBehaviour
 
     private void LateUpdate()
     {
+        var player = GetComponent<PlayerController>();
+        if (player != null && player.State == PlayerState.Dead)
+        {
+            if (lineRenderer != null) lineRenderer.enabled = false;
+            return;
+        }
+        else if (lineRenderer != null && !lineRenderer.enabled)
+        {
+            lineRenderer.enabled = true; // เปิดกลับมาตอนเกิดใหม่
+        }
+
         UpdateRopeVisual();
         UpdatePigletAnimations();
         lastPosition = transform.position;
@@ -115,6 +126,8 @@ public class ElevatorRope : MonoBehaviour
         lineRenderer.endColor = new Color(0.85f, 0.65f, 0.45f);
     }
 }
+
+
 
 
 

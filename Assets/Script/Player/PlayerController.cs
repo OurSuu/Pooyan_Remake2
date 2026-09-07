@@ -33,7 +33,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Sprite spriteShoot;  // MamaPig_1
     [SerializeField] private float shootSpriteTime = 0.15f;
     [SerializeField] private string shootAnimName = "Shoot";
-    [SerializeField] private string deadAnimName = "Dead";
+    [SerializeField] public string deadAnimName = "Fall";
+    [SerializeField] public float deathFloorY = -4.5f;
     [SerializeField] private string idleAnimName = "Idle";
 
     public PlayerState State { get; private set; } = PlayerState.Normal;
@@ -43,12 +44,14 @@ public class PlayerController : MonoBehaviour
 
     private ArrowShooter arrowShooter;
     private bool meatAvailable;
+    private Vector3 startPosition;
     private bool bossApproaching;
     private Coroutine shootSpriteRoutine;
     private Animator animator;
 
     private void Awake()
     {
+        startPosition = transform.position;
         arrowShooter = GetComponent<ArrowShooter>();
         if (arrowShooter == null) arrowShooter = GetComponentInChildren<ArrowShooter>();
     }
@@ -59,9 +62,26 @@ public class PlayerController : MonoBehaviour
         {
             animator = mamaPigRenderer.GetComponent<Animator>();
         }
+        
         if (animator == null)
         {
             animator = GetComponent<Animator>();
+        }
+        
+        if (animator == null)
+        {
+            // เจาะจงหาในลูกที่ชื่อ MamaPig ก่อน
+            Transform mamaPigObj = transform.Find("MamaPig");
+            if (mamaPigObj != null)
+            {
+                animator = mamaPigObj.GetComponent<Animator>();
+            }
+        }
+        
+        if (animator == null)
+        {
+            // ถ้ายังไม่เจออีกค่อยกวาดหาทั้งหมด
+            animator = GetComponentInChildren<Animator>();
         }
     }
 
@@ -215,15 +235,51 @@ public class PlayerController : MonoBehaviour
         
         if (animator != null)
         {
-            animator.Play(deadAnimName);
+            animator.enabled = true;
+            animator.Update(0f);
+            animator.speed = 1f;
+            animator.Play(deadAnimName, -1, 0f);
         }
 
         GameManager.Instance?.LoseLife(diedFromBoulder);
+        StartCoroutine(DeathBounceRoutine());
+    }
+
+    private System.Collections.IEnumerator DeathBounceRoutine()
+    {
+        float t = 0;
+        Vector3 startPos = transform.position;
+        // กระเด็นไปข้างหน้า (หันซ้าย แกน x ต้องติดลบ) และร่วงลง
+        float velocityX = -2.5f; // เด้งไปทางซ้าย (ข้างหน้า)
+        float velocityY = 3.0f; // เด้งลอยขึ้นนิดนึง
+        float gravity = 15f;
+        
+        while (State == PlayerState.Dead)
+        {
+            t += Time.deltaTime;
+            float newX = startPos.x + (velocityX * t);
+            float newY = startPos.y + (velocityY * t) - (0.5f * gravity * t * t);
+            
+            // เช็คว่าชนพื้นหรือยัง
+            if (newY <= deathFloorY)
+            {
+                newY = deathFloorY;
+                transform.position = new Vector3(newX, newY, startPos.z);
+                // (อนาคต: สั่งเล่นท่านอนตายตรงนี้ได้เลย)
+                break; // หลุดลูป ไม่ต้องร่วงหรือขยับต่อแล้ว
+            }
+
+            transform.position = new Vector3(newX, newY, startPos.z);
+            
+            yield return null;
+            if (t > 2.5f) break; // GameManager restarts wave in 2 seconds anyway
+        }
     }
 
     public void Respawn()
     {
         State = PlayerState.Normal;
+        transform.position = startPosition; // Reset position
         
         if (heldMeatVisual != null) heldMeatVisual.SetActive(false);
         
@@ -244,3 +300,12 @@ public class PlayerController : MonoBehaviour
         TakeDamage();
     }
 }
+
+
+
+
+
+
+
+
+

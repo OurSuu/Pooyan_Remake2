@@ -3,6 +3,7 @@
 public enum WolfState
 {
     WalkingBeforeDrop,
+    BlowingBalloon,
     Floating,
     Falling,
     WalkingToLadder,
@@ -27,6 +28,8 @@ public class Wolf : MonoBehaviour
 
     [Header("Animation / Sprites")]
     [SerializeField] protected Sprite spriteDrop;   // Static sprite for descending (until you have an Animation)
+    [SerializeField] protected Sprite spriteWaitLadder; // Static sprite for waiting on ladder
+    [SerializeField] protected string waitLadderAnimName = "WaitLadder";
     [SerializeField] protected Sprite spriteFly;    // Static sprite for ascending (until you have an Animation)
     [SerializeField] protected Sprite spriteFall;   // Static sprite for falling after balloon popped (optional)
 
@@ -128,8 +131,7 @@ public class Wolf : MonoBehaviour
         
         gameObject.tag = GameConstants.TagEnemy;
 
-        if (balloon != null)
-            balloon.Initialize(this, config.balloonHP);
+        if (balloon != null) { balloon.Initialize(this, config.balloonHP); balloon.gameObject.SetActive(false); }
 
         if (shieldTransform != null)
         {
@@ -149,11 +151,14 @@ public class Wolf : MonoBehaviour
     protected virtual void Update()
     {
         if (state == WolfState.Dead) return;
+        if (GameManager.Instance != null && GameManager.Instance.DeathFreeze) return; // หยุดการทำงานของศัตรูเมื่อแม่หมูตาย
 
         switch (state)
         {
             case WolfState.WalkingBeforeDrop:
                 UpdateWalkingBeforeDrop();
+                break;
+            case WolfState.BlowingBalloon:
                 break;
             case WolfState.Floating:
                 UpdateFloating();
@@ -202,23 +207,64 @@ public class Wolf : MonoBehaviour
     protected int currentLane = 0;
     protected float[] availableLanes;
 
+        protected void StartBlowingBalloon()
+    {
+        state = WolfState.BlowingBalloon;
+        if (animator != null && animator.enabled) animator.Play("BlowBalloon");
+        StartCoroutine(BlowBalloonRoutine());
+    }
+
+    private System.Collections.IEnumerator BlowBalloonRoutine()
+    {
+        // รอให้เล่นท่าเป่าลูกโป่ง
+        yield return new WaitForSeconds(0.5f); 
+        
+        // ลูกโป่งโผล่มา/เด้งขึ้นบนหัว
+        if (balloon != null) balloon.gameObject.SetActive(true);
+        
+        // รอแป๊บนึงก่อนโดดลง
+        yield return new WaitForSeconds(0.3f);
+        
+        if (state != WolfState.BlowingBalloon) yield break; // in case killed
+        
+        state = WolfState.Floating;
+        if (animator != null && animator.enabled) animator.Play(isDescendingStage ? floatDownAnimName : floatUpAnimName);
+        SetFloatingVisual();
+    }
+
     protected virtual void UpdateWalkingBeforeDrop()
     {
         transform.position = Vector3.MoveTowards(transform.position, new Vector3(targetDropX, transform.position.y, 0f), walkSpeed * Time.deltaTime);
         if (Mathf.Abs(transform.position.x - targetDropX) < 0.05f)
         {
             bool laneClear = true;
-            // Check if there is another wolf currently dropping right below us in the same lane
             var wolves = FindObjectsByType<Wolf>(FindObjectsInactive.Exclude);
             foreach (var w in wolves)
             {
                 if (w == this) continue;
-                if ((w.state == WolfState.Falling || w.state == WolfState.WalkingBeforeDrop) && Mathf.Abs(w.transform.position.x - targetDropX) < 0.1f)
+                
+                // เช็คว่ามีหมาป่าตัวอื่นอยู่ในเลนเป้าหมายเดียวกับเราไหม หรือกำลังจะไปที่เลนเดียวกัน
+                if (Mathf.Abs(w.transform.position.x - targetDropX) < 0.2f || Mathf.Abs(w.targetDropX - targetDropX) < 0.2f)
                 {
-                    if (Mathf.Abs(w.transform.position.y - transform.position.y) < 2.0f)
+                    // 1. ถ้าตัวอื่นกำลังเป่าลูกโป่ง หรือกำลังลอยลงมา (Floating) ในเลนนี้
+                    if (w.state == WolfState.BlowingBalloon || w.state == WolfState.Floating)
                     {
-                        laneClear = false;
-                        break;
+                        // และถ้าระยะห่างแนวดิ่ง (แกน Y) อยู่ใกล้กันเกิน 3.0 หน่วย -> ซ้อนกันแน่นอน!
+                        if (Mathf.Abs(w.transform.position.y - transform.position.y) < 3.0f)
+                        {
+                            laneClear = false;
+                            break;
+                        }
+                    }
+                    // 2. ถ้าตัวอื่นก็กำลังเดินไปที่จุดดรอปเดียวกันเป๊ะๆ
+                    else if (w.state == WolfState.WalkingBeforeDrop && Mathf.Abs(w.targetDropX - targetDropX) < 0.2f)
+                    {
+                        // ถ้ายืนซ้อนทับกันอยู่ (ห่างกันไม่ถึง 1.0 หน่วย) -> ตัวใดตัวหนึ่งต้องหลบ
+                        if (Mathf.Abs(w.transform.position.x - transform.position.x) < 1.0f)
+                        {
+                            laneClear = false;
+                            break;
+                        }
                     }
                 }
             }
@@ -248,10 +294,8 @@ public class Wolf : MonoBehaviour
             }
             else
             {
-                // Transition to Floating: pause Animator and show static sprite
-                state = WolfState.Floating;
-                if (balloon != null) balloon.gameObject.SetActive(true);
-                SetFloatingVisual();
+                // Start blowing balloon before floating down
+                StartBlowingBalloon();
             }
         }
     }
@@ -288,6 +332,7 @@ public class Wolf : MonoBehaviour
         if (animator != null)
         {
             animator.enabled = true;
+            animator.speed = 1f;
             animator.Play(fallAnimName);
         }
         else if (spriteFall != null && cachedSR != null)
@@ -329,8 +374,34 @@ public class Wolf : MonoBehaviour
         if (rockTimer <= 0f && rockPrefab != null)
         {
             rockTimer = rockThrowInterval;
+            StartCoroutine(ThrowRockRoutine());
+        }
+    }
+
+    private System.Collections.IEnumerator ThrowRockRoutine()
+    {
+        // 1. เล่นท่าปาหิน
+        if (animator != null && animator.enabled) animator.Play("ThrowRock");
+        
+        // 2. รอจังหวะง้างมือ (สมมติว่า 0.2 วินาที)
+        yield return new WaitForSeconds(0.2f); 
+        
+        // ถ้าถูกยิงตายหรือตกพื้นไปก่อนที่จะปา ก็ยกเลิกการปา
+        if (state != WolfState.Floating) yield break;
+        
+        // 3. เสกหินแล้วปาออกไป
+        if (rockPrefab != null)
+        {
             var rock = Instantiate(rockPrefab, transform.position, Quaternion.identity);
             rock.GetComponent<WolfProjectile>()?.LaunchAtPlayer(WolfProjectileType.Rock);
+        }
+
+        // 4. รอท่าปาหินจบ (0.3 วินาที) แล้วกลับสู่ท่าลอยตัวปกติ
+        yield return new WaitForSeconds(0.3f); 
+        
+        if (state == WolfState.Floating && animator != null && animator.enabled)
+        {
+            animator.Play(isDescendingStage ? floatDownAnimName : floatUpAnimName);
         }
     }
 
@@ -414,7 +485,7 @@ public class Wolf : MonoBehaviour
 
     protected void UpdateWalkToLadder()
     {
-        if (animator != null && animator.enabled) animator.Play("Run");
+        if (animator != null && animator.enabled) animator.Play("run");
         var ladder = LadderSystem.Instance;
         if (ladder == null) { DestroyWolf(); return; }
 
@@ -455,7 +526,7 @@ public class Wolf : MonoBehaviour
 
     protected void UpdateClimbing()
     {
-        if (animator != null && animator.enabled) animator.Play("Climb");
+        if (animator != null && animator.enabled) animator.Play("climb");
         var ladder = LadderSystem.Instance;
         if (ladder == null) { DestroyWolf(); return; }
 
@@ -478,7 +549,19 @@ public class Wolf : MonoBehaviour
 
     protected void UpdateWaitingOnLadder()
     {
-        if (animator != null && animator.enabled && !isBiting) animator.Play("Idle");
+        if (!isBiting)
+        {
+            if (spriteWaitLadder != null && cachedSR != null)
+            {
+                if (animator != null) animator.enabled = false; // ต้องปิด Animator ไม่งั้นมันจะบังคับเปลี่ยนรูปกลับ
+                cachedSR.sprite = spriteWaitLadder;
+            }
+            else if (animator != null)
+            {
+                animator.speed = 0f; 
+            }
+        }
+        
         biteTimer += Time.deltaTime;
         SpriteRenderer sr = cachedSR;
         
@@ -494,6 +577,14 @@ public class Wolf : MonoBehaviour
                 
                 // Visual feedback: Solid red during bite
                 if (sr != null) sr.color = new Color(1f, 0.3f, 0.3f);
+                
+                if (animator != null) 
+                {
+                    animator.enabled = true; // เปิดกลับมาทำงาน
+                    animator.Update(0f); // 🛑 เคล็ดลับโปร: บังคับให้ Animator รีเฟรชตัวเองทันทีในเฟรมนี้ (แก้บัคไม่เล่นท่า)
+                    animator.speed = 1f; 
+                    animator.Play("BiteRobe", -1, 0f); // บังคับเล่นตั้งแต่เฟรมแรกเสมอ
+                }
             }
             else if (biteInterval - biteTimer <= warningTime)
             {
@@ -623,12 +714,45 @@ public class Wolf : MonoBehaviour
     /// <summary>
     /// Called by LadderSystem when the wolf triggers a bite event.
     /// </summary>
+        public void PlayDeflectAnimation()
+    {
+        if (animator != null && animator.enabled)
+        {
+            animator.Play("BiteArrow", -1, 0f);
+            // Restore animation after a brief moment in case the Animator isn't set up to return automatically
+            StartCoroutine(RestoreAnimAfterBite());
+        }
+    }
+
+    private System.Collections.IEnumerator RestoreAnimAfterBite()
+    {
+        yield return new WaitForSeconds(0.3f);
+        if (animator != null && animator.enabled)
+        {
+            if (state == WolfState.Floating) animator.Play(isDescendingStage ? floatDownAnimName : floatUpAnimName);
+            else if (state == WolfState.Falling) animator.Play(fallAnimName);
+            else if (state == WolfState.WalkingToLadder || state == WolfState.WalkingBeforeDrop) animator.Play(runAnimName);
+        }
+    }
+
     public void TriggerBite()
     {
-        if (animator != null) animator.Play("Bite");
         if (state != WolfState.WaitingOnLadder) return;
         state = WolfState.Biting;
         AudioManager.Instance?.PlayWolfBite();
+        StartCoroutine(BiteAndDestroyRoutine());
+    }
+
+    private System.Collections.IEnumerator BiteAndDestroyRoutine()
+    {
+        if (animator != null) 
+        {
+            animator.speed = 1f; 
+            animator.Play("BiteRobe");
+        }
+        
+        // รอให้ท่ากัดเล่นจนจบก่อนค่อยหักเลือดและทำลายตัวเอง (สมมติท่ากัดยาว 0.5 วิ)
+        yield return new WaitForSeconds(0.5f);
         FindAnyObjectByType<PlayerController>()?.TakeDamage();
         DestroyWolf();
     }
@@ -643,6 +767,30 @@ public class Wolf : MonoBehaviour
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

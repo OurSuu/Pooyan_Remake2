@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public enum WolfProjectileType
 {
@@ -7,7 +7,7 @@ public enum WolfProjectileType
 }
 
 /// <summary>
-/// Rocks and fruits thrown by wolves — arrow destroys for points, player hit loses life.
+/// Rocks and fruits thrown by wolves â€” arrow destroys for points, player hit loses life.
 /// </summary>
 [RequireComponent(typeof(Collider2D))]
 public class WolfProjectile : MonoBehaviour
@@ -45,6 +45,7 @@ public class WolfProjectile : MonoBehaviour
 
     private void Update()
     {
+        if (GameManager.Instance != null && GameManager.Instance.DeathFreeze) return; // หยุดการทำงานของหินเมื่อแม่หมูตาย
         transform.position += (Vector3)(velocity * Time.deltaTime);
 
         if (transform.position.y < destroyY || transform.position.x < -12f || transform.position.x > 12f)
@@ -54,14 +55,15 @@ public class WolfProjectile : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (destroyed) return;
+        // Debug.Log("Rock hit: " + other.name + " with tag: " + other.tag);
 
         if (other.CompareTag(GameConstants.TagShield))
         {
-            // ถ้าโดนกระเช้า (ที่ติด Tag Shield ไว้) ให้กันหินได้
+            // à¸–à¹‰à¸²à¹‚à¸”à¸™à¸à¸£à¸°à¹€à¸Šà¹‰à¸² (à¸—à¸µà¹ˆà¸•à¸´à¸” Tag Shield à¹„à¸§à¹‰) à¹ƒà¸«à¹‰à¸à¸±à¸™à¸«à¸´à¸™à¹„à¸”à¹‰
             var player = other.GetComponentInParent<PlayerController>();
             if (player != null)
             {
-                AudioManager.Instance?.PlayShieldBlock();
+                player.OnProjectileHit();
                 Destroy(gameObject);
                 return;
             }
@@ -69,7 +71,7 @@ public class WolfProjectile : MonoBehaviour
 
         if (other.CompareTag(GameConstants.TagPlayer))
         {
-            // หินโดนผู้เล่น (แม่หมู) ตายทันที
+            // à¸«à¸´à¸™à¹‚à¸”à¸™à¸œà¸¹à¹‰à¹€à¸¥à¹ˆà¸™ (à¹à¸¡à¹ˆà¸«à¸¡à¸¹) à¸•à¸²à¸¢à¸—à¸±à¸™à¸—à¸µ
             var player = other.GetComponent<PlayerController>() ?? other.GetComponentInParent<PlayerController>();
             if (player != null)
             {
@@ -94,3 +96,8 @@ public class WolfProjectile : MonoBehaviour
         Destroy(gameObject);
     }
 }
+
+
+
+
+

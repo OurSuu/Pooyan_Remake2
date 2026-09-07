@@ -167,6 +167,8 @@ MonoBehaviour:
   shieldTransform: {fileID: 0}
   rockPrefab: {fileID: 1926483307685132397, guid: 34cd0122affc40848b25901f10d3ba12, type: 3}
   spriteDrop: {fileID: 1781254230411818056, guid: cee994d7dfef3054da12b5cd76a71975, type: 3}
+  spriteWaitLadder: {fileID: 4806478391568457651, guid: 3585573ee1fb4f645ae943116f2e8e86, type: 3}
+  waitLadderAnimName: WaitLadder
   spriteFly: {fileID: 1415970837381038977, guid: cee994d7dfef3054da12b5cd76a71975, type: 3}
   spriteFall: {fileID: -638794047502580265, guid: 4ded41380a8901849a0f0ab120d24106, type: 3}
   fallSpeed: 5
