@@ -1,28 +1,6 @@
 ﻿using UnityEngine;
 
 /// <summary>
-/// คอนฟิกความยากของแต่ละด่าน — สร้างเป็น ScriptableObject asset ไว้ใช้สะดวกๆ
-/// </summary>
-[CreateAssetMenu(fileName = "LevelConfig", menuName = "Pooyan/Level Config")]
-public class LevelConfig : ScriptableObject
-{
-    [Header("Wolves")]
-    public int wolfCount = 32;                     // จำนวนหมาป่าในด่านนี้
-    public Vector2 wolfSpeedRange = new(1.5f, 3f); // สปีดการเคลื่อนที่ สุ่มตั้งแต่-ถึง
-    [Range(0f, 1f)] public float shieldRatio = 0.2f;      // โอกาสที่หมาป่าจะถือโล่
-    [Range(0f, 1f)] public float rockThrowRatio = 0.15f;  // โอกาสที่หมาป่าจะปาหิน
-    public float spawnInterval = 1f;               // ระยะเวลาห่างในการเกิดตัวถัดไป
-
-    [Header("Balloon")]
-    [Min(1)] public int balloonHP = 1;             // เลือดลูกโป่ง ยิงกี่ทีแตก
-
-    [Header("Boss")]
-    public bool hasBossWolf = true;                // ด่านนี้มีบอสไหม
-    public bool hasTreeTopBoss;                    // มีบอสบนต้นไม้หรือเปล่า
-    [Min(1)] public int bossShieldHP = GameConstants.BossShieldHits; // โล่บอสอึดแค่ไหน
-}
-
-/// <summary>
 /// ตัวจัดการเรื่องความยากของด่านและจังหวะการเกิดเวฟต่างๆ
 /// </summary>
 public class LevelManager : MonoBehaviour

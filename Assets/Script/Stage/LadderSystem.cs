@@ -110,7 +110,7 @@ public class LadderSystem : MonoBehaviour
         float playerY = player.transform.position.y;
 
         // ถ้าระยะห่างหมากับหมูใกล้กันเกินไป มันจะงับเรา!
-        if (Mathf.Abs(playerY - wolfY) <= 1.2f)
+        if (Mathf.Abs(playerY - wolfY) <= 0.5f)
         {
             wolf.TriggerBite();
         }
@@ -128,3 +128,4 @@ public class LadderSystem : MonoBehaviour
         occupiedSteps.Clear();
     }
 }
+

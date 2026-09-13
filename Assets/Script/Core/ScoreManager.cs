@@ -1,29 +1,46 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
+public class HighScoreEntry
+{
+    public string playerName;
+    public int score;
+    public int stage;
+}
+
+[System.Serializable]
+public class LeaderboardData
+{
+    public List<HighScoreEntry> entries = new List<HighScoreEntry>();
+}
+
 /// <summary>
-/// จัดการเรื่องคะแนน, ไฮสกอร์, และคะแนนจากการทำคอมโบด้วยเนื้อ
+/// จัดการเรื่องคะแนน, ไฮสกอร์, และคะแนนจากการทำคอมโบด้วยเนื้อ (อัปเกรดระบบ Top 5 Leaderboard)
 /// </summary>
 public class ScoreManager : MonoBehaviour
 {
     public static ScoreManager Instance { get; private set; }
 
-    // Key สำหรับเซฟไฮสกอร์ลงเครื่อง
-    private const string HighScoreKey = "Pooyan_HighScore";
+    private const string LeaderboardKey = "Pooyan_Leaderboard";
+    private const int MaxLeaderboardEntries = 5;
 
     [SerializeField] private int score;
-    [SerializeField] private int highScore;
-
-    private int meatComboCounter; // ตัวนับคอมโบเวลาปาเนื้อ
+    private int meatComboCounter;
+    private int nextExtraLifeIndex = 0;
 
     public int Score => score;
-    public int HighScore => highScore;
     public int MeatComboCounter => meatComboCounter;
+    
+    // ดึงคะแนนสูงสุดอันดับ 1 มาโชว์
+    public int HighScore => (leaderboard.entries.Count > 0) ? leaderboard.entries[0].score : 0;
 
-    // Events สำหรับอัปเดต UI 
+    private LeaderboardData leaderboard = new LeaderboardData();
+
     public event Action<int> OnScoreChanged;
     public event Action<int> OnHighScoreChanged;
-    public event Action<int, Vector3> OnScoreFloating; // ทำเลขคะแนนเด้งๆ ตรงที่เกิดอีเวนต์
+    public event Action<int, Vector3> OnScoreFloating;
 
     private void Awake()
     {
@@ -33,8 +50,65 @@ public class ScoreManager : MonoBehaviour
             return;
         }
         Instance = this;
-        // โหลดไฮสกอร์ที่เคยทำไว้ขึ้นมา
-        highScore = PlayerPrefs.GetInt(HighScoreKey, 0);
+        LoadLeaderboard();
+    }
+
+    private void LoadLeaderboard()
+    {
+        if (PlayerPrefs.HasKey(LeaderboardKey))
+        {
+            string json = PlayerPrefs.GetString(LeaderboardKey);
+            leaderboard = JsonUtility.FromJson<LeaderboardData>(json);
+        }
+        
+        // ถ้ายังไม่มีข้อมูลเลย ให้สร้างข้อมูลสมมติแบบตู้เกม
+        if (leaderboard == null || leaderboard.entries == null || leaderboard.entries.Count == 0)
+        {
+            leaderboard = new LeaderboardData();
+            leaderboard.entries.Add(new HighScoreEntry { playerName = "KON", score = 20000, stage = 5 });
+            leaderboard.entries.Add(new HighScoreEntry { playerName = "AMI", score = 15000, stage = 4 });
+            leaderboard.entries.Add(new HighScoreEntry { playerName = "POO", score = 10000, stage = 3 });
+            leaderboard.entries.Add(new HighScoreEntry { playerName = "YAN", score = 5000, stage = 2 });
+            leaderboard.entries.Add(new HighScoreEntry { playerName = "PIG", score = 2000, stage = 1 });
+            SaveLeaderboard();
+        }
+    }
+
+    public void SaveLeaderboard()
+    {
+        // จัดเรียงคะแนนจากมากไปน้อย
+        leaderboard.entries.Sort((a, b) => b.score.CompareTo(a.score));
+        
+        // เก็บแค่ 5 อันดับแรก
+        if (leaderboard.entries.Count > MaxLeaderboardEntries)
+        {
+            leaderboard.entries.RemoveRange(MaxLeaderboardEntries, leaderboard.entries.Count - MaxLeaderboardEntries);
+        }
+
+        string json = JsonUtility.ToJson(leaderboard);
+        PlayerPrefs.SetString(LeaderboardKey, json);
+        PlayerPrefs.Save();
+    }
+
+    public List<HighScoreEntry> GetLeaderboard()
+    {
+        return leaderboard.entries;
+    }
+
+    public bool IsTopScore(int currentScore)
+    {
+        if (currentScore == 0) return false;
+        if (leaderboard.entries.Count < MaxLeaderboardEntries) return true;
+        
+        // เช็คว่าชนะอันดับที่ 5 หรือไม่
+        return currentScore > leaderboard.entries[leaderboard.entries.Count - 1].score;
+    }
+
+    public void AddNewHighScore(string playerName, int finalScore, int stage)
+    {
+        leaderboard.entries.Add(new HighScoreEntry { playerName = playerName, score = finalScore, stage = stage });
+        SaveLeaderboard();
+        OnHighScoreChanged?.Invoke(HighScore);
     }
 
     public void ResetScore()
@@ -45,9 +119,6 @@ public class ScoreManager : MonoBehaviour
         OnScoreChanged?.Invoke(score);
     }
 
-    private int nextExtraLifeIndex = 0; // เอาไว้เช็คว่าจะได้ 1-Up ครั้งต่อไปเมื่อไหร่
-
-    // บวกคะแนนหลัก
     public void AddScore(int points)
     {
         if (points <= 0) return;
@@ -55,26 +126,21 @@ public class ScoreManager : MonoBehaviour
         score += points;
         OnScoreChanged?.Invoke(score);
 
-        // เช็คว่าถึงเป้า Extra Life หรือยัง (อิงตามตู้ อาเขต: 30,000 / 70,000)
         while (nextExtraLifeIndex < GameConstants.ExtraLifeThresholds.Length
             && oldScore < GameConstants.ExtraLifeThresholds[nextExtraLifeIndex]
             && score >= GameConstants.ExtraLifeThresholds[nextExtraLifeIndex])
         {
-            GameManager.Instance?.AddLife(); // แจกชีวิต!
+            GameManager.Instance?.AddLife();
             nextExtraLifeIndex++;
         }
 
-        // ทุบสถิติใหม่!
-        if (score > highScore)
+        // ดักอัปเดต HighScore บน UI แบบ Real-time ถ้าเล่นอยู่แล้วแซงที่ 1 ได้
+        if (score > HighScore)
         {
-            highScore = score;
-            PlayerPrefs.SetInt(HighScoreKey, highScore);
-            PlayerPrefs.Save();
-            OnHighScoreChanged?.Invoke(highScore);
+            OnHighScoreChanged?.Invoke(score);
         }
     }
 
-    // พวกฟังก์ชันเพิ่มคะแนนยิบย่อย พร้อมลอยเลขกลางจอ
     public void AddMeatPickupScore(Vector3 pos)
     {
         AddScore(GameConstants.ScoreMeatPickup);
@@ -99,20 +165,16 @@ public class ScoreManager : MonoBehaviour
         OnScoreFloating?.Invoke(GameConstants.ScoreFruitDestroy, pos);
     }
 
-    // คิดคะแนนคอมโบเนื้อ ยิ่งโดนหลายตัวยิ่งคูณเยอะ
     public void AddMeatComboScore(Vector3 worldPosition)
     {
         meatComboCounter++;
-        // กฎตู้เกม: 400 * 2^(n-1) -> 400, 800, 1600, 3200, 6400... ทวีคูณไปเรื่อยๆ!
         int points = GameConstants.ScoreMeatComboBase * (1 << (meatComboCounter - 1));
         AddScore(points);
         OnScoreFloating?.Invoke(points, worldPosition);
     }
 
-    // พลาดแล้วก็รีเซ็ตคอมโบเริ่มใหม่นะ
     public void ResetMeatCombo() => meatComboCounter = 0;
 
-    // ได้ผลไม้โบนัส
     public void AddBonusFruitScore(BonusFruitType fruitType, Vector3 pos)
     {
         int points = fruitType switch
@@ -127,7 +189,6 @@ public class ScoreManager : MonoBehaviour
     }
 }
 
-// ชนิดผลไม้จ้า
 public enum BonusFruitType
 {
     Strawberry,

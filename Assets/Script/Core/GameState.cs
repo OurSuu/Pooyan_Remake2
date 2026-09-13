@@ -5,7 +5,9 @@ public enum GameState
     Playing,
     BonusStage,
     StageClear,
-    GameOver
+    GameOver,
+    NameEntry,   // หน้าจอให้กรอกชื่อตอนทำคะแนน High Score
+    Leaderboard  // หน้าจอแสดงตารางคะแนน
 }
 
 // ทิศทางของด่าน ลงหรือขึ้น

@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea4e129347de49849bbd6c653092c7dc, type: 3}
+  m_Name: Autumn
+  m_EditorClassIdentifier: Assembly-CSharp::LevelConfig
+  wolfCount: 24
+  wolfSpeedRange: {x: 1.5, y: 1}
+  shieldRatio: 0.05
+  rockThrowRatio: 0.05
+  spawnInterval: 5
+  balloonHP: 1
+  hasBossWolf: 1
+  hasTreeTopBoss: 0
+  bossShieldHP: 3

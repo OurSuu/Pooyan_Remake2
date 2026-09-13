@@ -9,15 +9,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
-  m_Name: LevelConfig
+  m_Script: {fileID: 11500000, guid: ea4e129347de49849bbd6c653092c7dc, type: 3}
+  m_Name: Defult
   m_EditorClassIdentifier: Assembly-CSharp::LevelConfig
-  wolfCount: 32
-  wolfSpeedRange: {x: 1.5, y: 1}
-  shieldRatio: 0.2
-  rockThrowRatio: 0.15
-  spawnInterval: 2
+  wolfCount: 24
+  wolfSpeedRange: {x: 1.2, y: 2.5}
+  shieldRatio: 0.05
+  rockThrowRatio: 0.05
+  spawnInterval: 3
   balloonHP: 1
   hasBossWolf: 1
   hasTreeTopBoss: 0
-  bossShieldHP: 5
+  bossShieldHP: 3

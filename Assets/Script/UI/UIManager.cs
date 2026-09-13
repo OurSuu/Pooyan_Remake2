@@ -16,9 +16,12 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI cliffCounterText; // Text ข้างในแผงบนอีกที
 
     [Header("Screens")]
+    [SerializeField] private GameObject titleScreen; // หน้าจอเริ่มเกม
     [SerializeField] private GameObject stageClearScreen; // หน้าจอแสดงผลตอนผ่านด่าน
     [SerializeField] private GameObject gameOverScreen; // เกมโอเวอร์โว้ย
     [SerializeField] private GameObject bonusResultPanel; // สรุปผลคะแนนด่านโบนัส
+    [SerializeField] private GameObject nameEntryScreen; // หน้าจอกรอกชื่อคนเก่ง
+    [SerializeField] private GameObject leaderboardScreen; // หน้าจออวดคะแนน Top 5
 
     private void Start()
     {
@@ -42,6 +45,7 @@ public class UIManager : MonoBehaviour
 
             UpdateLives(GameManager.Instance.Lives);
             UpdateStage(GameManager.Instance.CurrentStage);
+            HandleStateChanged(GameManager.Instance.CurrentState); // สั่งอัปเดตหน้าจอตั้งแต่เริ่ม
         }
 
         // นับจำนวนหมาป่าบนหน้าผาด้วย
@@ -54,9 +58,6 @@ public class UIManager : MonoBehaviour
             WolfTracker.Instance.OnKillCountChanged += UpdateRemainingWolves;
             UpdateRemainingWolves(WolfTracker.Instance.RemainingKills);
         }
-
-        // เริ่มเกมมาต้องปิดพวกหน้าจอบังๆ ให้หมดก่อน
-        HideAllScreens();
     }
 
     private void OnDestroy()
@@ -130,12 +131,21 @@ public class UIManager : MonoBehaviour
 
         switch (state)
         {
+            case GameState.MainMenu:
+                if (titleScreen != null) titleScreen.SetActive(true);
+                break;
             case GameState.Playing:
                 if (cliffCounterPanel != null)
                     cliffCounterPanel.SetActive(GameManager.Instance != null && !GameManager.Instance.IsOddStage);
                 break;
             case GameState.BonusStage:
                 if (bonusResultPanel != null) bonusResultPanel.SetActive(true);
+                break;
+            case GameState.NameEntry:
+                if (nameEntryScreen != null) nameEntryScreen.SetActive(true);
+                break;
+            case GameState.Leaderboard:
+                if (leaderboardScreen != null) leaderboardScreen.SetActive(true);
                 break;
         }
     }
@@ -158,14 +168,18 @@ public class UIManager : MonoBehaviour
     private void ShowGameOver()
     {
         // จบเห่ ขึ้นหน้าจอเลยเพื่อน
+        HideAllScreens();
         if (gameOverScreen != null) gameOverScreen.SetActive(true);
     }
 
     private void HideAllScreens()
     {
         // สับสวิตช์ปิดหน้าจอใหญ่ๆ ทั้งหมด
+        if (titleScreen != null) titleScreen.SetActive(false);
         if (stageClearScreen != null) stageClearScreen.SetActive(false);
         if (gameOverScreen != null) gameOverScreen.SetActive(false);
         if (bonusResultPanel != null) bonusResultPanel.SetActive(false);
+        if (nameEntryScreen != null) nameEntryScreen.SetActive(false);
+        if (leaderboardScreen != null) leaderboardScreen.SetActive(false);
     }
 }
