@@ -43,8 +43,21 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
-        currentStage = 1;
-        lives = GameConstants.StartingLives;
+        // ถ้ามีข้อมูล GameSession ที่ส่งมาจาก MainMenu หรือ Scene ก่อนหน้า ให้ใช้ค่านั้น
+        if (GameSession.IsActive)
+        {
+            currentStage = GameSession.CurrentStage;
+            lives = GameSession.Lives;
+        }
+        else
+        {
+            // เผื่อกรณีเทสเกมจาก Editor โดยตรง ไม่ได้ผ่าน MainMenu
+            GameSession.IsActive = true;
+            GameSession.CurrentStage = currentStage;
+            GameSession.Lives = lives;
+            GameSession.Score = 0;
+        }
+
         DeathFreeze = false;
         
         ScoreManager.Instance?.ResetScore();
@@ -87,6 +100,7 @@ public class GameManager : MonoBehaviour
 
         DeathFreeze = true;
         lives = Mathf.Max(0, lives - 1);
+        GameSession.Lives = lives; // บันทึกไว้เผื่อเปลี่ยน Scene
         OnLivesChanged?.Invoke(lives);
 
         var spawner = FindAnyObjectByType<WolfSpawner>();
@@ -121,6 +135,7 @@ public class GameManager : MonoBehaviour
     public void AddLife()
     {
         lives++;
+        GameSession.Lives = lives;
         OnLivesChanged?.Invoke(lives);
         AudioManager.Instance?.PlayExtraLife(); 
     }
@@ -141,8 +156,12 @@ public class GameManager : MonoBehaviour
         else
         {
             currentStage++;
-            OnStageChanged?.Invoke(currentStage);
-            SetState(GameState.Playing);
+            GameSession.CurrentStage = currentStage;
+            GameSession.Lives = lives;
+            if (ScoreManager.Instance != null) GameSession.Score = ScoreManager.Instance.Score;
+            
+            // เปลี่ยน Scene เป็นด่านใหม่ตามฤดู
+            SceneManager.LoadScene(GetSceneNameForStage(currentStage));
         }
     }
 
@@ -154,8 +173,25 @@ public class GameManager : MonoBehaviour
     public void CompleteBonusStage()
     {
         currentStage++;
-        OnStageChanged?.Invoke(currentStage);
-        SetState(GameState.Playing);
+        GameSession.CurrentStage = currentStage;
+        GameSession.Lives = lives;
+        if (ScoreManager.Instance != null) GameSession.Score = ScoreManager.Instance.Score;
+        
+        SceneManager.LoadScene(GetSceneNameForStage(currentStage));
+    }
+
+    private string GetSceneNameForStage(int stage)
+    {
+        // 1=Autumn, 2=Spring, 3=Summer, 4=Winter (แล้ววนลูป)
+        int index = (stage - 1) % 4;
+        switch (index)
+        {
+            case 0: return "Autumn";
+            case 1: return "Spring";
+            case 2: return "Summer";
+            case 3: return "Winter";
+            default: return "Autumn";
+        }
     }
 
     public void TriggerGameOver()

@@ -41,6 +41,9 @@ public class LevelManager : MonoBehaviour
     public LevelConfig GetConfigForStage(int stage)
     {
         // ถ้ามีเซ็ตไว้ล่วงหน้า (Override) ก็เอาอันนั้นมาใช้
+        if (stageOverrides != null && stageOverrides.Length == 1 && stageOverrides[0] != null)
+            return stageOverrides[0];
+
         if (stageOverrides != null && stage >= 1 && stage <= stageOverrides.Length && stageOverrides[stage - 1] != null)
             return stageOverrides[stage - 1];
 
@@ -73,3 +76,4 @@ public class LevelManager : MonoBehaviour
         config.hasBossWolf = stage % 2 == 0;                           // ด่านคู่จะมีบอสโผล่มา
     }
 }
+

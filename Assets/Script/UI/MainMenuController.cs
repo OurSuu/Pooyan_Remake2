@@ -125,6 +125,7 @@ public class MainMenuController : MonoBehaviour
     {
         AudioManager.Instance?.PlayArrowFire();
         PlayerPrefs.SetInt("PlayerMode", selectedOption + 1);
+        GameSession.ResetSession();
         SceneManager.LoadScene("Autumn"); 
     }
 }

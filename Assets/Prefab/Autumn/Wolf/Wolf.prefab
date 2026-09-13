@@ -27,8 +27,8 @@ Transform:
   m_GameObject: {fileID: 2351801420819691768}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.16, y: 0.61, z: 0}
-  m_LocalScale: {x: 0.38225308, y: 0.38225308, z: 0.38225308}
+  m_LocalPosition: {x: -0.18, y: 0.44, z: 0}
+  m_LocalScale: {x: 0.37, y: 0.37, z: 0.37}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2686566103193013670}
@@ -80,7 +80,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 10
   m_MaskInteraction: 0
   m_Sprite: {fileID: 1781254230411818056, guid: cee994d7dfef3054da12b5cd76a71975, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -176,7 +176,7 @@ MonoBehaviour:
   climbSpeed: 1.5
   shieldToggleInterval: 1.5
   rockThrowInterval: 3
-  walkGroundY: -4.5
+  walkGroundY: -4.2
   deadGroundY: -4.5
   cliffHitY: 4
   floatDownAnimName: Drop

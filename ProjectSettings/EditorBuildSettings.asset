@@ -11,6 +11,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Autumn.unity
     guid: 6ea5df988fe1c154e9c994ae4f162d8a
+  - enabled: 1
+    path: Assets/Scenes/Spring.unity
+    guid: 85307af2a2f0cf04582b57e0b471195c
   - enabled: 0
     path: Assets/Scenes/SampleScene.unity
     guid: 2cda990e2423bbf4892e6590ba056729

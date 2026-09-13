@@ -113,7 +113,7 @@ public class ScoreManager : MonoBehaviour
 
     public void ResetScore()
     {
-        score = 0;
+        score = GameSession.IsActive ? GameSession.Score : 0;
         meatComboCounter = 0;
         nextExtraLifeIndex = 0;
         OnScoreChanged?.Invoke(score);
@@ -124,6 +124,7 @@ public class ScoreManager : MonoBehaviour
         if (points <= 0) return;
         int oldScore = score;
         score += points;
+        GameSession.Score = score;
         OnScoreChanged?.Invoke(score);
 
         while (nextExtraLifeIndex < GameConstants.ExtraLifeThresholds.Length
@@ -195,3 +196,4 @@ public enum BonusFruitType
     Cherry,
     Peach
 }
+

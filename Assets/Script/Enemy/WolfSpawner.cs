@@ -292,7 +292,7 @@ public class WolfSpawner : MonoBehaviour
 
         // ด่านคลาสสิกอาเขต: เนื้อจะมาเมื่อเหลือหมาป่าตามหลักทวีคูณของ 8
         // สมมติมี 32 ตัว -> เนื้อมาตอนเหลือ 24, 16, 8 ตัว
-        int lastMeatMilestone = WolfTracker.Instance != null ? WolfTracker.Instance.TargetKills : wolvesToSpawn;
+        int nextMeatKillTarget = 0;
 
         while (spawning)
         {
@@ -308,11 +308,11 @@ public class WolfSpawner : MonoBehaviour
             // เช็คว่าเนื้อยังไม่มี และแม่หมูไม่ได้ถือเนื้ออยู่
             if (player != null && !player.IsMeatAvailable && player.State != PlayerState.HoldingMeat)
             {
-                int currentMilestone = (remainingToKill / 8) * 8; // หาหลักไมล์หาร 8 ลงตัว
-                if (currentMilestone < lastMeatMilestone && remainingToKill > 0)
+                int currentKills = WolfTracker.Instance != null ? WolfTracker.Instance.Kills : wolvesSpawned;
+                if (currentKills >= nextMeatKillTarget && remainingToKill > 0)
                 {
-                    player.SetMeatAvailable(true); // เสกเนื้อ!
-                    lastMeatMilestone = currentMilestone; // บันทึกไว้จะได้ไม่เสกซ้ำ
+                    player.SetMeatAvailable(true);
+                    nextMeatKillTarget = currentKills + 8; // รอฆ่าอีก 8 ตัวถึงได้อันใหม่
                 }
             }
 
@@ -415,3 +415,4 @@ public class WolfSpawner : MonoBehaviour
         // เผื่อเอาไว้ดักตอนหมาป่าตาย เพื่อเช็คจบด่าน (ตอนนี้ยังไม่ได้ใช้ ปล่อยว่างไปก่อน)
     }
 }
+
