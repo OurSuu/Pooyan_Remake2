@@ -84,7 +84,9 @@ public class StageFlowController : MonoBehaviour
     // รีสตาร์ทเวฟปัจจุบัน (มักจะใช้ตอนตายแล้วเริ่มใหม่ในด่านเดิม)
     public void RestartCurrentWave(bool diedFromBoulder = false)
     {
-        ClearAllEntities(); // ล้างฉากก่อนเลย
+        WolfTracker.Instance?.SuppressNotifications(true);
+        ClearAllEntities();
+        WolfTracker.Instance?.SuppressNotifications(false); // ล้างฉากก่อนเลย
         ladderSystem?.ResetLadder();
         
         if (diedFromBoulder && boulderSystem != null)
@@ -111,7 +113,13 @@ public class StageFlowController : MonoBehaviour
         {
             var objs = GameObject.FindGameObjectsWithTag(tag);
             foreach (var obj in objs)
+            {
+                var notifier = obj.GetComponent<WolfDeathNotifier>();
+                if (notifier != null) notifier.countsAsKill = false;
                 Destroy(obj);
+            }
         }
     }
 }
+
+

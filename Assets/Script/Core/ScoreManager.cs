@@ -106,7 +106,19 @@ public class ScoreManager : MonoBehaviour
 
     public void AddNewHighScore(string playerName, int finalScore, int stage)
     {
-        leaderboard.entries.Add(new HighScoreEntry { playerName = playerName, score = finalScore, stage = stage });
+        var existing = leaderboard.entries.Find(e => e.playerName == playerName);
+        if (existing != null)
+        {
+            if (finalScore > existing.score)
+            {
+                existing.score = finalScore;
+                existing.stage = stage;
+            }
+        }
+        else
+        {
+            leaderboard.entries.Add(new HighScoreEntry { playerName = playerName, score = finalScore, stage = stage });
+        }
         SaveLeaderboard();
         OnHighScoreChanged?.Invoke(HighScore);
     }
@@ -196,4 +208,5 @@ public enum BonusFruitType
     Cherry,
     Peach
 }
+
 

@@ -103,7 +103,7 @@ public class WolfTracker : MonoBehaviour
 public class WolfDeathNotifier : MonoBehaviour
 {
     private WolfTracker tracker;
-    private bool countsAsKill = true; // บ่งบอกว่าตายแบบนับแต้มไหม
+    public bool countsAsKill = true; // บ่งบอกว่าตายแบบนับแต้มไหม
     private bool reported; // แจ้งไปแล้วหรือยัง
 
     public void Initialize(WolfTracker wolfTracker) => tracker = wolfTracker;
@@ -123,3 +123,4 @@ public class WolfDeathNotifier : MonoBehaviour
         tracker?.NotifyKilled(); // ไปบอก Tracker ว่าตัวนี้ตายจริง!
     }
 }
+

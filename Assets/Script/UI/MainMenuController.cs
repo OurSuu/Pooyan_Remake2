@@ -57,15 +57,8 @@ public class MainMenuController : MonoBehaviour
         {
             if (Input.anyKeyDown)
             {
-                if (Input.GetButtonDown("Fire1") || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return))
-                {
-                    StartGame();
-                }
-                else
-                {
-                    ShowTitle();
+                ShowTitle();
                     inputCooldown = 0.2f;
-                }
             }
             return;
         }
@@ -129,3 +122,4 @@ public class MainMenuController : MonoBehaviour
         SceneManager.LoadScene("Autumn"); 
     }
 }
+
