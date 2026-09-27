@@ -176,6 +176,8 @@ MonoBehaviour:
   climbSpeed: 1.5
   shieldToggleInterval: 1.5
   rockThrowInterval: 3
+  enableDebugMode: 0
+  debugRockThrowInterval: 1
   walkGroundY: -4.2
   deadGroundY: -4.5
   cliffHitY: 4

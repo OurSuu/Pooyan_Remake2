@@ -324,6 +324,6 @@ public class PlayerController : MonoBehaviour
     public void OnProjectileHit()
     {
         AudioManager.Instance?.PlayRockHit(); // เสียงหินกระทบกระเช้า ปั้ก!
-        TakeDamage();
     }
 }
+

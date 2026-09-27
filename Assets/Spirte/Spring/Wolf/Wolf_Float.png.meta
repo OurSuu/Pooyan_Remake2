@@ -1,0 +1,546 @@
+fileFormatVersion: 2
+guid: cee8dc86a53f43344866cc8d90a557b1
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -2400623706706821680
+    second: Wolf_Float_0
+  - first:
+      213: -6763126209831602185
+    second: Wolf_Float_1
+  - first:
+      213: 5518466203276315749
+    second: Wolf_Float_2
+  - first:
+      213: -6699374269990516842
+    second: Wolf_Float_3
+  - first:
+      213: -1435523893221263889
+    second: Wolf_Float_4
+  - first:
+      213: 3089887432703584436
+    second: Wolf_Float_5
+  - first:
+      213: -1325034963328878938
+    second: Wolf_Float_6
+  - first:
+      213: 8767860367471010842
+    second: Wolf_Float_7
+  - first:
+      213: 6745506265204588091
+    second: Wolf_Float_8
+  - first:
+      213: 6778592204653527209
+    second: Wolf_Float_9
+  - first:
+      213: -8140965058237816251
+    second: Wolf_Float_10
+  - first:
+      213: -1613989691299257489
+    second: Wolf_Float_11
+  - first:
+      213: 3070207619075924333
+    second: Wolf_Float_12
+  - first:
+      213: -7040945226722058916
+    second: Wolf_Float_13
+  - first:
+      213: 2608114080211565159
+    second: Wolf_Float_14
+  - first:
+      213: -905777861696311607
+    second: Wolf_Float_15
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 90
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Wolf_Float_0
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 1581
+        width: 319
+        height: 458
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0ddbb5235754faed0800000000000000
+      internalID: -2400623706706821680
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Wolf_Float_1
+      rect:
+        serializedVersion: 2
+        x: 522
+        y: 1583
+        width: 312
+        height: 456
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7f77ad37b8c8422a0800000000000000
+      internalID: -6763126209831602185
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Wolf_Float_2
+      rect:
+        serializedVersion: 2
+        x: 1045
+        y: 1583
+        width: 301
+        height: 455
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 56c884716c7859c40800000000000000
+      internalID: 5518466203276315749
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Wolf_Float_3
+      rect:
+        serializedVersion: 2
+        x: 1602
+        y: 1583
+        width: 265
+        height: 455
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 697c2d3a89a0703a0800000000000000
+      internalID: -6699374269990516842
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Wolf_Float_4
+      rect:
+        serializedVersion: 2
+        x: 155
+        y: 1070
+        width: 188
+        height: 454
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fe5f5f5ff9ef31ce0800000000000000
+      internalID: -1435523893221263889
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Wolf_Float_5
+      rect:
+        serializedVersion: 2
+        x: 687
+        y: 1072
+        width: 257
+        height: 453
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4b8ad36cf3c71ea20800000000000000
+      internalID: 3089887432703584436
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Wolf_Float_6
+      rect:
+        serializedVersion: 2
+        x: 1212
+        y: 1076
+        width: 287
+        height: 449
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6a63fcf98b78c9de0800000000000000
+      internalID: -1325034963328878938
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Wolf_Float_7
+      rect:
+        serializedVersion: 2
+        x: 1728
+        y: 1083
+        width: 303
+        height: 442
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a14e553dc82bda970800000000000000
+      internalID: 8767860367471010842
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Wolf_Float_8
+      rect:
+        serializedVersion: 2
+        x: 194
+        y: 576
+        width: 316
+        height: 437
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b3ef0bf753adc9d50800000000000000
+      internalID: 6745506265204588091
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Wolf_Float_9
+      rect:
+        serializedVersion: 2
+        x: 703
+        y: 571
+        width: 303
+        height: 442
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9a00b9312b5621e50800000000000000
+      internalID: 6778592204653527209
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Wolf_Float_10
+      rect:
+        serializedVersion: 2
+        x: 1212
+        y: 564
+        width: 287
+        height: 449
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5422ed6896b750f80800000000000000
+      internalID: -8140965058237816251
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Wolf_Float_11
+      rect:
+        serializedVersion: 2
+        x: 1712
+        y: 560
+        width: 257
+        height: 453
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f6327f25de4f999e0800000000000000
+      internalID: -1613989691299257489
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Wolf_Float_12
+      rect:
+        serializedVersion: 2
+        x: 155
+        y: 45
+        width: 188
+        height: 454
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d61e7b910919b9a20800000000000000
+      internalID: 3070207619075924333
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Wolf_Float_13
+      rect:
+        serializedVersion: 2
+        x: 577
+        y: 45
+        width: 265
+        height: 455
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c5ddf3eee99894e90800000000000000
+      internalID: -7040945226722058916
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Wolf_Float_14
+      rect:
+        serializedVersion: 2
+        x: 1045
+        y: 45
+        width: 301
+        height: 455
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 76a74b400f1e13420800000000000000
+      internalID: 2608114080211565159
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Wolf_Float_15
+      rect:
+        serializedVersion: 2
+        x: 1547
+        y: 45
+        width: 312
+        height: 456
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9cead2475d70e63f0800000000000000
+      internalID: -905777861696311607
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Wolf_Float_0: -2400623706706821680
+      Wolf_Float_1: -6763126209831602185
+      Wolf_Float_10: -8140965058237816251
+      Wolf_Float_11: -1613989691299257489
+      Wolf_Float_12: 3070207619075924333
+      Wolf_Float_13: -7040945226722058916
+      Wolf_Float_14: 2608114080211565159
+      Wolf_Float_15: -905777861696311607
+      Wolf_Float_2: 5518466203276315749
+      Wolf_Float_3: -6699374269990516842
+      Wolf_Float_4: -1435523893221263889
+      Wolf_Float_5: 3089887432703584436
+      Wolf_Float_6: -1325034963328878938
+      Wolf_Float_7: 8767860367471010842
+      Wolf_Float_8: 6745506265204588091
+      Wolf_Float_9: 6778592204653527209
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -38,6 +38,9 @@ public class WolfSpawner : MonoBehaviour
     public bool allowRockWolf = true;
     public bool allowShieldAndRockWolf = true;
 
+    [Header("Debug Gameplay")]
+    public bool debugRapidFireRocks = false;
+
     private int wolvesSpawned; // เกิดมากี่ตัวแล้ว
     private int wolvesToSpawn; // ต้องเกิดทั้งหมดกี่ตัว
     private bool bossSpawned; // บอสเกิดรึยัง
@@ -398,6 +401,7 @@ public class WolfSpawner : MonoBehaviour
         {
             var boss = Instantiate(bossWolfPrefab, pos, Quaternion.identity);
             boss.Initialize(config, descending, speed, true, rock, dropX, laneXCoords, laneIndex);
+            if (debugRapidFireRocks) boss.SetRapidFire(true);
             WolfTracker.Instance?.Register(boss);
             return boss;
         }
@@ -406,6 +410,7 @@ public class WolfSpawner : MonoBehaviour
         if (wolfPrefab == null) return null;
         var wolf = Instantiate(wolfPrefab, pos, Quaternion.identity);
         wolf.Initialize(config, descending, speed, shield, rock, dropX, laneXCoords, laneIndex);
+        if (debugRapidFireRocks) wolf.SetRapidFire(true);
         WolfTracker.Instance?.Register(wolf);
         return wolf;
     }
@@ -415,4 +420,6 @@ public class WolfSpawner : MonoBehaviour
         // เผื่อเอาไว้ดักตอนหมาป่าตาย เพื่อเช็คจบด่าน (ตอนนี้ยังไม่ได้ใช้ ปล่อยว่างไปก่อน)
     }
 }
+
+
 

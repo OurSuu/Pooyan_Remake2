@@ -71,10 +71,13 @@ public class WolfProjectile : MonoBehaviour
             var player = other.GetComponentInParent<PlayerController>();
             if (player != null)
             {
-                player.OnProjectileHit(); // แจ้งผู้เล่นว่าโดนปาของใส่
-                Destroy(gameObject);
-                return;
+                player.OnProjectileHit(); // มีเสียงดังป๊าบ!
             }
+            // กระเด้งกลับ! ตามต้นฉบับ
+            var col = GetComponent<Collider2D>();
+            if (col != null) col.enabled = false; // ปิด Collider จะได้ไม่ชนซ้ำ
+            velocity = new Vector2(-velocity.x, -5f); // สะท้อนกลับไปทางเดิมแล้วร่วงลงพื้น
+            return;
         }
 
         // ถ้าชนตัวผู้เล่นเต็มๆ
@@ -83,7 +86,7 @@ public class WolfProjectile : MonoBehaviour
             var player = other.GetComponent<PlayerController>() ?? other.GetComponentInParent<PlayerController>();
             if (player != null)
             {
-                player.OnProjectileHit(); // แจ้งว่าโดน
+                player.TakeDamage(); // โดนตัวเต็มๆ ตายสถานเดียว
             }
             Destroy(gameObject); // ชนปุ๊บหายปั๊บ
             return;
@@ -106,3 +109,5 @@ public class WolfProjectile : MonoBehaviour
         Destroy(gameObject); // ลบทิ้ง
     }
 }
+
+

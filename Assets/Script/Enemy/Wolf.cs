@@ -32,6 +32,8 @@ public class Wolf : MonoBehaviour
     [SerializeField] protected string waitLadderAnimName = "WaitLadder";
     [SerializeField] protected Sprite spriteFly;    // Static sprite for ascending (until you have an Animation)
     [SerializeField] protected Sprite spriteFall;   // Static sprite for falling after balloon popped (optional)
+    [SerializeField] protected Sprite spritePushIdle; // ภาพยืนดันหินค้าง
+    [SerializeField] protected string pushAnimName = "Push"; // ชื่ออนิเมชันท่าเดินดันหิน
 
     protected SpriteRenderer cachedSR;
     protected Animator animator;
@@ -45,13 +47,14 @@ public class Wolf : MonoBehaviour
     [Header("Shield")]
     [SerializeField] protected float shieldToggleInterval = 1.5f;
 
-    [Header("Rock Throw")]
+        [Header("Rock Throw")]
     [SerializeField] protected float rockThrowInterval = 3f;
 
     protected WolfState state = WolfState.WalkingBeforeDrop;
     protected float floatSpeed;
     protected bool hasShield;
     protected bool canThrowRock;
+    protected bool rapidFire = false;
 
     [Header("Heights")]
     [SerializeField] protected float walkGroundY = -3.5f;
@@ -107,6 +110,12 @@ public class Wolf : MonoBehaviour
     public void DisableTeaseBounces()
     {
         teaseBounces = 0;
+    }
+
+    public void SetRapidFire(bool enabled)
+    {
+        rapidFire = enabled;
+        if (enabled) canThrowRock = true;
     }
 
     public virtual void Initialize(LevelConfig config, bool descending, float speed, bool shield, bool rockThrow, float dropX = 0f, float[] lanes = null, int laneIndex = 0)
@@ -186,20 +195,57 @@ public class Wolf : MonoBehaviour
         }
     }
 
+    protected bool isPushIdle = false;
+
     protected void UpdateReachedCliff()
     {
         var boulderSys = BoulderSystem.Instance;
         if (boulderSys == null) return;
         
         Vector3 targetPos = boulderSys.GetCliffTargetPosition(this);
+        float distance = Mathf.Abs(transform.position.x - targetPos.x);
         
-        // Move horizontally towards the target slot
-        transform.position = Vector3.MoveTowards(transform.position, new Vector3(targetPos.x, transform.position.y, 0f), walkSpeed * Time.deltaTime);
-        
-        // Sprite flip to face moving direction
-        if (cachedSR != null && Mathf.Abs(transform.position.x - targetPos.x) > 0.05f)
+        if (distance > 0.01f)
         {
-            cachedSR.flipX = targetPos.x < transform.position.x;
+            // กำลังเดิน
+            transform.position = Vector3.MoveTowards(transform.position, new Vector3(targetPos.x, targetPos.y, 0f), walkSpeed * Time.deltaTime);
+            
+            bool movingRight = targetPos.x > transform.position.x;
+            
+            if (animator != null)
+            {
+                if (!animator.enabled) animator.enabled = true;
+                
+                string animToPlay = movingRight ? pushAnimName : "run"; // เดินไปขวา = ดันหิน, เดินไปซ้าย = วิ่งไปต่อคิว
+                
+                var stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+                if (!stateInfo.IsName(animToPlay))
+                {
+                    animator.Play(animToPlay);
+                }
+            }
+                
+            // หันหน้า: ถ้าขยับซ้าย flipX=true (หน้าหันซ้าย), ถ้าขยับขวา flipX=false (หน้าหันขวา)
+            if (cachedSR != null)
+                cachedSR.flipX = !movingRight; 
+
+            isPushIdle = false;
+        }
+        else
+        {
+            // ถึงเป้าหมาย ยืนนิ่ง
+            if (!isPushIdle)
+            {
+                isPushIdle = true;
+                if (animator != null) animator.enabled = false; 
+                
+                if (cachedSR != null)
+                {
+                    cachedSR.flipX = false; // บังคับหันหน้าเข้าหาหินเสมอตอนยืนรอคิว
+                    if (spritePushIdle != null)
+                        cachedSR.sprite = spritePushIdle; 
+                }
+            }
         }
     }
 
@@ -373,7 +419,7 @@ public class Wolf : MonoBehaviour
         rockTimer -= Time.deltaTime;
         if (rockTimer <= 0f && rockPrefab != null)
         {
-            rockTimer = rockThrowInterval;
+            rockTimer = rapidFire ? 0.5f : rockThrowInterval;
             StartCoroutine(ThrowRockRoutine());
         }
     }
@@ -767,6 +813,19 @@ public class Wolf : MonoBehaviour
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
