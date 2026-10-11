@@ -18,6 +18,7 @@ public class WolfProjectile : MonoBehaviour
     private WolfProjectileType type; // ประเภทของอาวุธ
     private Vector2 velocity; // ความเร็วและทิศทาง
     private bool destroyed; // พังไปหรือยัง
+    private bool isDeflected; // กระดอนหรือชนกิ่งไม้/โล่แล้วหรือยัง
 
     [Header("Trajectory Mode (โหมดวิถีการปา)")]
     [Tooltip("เปิดใช้ระบบวิถีปาหินโค้งย้อยแบบ NES 1985 (ถ้าปิด = ใช้โค้ดเดิมที่เล็งตามตัวผู้เล่นตรงๆ 100%)")]
@@ -138,15 +139,34 @@ public class WolfProjectile : MonoBehaviour
         // ขยับไปตามทิศทางที่เล็งไว้
         transform.position += (Vector3)(velocity * Time.deltaTime);
 
+        // เช็คการชนกับแท่นกิ่งไม้ที่หมาป่าโดดลงมาในด่านคี่ (Odd Stage)
+        CheckBranchCollision();
+
         // ถ้าร่วงเลยจอ หรือหลุดออกนอกจอไปไกลๆ ก็ทำลายทิ้งซะ
         if (transform.position.y < destroyY || transform.position.x < -12f || transform.position.x > 12f)
             Destroy(gameObject);
     }
 
+    // เช็คว่าหินลอยไปชนขอบแท่น/ใต้กิ่งไม้ที่หมาป่าโดดลงมาหรือไม่
+    private void CheckBranchCollision()
+    {
+        if (isDeflected || destroyed) return;
+
+        bool isOdd = GameManager.Instance == null || GameManager.Instance.IsOddStage;
+        if (!isOdd) return;
+
+        // ในด่านคี่ แท่นกิ่งไม้ที่หมาป่าเดินโดดลงมาจะอยู่ที่ช่วง X <= 1.65f และระดับความสูงขอบล่างกิ่งไม้ Y >= 3.35f
+        // ถ้าหินกำลังพุ่งขึ้นแล้วลอยไปชนใต้แท่น หรือลอยเกินเพดานฉาก ให้ติดแท่นแล้วเด้งร่วงลงทันที
+        if ((transform.position.x <= 1.65f && transform.position.y >= 3.35f && velocity.y > 0f) || transform.position.y >= 3.8f)
+        {
+            DeflectDown(fromShield: false);
+        }
+    }
+
     // เวลาชนกับอะไรซักอย่าง
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (destroyed) return;
+        if (destroyed || isDeflected) return;
 
         // ถ้าชนโล่ (หรืออะไรที่กันได้)
         if (other.CompareTag(GameConstants.TagShield))
@@ -156,10 +176,7 @@ public class WolfProjectile : MonoBehaviour
             {
                 player.OnProjectileHit(); // มีเสียงดังป๊าบ!
             }
-            // กระเด้งกลับ! ตามต้นฉบับ
-            var col = GetComponent<Collider2D>();
-            if (col != null) col.enabled = false; // ปิด Collider จะได้ไม่ชนซ้ำ
-            velocity = new Vector2(-velocity.x, -5f); // สะท้อนกลับไปทางเดิมแล้วร่วงลงพื้น
+            DeflectDown(fromShield: true);
             return;
         }
 
@@ -174,6 +191,37 @@ public class WolfProjectile : MonoBehaviour
             Destroy(gameObject); // ชนปุ๊บหายปั๊บ
             return;
         }
+
+        // ถ้าชนสิ่งกีดขวาง/พื้น/แท่นกิ่งไม้
+        if (other.CompareTag("Ground") || other.CompareTag("Platform"))
+        {
+            DeflectDown(fromShield: false);
+            return;
+        }
+    }
+
+    // หินกระดอนตกลงมา (ชนโล่ หรือ ชนติดแท่นกิ่งไม้)
+    private void DeflectDown(bool fromShield)
+    {
+        if (isDeflected) return;
+        isDeflected = true;
+
+        gameObject.tag = "Untagged"; // ปลดแท็กอันตรายออก จะได้ไม่ทำร้ายแม่หมูตอนร่วงตกพื้น
+        var col = GetComponent<Collider2D>();
+        if (col != null) col.enabled = false; // ปิด Collider กันการชนซ้ำ
+
+        if (fromShield)
+        {
+            velocity = new Vector2(-velocity.x, -5f); // สะท้อนกลับไปทางเดิมแล้วร่วงลงพื้น
+        }
+        else
+        {
+            // ชนติดแท่นกิ่งไม้แล้วเด้งร่วงลงมาตรงๆ ตามต้นฉบับ Arcade!
+            velocity = new Vector2(velocity.x * 0.15f, -4.5f);
+            AudioManager.Instance?.PlayRockDestroy(); // เล่นเสียงหินกระทบไม้
+        }
+
+        hasGravity = true;
     }
 
     // ตอนถูกลูกธนูของเรายิงโดน (ยิงสกัดได้!)

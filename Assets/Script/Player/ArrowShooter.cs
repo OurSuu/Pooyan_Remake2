@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -10,16 +10,47 @@ public class ArrowShooter : MonoBehaviour
     [Header("Shooting")]
     [SerializeField] private GameObject arrowPrefab; // พรีแฟบลูกธนู
     [SerializeField] private Transform shootPoint; // จุดปล่อยลูกธนู
-    [SerializeField] private float shootCooldown = 0.15f; // คูลดาวน์กันกดยิงรัวเกิน
+    [SerializeField] private float rapidCooldown = GameConstants.RapidShootCooldown; // ดีเลย์ระหว่างนัดที่ 1 กับ 2 (0.12s)
+    [SerializeField] private float reloadCooldown = GameConstants.ReloadShootCooldown; // คูลดาวน์หลังยิงครบ 2 นัด (0.40s)
     [SerializeField] private float shootDirection = -1f; // หันหน้าไปซ้ายเป็นหลัก
 
     private float shootTimer; // ตัวนับเวลาคูลดาวน์
+    private int burstCount = 0; // จำนวนนัดที่ยิงในชุดปัจจุบัน (0, 1, 2)
+    private float burstResetTimer = 0f; // ตัวนับเวลารีเซ็ตชุด ถ้าทิ้งช่วงนานเกินไป
     private bool canShoot = true; // ล็อกการยิงได้ (เช่นตอนถือเนื้ออยู่)
     private readonly List<Arrow> activeArrows = new(); // เก็บลูกธนูที่กำลังลอยอยู่ในจอ
 
+    public float RapidCooldown
+    {
+        get => rapidCooldown;
+        set => rapidCooldown = value;
+    }
+
+    public float ReloadCooldown
+    {
+        get => reloadCooldown;
+        set => reloadCooldown = value;
+    }
+
+    private void Awake()
+    {
+        if (rapidCooldown < 0.05f) rapidCooldown = GameConstants.RapidShootCooldown;
+        if (reloadCooldown < 0.1f) reloadCooldown = GameConstants.ReloadShootCooldown;
+    }
+
     private void Update()
     {
-        shootTimer -= Time.deltaTime; // ลดเวลาคูลดาวน์ไปเรื่อยๆ
+        if (shootTimer > 0f) shootTimer -= Time.deltaTime; // ลดเวลาคูลดาวน์ไปเรื่อยๆ
+
+        // ถ้ายิงนัดแรกแล้วทิ้งช่วงไม่ยิงนัดที่สอง ให้รีเซ็ตกลับไปเป็นนัดแรกของชุดใหม่
+        if (burstCount > 0)
+        {
+            burstResetTimer -= Time.deltaTime;
+            if (burstResetTimer <= 0f)
+            {
+                burstCount = 0;
+            }
+        }
     }
 
     public void SetCanShoot(bool value) => canShoot = value;
@@ -32,7 +63,7 @@ public class ArrowShooter : MonoBehaviour
 
         CleanupDestroyed(); // เก็บกวาดลูกธนูที่พังไปแล้วออกจากลิสต์ก่อน
         
-        // กฎเหล็กของ Pooyan! มีธนูในจอได้จำกัด (น่าจะ 2 ดอก)
+        // กฎเหล็กของ Pooyan! มีธนูในจอได้จำกัด 2 ดอกเท่านั้น
         if (activeArrows.Count >= GameConstants.MaxArrowsOnScreen) return false;
         if (arrowPrefab == null || shootPoint == null) return false;
 
@@ -46,7 +77,20 @@ public class ArrowShooter : MonoBehaviour
             activeArrows.Add(arrow);
         }
 
-        shootTimer = shootCooldown; // เริ่มนับคูลดาวน์ใหม่
+        burstCount++;
+        if (burstCount >= 2)
+        {
+            // ยิงครบ 2 นัดติดกันแล้ว -> ติดคูลดาวน์พักง้างธนูชุดใหม่ (0.40s) ป้องกันสแปมปืนกล
+            shootTimer = reloadCooldown;
+            burstCount = 0;
+        }
+        else
+        {
+            // เพิ่งยิงนัดแรก -> คูลดาวน์สั้นๆ (0.12s) เพื่อให้กดยิงนัดที่ 2 ตามไปติดๆ ได้
+            shootTimer = rapidCooldown;
+            burstResetTimer = reloadCooldown;
+        }
+
         AudioManager.Instance?.PlayArrowFire(); // เล่นเสียงฟิ้ว!
         return true;
     }
