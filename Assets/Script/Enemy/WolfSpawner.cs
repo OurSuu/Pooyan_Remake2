@@ -119,6 +119,18 @@ public class WolfSpawner : MonoBehaviour
             int remainingToKill = WolfTracker.Instance != null ? WolfTracker.Instance.RemainingKills : wolvesToSpawn - wolvesSpawned;
             if (remainingToKill <= 0) break; // ครบแล้วจ้า พอ!
 
+            // คำนวณจำนวนหมาป่าเป้าหมายที่กำลังลอยอยู่ในฉาก (ยังไม่รอดและยังไม่ตาย)
+            int activeTargets = WolfTracker.Instance != null ? WolfTracker.Instance.ActiveTargetCount : 0;
+            int neededToSpawn = remainingToKill - activeTargets;
+
+            // ถ้ามีหมาป่าลอยอยู่ในฉากเพียงพอกับจำนวนที่ต้องฆ่าแล้ว -> รอผลลัพธ์ ไม่เสกเกินโควต้า
+            // ถ้าหมาป่าหนีรอดไปได้ activeTargets จะลดลง ทำให้ neededToSpawn > 0 แล้วเสกตัวใหม่มาแทนที่ทันที!
+            if (neededToSpawn <= 0)
+            {
+                yield return new WaitForSeconds(1f);
+                continue;
+            }
+
             // ถ้ามีหมาป่าในฉากเกิน 10 ตัว ให้รอก่อน อย่าเพิ่งเสกเยอะไปเดี๋ยวแลคและยากไป
             int activeWolves = FindObjectsByType<Wolf>(FindObjectsInactive.Exclude).Length;
             if (activeWolves > 10) 
@@ -172,9 +184,9 @@ public class WolfSpawner : MonoBehaviour
                 else pattern = 3;
             }
 
-            // บังคับรูปแบบตามจำนวนที่เหลือ
-            if (remainingToKill == 1) pattern = 0; // เหลือตัวเดียวก็ลงตัวเดียวสิ
-            if (remainingToKill == 2 && pattern == 3) pattern = 1; // เหลือสองตัว ไม่เอาหน้ากระดาน
+            // บังคับรูปแบบตามจำนวนที่ต้องการเสกเพิ่ม (neededToSpawn)
+            if (neededToSpawn == 1) pattern = 0; // ต้องการอีกตัวเดียว ก็ปล่อยตัวเดียวพอดีเป๊ะ
+            if (neededToSpawn == 2 && pattern == 3) pattern = 1; // เหลือสองตัว ไม่เอาหน้ากระดาน
 
             if (pattern == 0) // ลงมาตัวเดียวเหงาๆ
             {
@@ -192,7 +204,7 @@ public class WolfSpawner : MonoBehaviour
             else if (pattern == 1) // สองตัวลงเลนเดียวกัน! งานหนักเลย
             {
                 int lane = Random.Range(0, laneCount);
-                int count = Mathf.Min(2, remainingToKill);
+                int count = Mathf.Min(2, neededToSpawn);
                 float sharedSpeed = Random.Range(config.wolfSpeedRange.x, config.wolfSpeedRange.y);
                 for (int i = 0; i < count; i++)
                 {
@@ -212,7 +224,7 @@ public class WolfSpawner : MonoBehaviour
             else if (pattern == 2) // ทแยงมุม ลงมาเป็นสเต็ป
             {
                 int count = Random.Range(2, 4); // มา 2-3 ตัว
-                count = Mathf.Min(count, remainingToKill);
+                count = Mathf.Min(count, neededToSpawn);
                 
                 bool leftToRight = Random.value > 0.5f; // ซ้ายไปขวา หรือ ขวาไปซ้าย
                 int startLane = leftToRight ? 0 : laneCount - 1;
@@ -239,7 +251,7 @@ public class WolfSpawner : MonoBehaviour
             else if (pattern == 3) // หน้ากระดานเรียงหนึ่ง น่ากลัวสุดๆ
             {
                 int count = Random.Range(2, 4); // 2-3 ตัว
-                count = Mathf.Min(count, remainingToKill);
+                count = Mathf.Min(count, neededToSpawn);
                 
                 int startL = Random.Range(0, laneCount - count + 1);
                 List<int> selectedLanes = new List<int>();
@@ -413,6 +425,11 @@ public class WolfSpawner : MonoBehaviour
         if (debugRapidFireRocks) wolf.SetRapidFire(true);
         WolfTracker.Instance?.Register(wolf);
         return wolf;
+    }
+
+    public void ResetBossSpawned()
+    {
+        bossSpawned = false;
     }
 
     public void OnWolfDestroyed()

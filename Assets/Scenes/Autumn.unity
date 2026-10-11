@@ -6736,7 +6736,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b9f43ec99ce9814281c5fcda3f92aed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BonusStageManager
-  fruitPrefab: {fileID: 0}
+  fruitPrefab: {fileID: 923139917039987540, guid: 6a5e74d9f5021bc46b63f2dbb7bf7d11, type: 3}
   fruitSpawnInterval: 0.8
   fruitSpawnXMin: -4
   fruitSpawnXMax: 4
@@ -8191,6 +8191,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   currentStage: 1
   lives: 3
+  useInspectorStageInEditor: 1
 --- !u!1 &845342375
 GameObject:
   m_ObjectHideFlags: 0
@@ -17403,7 +17404,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   moveSpeed: 3
-  minY: -2.3
+  minY: -1.7
   maxY: 2.7
   topPickupThreshold: 0.05
   meatSpawnPoint: {fileID: 0}

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public enum WolfState
 {
@@ -51,6 +51,10 @@ public class Wolf : MonoBehaviour
     [SerializeField] protected float rockThrowInterval = 3f;
 
     protected WolfState state = WolfState.WalkingBeforeDrop;
+    public bool IsActiveTarget => 
+        state == WolfState.WalkingBeforeDrop || 
+        state == WolfState.BlowingBalloon || 
+        state == WolfState.Floating;
     protected float floatSpeed;
     protected bool hasShield;
     protected bool canThrowRock;
@@ -118,7 +122,16 @@ public class Wolf : MonoBehaviour
         if (enabled) canThrowRock = true;
     }
 
-    public virtual void Initialize(LevelConfig config, bool descending, float speed, bool shield, bool rockThrow, float dropX = 0f, float[] lanes = null, int laneIndex = 0)
+    public virtual void Initialize(
+        LevelConfig config,
+        bool descending,
+        float speed,
+        bool shield,
+        bool rockThrow,
+        float dropX = 0f,
+        float[] lanes = null,
+        int laneIndex = 0,
+        int? overrideBalloonHP = null)
     {
         isDescendingStage = descending;
         
@@ -140,7 +153,33 @@ public class Wolf : MonoBehaviour
         
         gameObject.tag = GameConstants.TagEnemy;
 
-        if (balloon != null) { balloon.Initialize(this, config.balloonHP); balloon.gameObject.SetActive(false); }
+        // คำนวณเลือดและสีของลูกโป่งตามต้นฉบับ NES Pooyan
+        int targetBalloonHP = 1;
+        if (overrideBalloonHP.HasValue)
+        {
+            targetBalloonHP = overrideBalloonHP.Value;
+        }
+        else if (config != null && config.balloonHP > 1)
+        {
+            targetBalloonHP = config.balloonHP;
+        }
+        else if (!descending) // ด่านลอยขึ้น (Stage 2)
+        {
+            // ต้นฉบับ Famicom / NES: โอกาส ~30% ได้ลูกโป่งสีเหลือง (2 HP), 70% สีชมพู (1 HP)
+            float yellowChance = (config != null) ? config.yellowBalloonRatio : 0.3f;
+            targetBalloonHP = (Random.value < yellowChance) ? 2 : 1;
+        }
+        else
+        {
+            // ด่าน 1 ลอยลง: สีชมพู 1 HP
+            targetBalloonHP = 1;
+        }
+
+        if (balloon != null)
+        {
+            balloon.Initialize(this, targetBalloonHP);
+            balloon.gameObject.SetActive(false);
+        }
 
         if (shieldTransform != null)
         {
@@ -414,11 +453,19 @@ public class Wolf : MonoBehaviour
         }
     }
 
-    protected void UpdateRockThrow()
+
+            protected void UpdateRockThrow()
     {
         rockTimer -= Time.deltaTime;
         if (rockTimer <= 0f && rockPrefab != null)
         {
+            // โควต้าตู้ Arcade: มีหินบนจอได้สูงสุด 3 ก้อนพร้อมกัน (ยกเว้นเปิด Debug Rapid Fire ไว้)
+            if (!rapidFire && WolfProjectile.ActiveRockCount >= 3)
+            {
+                rockTimer = 0.5f; // รออีกครึ่งวิแล้วค่อยเช็คใหม่
+                return;
+            }
+
             rockTimer = rapidFire ? 0.5f : rockThrowInterval;
             StartCoroutine(ThrowRockRoutine());
         }
@@ -434,6 +481,9 @@ public class Wolf : MonoBehaviour
         
         // ถ้าถูกยิงตายหรือตกพื้นไปก่อนที่จะปา ก็ยกเลิกการปา
         if (state != WolfState.Floating) yield break;
+
+        // เช็คโควต้าอีกครั้งก่อนปล่อยหิน
+        if (!rapidFire && WolfProjectile.ActiveRockCount >= 3) yield break;
         
         // 3. เสกหินแล้วปาออกไป
         if (rockPrefab != null)
@@ -498,6 +548,7 @@ public class Wolf : MonoBehaviour
             notifier.MarkEscaped();
             WolfTracker.Instance?.NotifyEscapedToGround();
         }
+        WolfTracker.Instance?.UnregisterTargetWolf(this);
     }
 
     [SerializeField] protected string runAnimName = "Run";
@@ -696,6 +747,7 @@ public class Wolf : MonoBehaviour
 
         // Transition to falling
         state = WolfState.Falling;
+        WolfTracker.Instance?.UnregisterTargetWolf(this);
         SetFallingVisual();
         AudioManager.Instance?.PlayWolfFall();
 
@@ -739,12 +791,19 @@ public class Wolf : MonoBehaviour
     {
         if (state == WolfState.Dead) return;
         state = WolfState.Dead;
+        WolfTracker.Instance?.UnregisterTargetWolf(this);
         if (balloon != null) balloon.gameObject.SetActive(false);
         DestroyWolf();
     }
 
+    protected virtual void OnDestroy()
+    {
+        WolfTracker.Instance?.UnregisterTargetWolf(this);
+    }
+
     protected void DestroyWolf()
     {
+        WolfTracker.Instance?.UnregisterTargetWolf(this);
         if (reservedStepIndex.HasValue)
         {
             LadderSystem.Instance?.ReleaseStepByIndex(reservedStepIndex.Value, this);

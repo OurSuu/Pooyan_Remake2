@@ -1,4 +1,4 @@
-﻿using TMPro;
+using TMPro;
 using UnityEngine;
 
 /// <summary>
@@ -137,9 +137,13 @@ public class UIManager : MonoBehaviour
             case GameState.Playing:
                 if (cliffCounterPanel != null)
                     cliffCounterPanel.SetActive(GameManager.Instance != null && !GameManager.Instance.IsOddStage);
+                if (stageText != null && GameManager.Instance != null)
+                    stageText.text = $"STAGE: {GameManager.Instance.CurrentStage}";
                 break;
             case GameState.BonusStage:
-                if (bonusResultPanel != null) bonusResultPanel.SetActive(true);
+                if (stageText != null) stageText.text = "BONUS STAGE";
+                if (cliffCounterPanel != null) cliffCounterPanel.SetActive(false);
+                if (remainingWolvesText != null) remainingWolvesText.text = "BONUS TIME!";
                 break;
             case GameState.NameEntry:
                 if (nameEntryScreen != null) nameEntryScreen.SetActive(true);

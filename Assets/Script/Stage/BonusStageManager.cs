@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -48,9 +48,13 @@ public class BonusStageManager : MonoBehaviour
 
     public void StartBonusStage()
     {
-        int stage = GameManager.Instance?.CurrentStage ?? 1;
-        // สูตรคำนวณสลับด่านโบนัสง่ายๆ ผลไม้สลับเนื้อ
-        currentBonusType = (stage / 2) % 2 == 0 ? BonusType.Fruit : BonusType.Meat;
+        int stage = GameManager.Instance?.CurrentStage ?? 2;
+        // ด่าน 2 จบเข้า Fruit Bonus, ด่าน 4 จบเข้า Meat Bonus
+        currentBonusType = (stage == 2 || ((stage / 2) % 2 != 0)) ? BonusType.Fruit : BonusType.Meat;
+
+        // เคลียร์หมาป่าและกระสุนตกค้างในฉาก และหยุดการเสกหมาป่าธรรมดา
+        FindAnyObjectByType<StageFlowController>()?.ClearAllEntities();
+        FindAnyObjectByType<WolfSpawner>()?.StopAllSpawning();
 
         if (bonusRoutine != null) StopCoroutine(bonusRoutine);
         bonusRoutine = StartCoroutine(BonusRoutine());
@@ -136,15 +140,36 @@ public class BonusStageManager : MonoBehaviour
 
     private void SpawnFruit()
     {
-        if (fruitPrefab == null) return;
+        // สุ่มตำแหน่งเกิดจากขอบผาซ้ายตามระยะที่ตั้งไว้
+        float spawnX = Mathf.Min(fruitSpawnXMin, -5.5f);
+        float spawnY = Random.Range(-2f, Mathf.Min(fruitSpawnY, 1f));
+        Vector3 spawnPos = new Vector3(spawnX, spawnY, 0f);
+        GameObject fruit;
 
-        float x = Random.Range(fruitSpawnXMin, fruitSpawnXMax);
-        var fruit = Instantiate(fruitPrefab, new Vector3(x, fruitSpawnY, 0f), Quaternion.identity);
+        if (fruitPrefab != null)
+        {
+            fruit = Instantiate(fruitPrefab, spawnPos, Quaternion.identity);
+        }
+        else
+        {
+            // แผนสำรองถ้าลืมใส่ Prefab ใน Inspector: สร้างขึ้นมาสดๆ เลย ไม่พังแน่นอน
+            fruit = new GameObject("BonusFruit_Procedural");
+            fruit.transform.position = spawnPos;
+            var sr = fruit.AddComponent<SpriteRenderer>();
+            var col = fruit.AddComponent<CircleCollider2D>();
+            col.isTrigger = true;
+            col.radius = 0.4f;
+        }
+
         var bonusFruit = fruit.GetComponent<BonusFruit>();
         if (bonusFruit == null)
             bonusFruit = fruit.AddComponent<BonusFruit>();
 
-        bonusFruit.Initialize(RandomFruitType());
+        // สปีดการโยนวิถีโค้งจากซ้ายไปขวา เข้าหาระยะยิงของแม่หมู
+        float targetX = Random.Range(Mathf.Max(fruitSpawnXMax, 2f), 5.5f);
+        float horizontalSpeed = Mathf.Lerp(4.5f, 7.0f, (targetX - 2f) / 3.5f);
+        Vector2 launchVel = new Vector2(horizontalSpeed, Random.Range(6.0f, 9.5f));
+        bonusFruit.Initialize(RandomFruitType(), launchVel);
     }
 
     private BonusFruitType RandomFruitType()
@@ -169,39 +194,3 @@ public class BonusStageManager : MonoBehaviour
     }
 }
 
-/// <summary>
-/// ตัวผลไม้โบนัส ถ้ายิงโดนก็จะได้คะแนนไงล่ะ
-/// </summary>
-[RequireComponent(typeof(Collider2D))]
-public class BonusFruit : MonoBehaviour
-{
-    [SerializeField] private float fallSpeed = 3f; // ความเร็วตก
-
-    private BonusFruitType fruitType;
-
-    public void Initialize(BonusFruitType type)
-    {
-        fruitType = type;
-        gameObject.tag = "Untagged"; // ลบแท็กศัตรูทิ้ง หมูจะได้ไม่ตายเวลาผลไม้ชน
-    }
-
-    private void Update()
-    {
-        transform.position += Vector3.down * (fallSpeed * Time.deltaTime);
-        if (transform.position.y < -6f) Destroy(gameObject); // ตกจอแล้วลบทิ้ง
-    }
-
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        if (!other.CompareTag(GameConstants.TagArrow)) return; // สนใจแค่ธนูพอ
-
-        // บวกคะแนนเลยเพื่อน
-        ScoreManager.Instance?.AddBonusFruitScore(fruitType, transform.position);
-        AudioManager.Instance?.PlayRockDestroy();
-
-        // บอกผู้จัดการว่าโดนยิงไปแล้ว
-        FindAnyObjectByType<BonusStageManager>()?.OnBonusFruitHit();
-
-        Destroy(gameObject); // บึ้มมม
-    }
-}

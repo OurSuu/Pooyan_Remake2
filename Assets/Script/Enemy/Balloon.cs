@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 
 // ลูกโป่งของหมาป่า นี่แหละเป้าหมายหลักให้เรายิง!
@@ -7,11 +7,22 @@ public class Balloon : MonoBehaviour
     [SerializeField] private Sprite[] damageStages; // สไปรท์ตอนลูกโป่งโดนยิงไปแต่ละขั้น (ถ้ามีหลายฮิต)
     [SerializeField] private float flashInterval = 0.15f; // ความเร็วตอนกระพริบ (เวลาเป็นบอส)
 
+    [Header("Balloon Colors (NES Pooyan Original)")]
+    [Tooltip("สีชมพู 1 HP - สีพื้นฐานของด่าน 1 และด่านทั่วไป")]
+    [SerializeField] private Color pinkColor = new Color(1f, 0.42f, 0.65f, 1f);
+    [Tooltip("สีเหลือง 2 HP - สีลูกโป่งอึดในด่าน 2 โดนยิง 1 ทีจะกลายเป็นสีชมพู")]
+    [SerializeField] private Color yellowColor = new Color(1f, 0.88f, 0.15f, 1f);
+    [Tooltip("สีแดง 3+ HP - สำหรับด่านหลังๆ ที่ลูกโป่งหนาพิเศษ")]
+    [SerializeField] private Color redColor = new Color(1f, 0.25f, 0.2f, 1f);
+
     private int maxHP;
     private int currentHP;
     private bool isBossFlash;
     private SpriteRenderer spriteRenderer;
     private Wolf owner; // เจ้าของลูกโป่งนี้ (หมาป่าตัวไหน)
+
+    public int CurrentHP => currentHP;
+    public int MaxHP => maxHP;
 
     private void Awake()
     {
@@ -29,7 +40,7 @@ public class Balloon : MonoBehaviour
         if (isBossFlash)
             StartCoroutine(BossFlashRoutine());
 
-        UpdateVisual(); // อัปเดตภาพลูกโป่งตอนเริ่ม
+        UpdateVisual(); // อัปเดตภาพและสีลูกโป่งตอนเริ่ม
     }
 
     // เรียกตอนลูกโป่งโดนโจมตี คืนค่าเป็น true ถ้าลูกโป่งแตก
@@ -38,7 +49,7 @@ public class Balloon : MonoBehaviour
         if (currentHP <= 0) return true; // ถ้าแตกไปแล้วก็ปล่อยผ่าน
 
         currentHP -= damage;
-        UpdateVisual(); // เปลี่ยนสไปรท์ตามเลือดที่เหลือ
+        UpdateVisual(); // เปลี่ยนสไปรท์และสีตามเลือดที่เหลือ (2 HP สีเหลือง -> 1 HP สีชมพู!)
 
         if (currentHP <= 0)
         {
@@ -46,6 +57,8 @@ public class Balloon : MonoBehaviour
             return true;
         }
 
+        // ยังไม่แตก (เช่น สีเหลืองโดนยิงเหลือสีชมพู) เล่นเสียงกระแทกเบาๆ
+        AudioManager.Instance?.PlayRockDestroy();
         return false;
     }
 
@@ -130,7 +143,14 @@ public class Balloon : MonoBehaviour
         Destroy(gameObject);
     }
 
-    // อัปเดตสไปรท์และขนาดตามเลือดลูกโป่ง
+    public Color GetColorForHP(int hp)
+    {
+        if (hp >= 3) return redColor;
+        if (hp == 2) return yellowColor;
+        return pinkColor;
+    }
+
+    // อัปเดตสไปรท์ ขนาด และสีตามเลือดลูกโป่ง
     private void UpdateVisual()
     {
         if (spriteRenderer == null) return;
@@ -138,6 +158,12 @@ public class Balloon : MonoBehaviour
         // ยิ่งเลือดน้อยยิ่งแฟบลง
         float scale = 1f - (maxHP - currentHP) * 0.05f;
         transform.localScale = Vector3.one * scale;
+
+        // อัปเดตสีตามเลือดที่เหลือ (ถ้าไม่ใช่ลูกโป่งบอสที่กระพริบวิบวับ)
+        if (!isBossFlash)
+        {
+            spriteRenderer.color = GetColorForHP(currentHP);
+        }
 
         if (damageStages == null || damageStages.Length == 0) return;
 
@@ -152,15 +178,17 @@ public class Balloon : MonoBehaviour
     // บอสสเปเชียล: ลูกโป่งกระพริบวิบวับ
     private IEnumerator BossFlashRoutine()
     {
-        var normalColor = Color.white;
-        var flashColor = new Color(1f, 0.2f, 0.2f); // กระพริบแดง
+        var flashColor = Color.white;
 
         while (true)
         {
-            spriteRenderer.color = flashColor;
+            if (spriteRenderer != null)
+                spriteRenderer.color = flashColor;
             yield return new WaitForSeconds(flashInterval);
-            spriteRenderer.color = normalColor;
+            if (spriteRenderer != null)
+                spriteRenderer.color = GetColorForHP(currentHP);
             yield return new WaitForSeconds(flashInterval);
         }
     }
 }
+

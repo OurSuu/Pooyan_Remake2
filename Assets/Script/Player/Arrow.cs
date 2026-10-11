@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 [RequireComponent(typeof(Collider2D))]
@@ -47,6 +47,15 @@ public class Arrow : MonoBehaviour
     {
         // Debug.Log ไว้เช็คว่าโดนอะไรบ้าง (ปิดไปก็ได้นะถ้าล้น Console)
         Debug.Log("Arrow hit: " + other.gameObject.name + " with tag: " + other.tag);
+
+        // ถ้าชนผลไม้โบนัส
+        var fruit = other.GetComponent<BonusFruit>();
+        if (fruit != null)
+        {
+            fruit.TakeHit(gameObject);
+            DestroySelf();
+            return;
+        }
 
         // ถ้าชนลูกโป่ง
         if (other.CompareTag(GameConstants.TagBalloon))
@@ -125,7 +134,7 @@ public class Arrow : MonoBehaviour
     private bool isDestroyed = false;
     
     // ห่อฟังก์ชัน Destroy ไว้เรียกง่ายๆ จะได้เคลียร์ Event ด้วย
-    private void DestroySelf()
+    public void DestroySelf()
     {
         if (isDestroyed) return;
         isDestroyed = true;

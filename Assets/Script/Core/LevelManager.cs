@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 /// <summary>
 /// ตัวจัดการเรื่องความยากของด่านและจังหวะการเกิดเวฟต่างๆ
@@ -71,6 +71,7 @@ public class LevelManager : MonoBehaviour
         config.shieldRatio = Mathf.Min(0.7f, config.shieldRatio + tier * 0.05f);     // ถือโล่กันเยอะขึ้น
         config.rockThrowRatio = Mathf.Min(0.5f, config.rockThrowRatio + tier * 0.03f); // ปาหินรัวๆ
         config.balloonHP = Mathf.Min(3, 1 + (tier / 2));               // ลูกโป่งอึดขึ้นด้วย
+        config.yellowBalloonRatio = Mathf.Min(0.6f, 0.3f + tier * 0.05f); // สัดส่วนลูกโป่งสีเหลืองเพิ่มขึ้นตามด่าน
         config.spawnInterval = Mathf.Max(0.5f, config.spawnInterval - tier * 0.05f); // เกิดไวขึ้น
         config.hasTreeTopBoss = stage >= 3;                            // หลังด่าน 3 มีบอสบนต้นไม้แล้ว
         config.hasBossWolf = stage % 2 == 0;                           // ด่านคู่จะมีบอสโผล่มา

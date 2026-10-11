@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 /// <summary>
 /// บอสหมาป่าด่าน 2 (ตอนขึ้น) - มีลูกโป่งกระพริบๆ โล่กันได้ 5 ที ฆ่าปุ๊บผ่านด่านทันทีเลยโคตรเท่
@@ -8,10 +8,10 @@ public class BossWolf : Wolf
     private int remainingShieldHP; // เลือดของโล่บอส ทนหน่อยนะ
 
     // ตอนเกิดเรียกฟังก์ชันนี้แหละ ตั้งค่าสเตตัสต่างๆ
-    public override void Initialize(LevelConfig config, bool descending, float speed, bool shield, bool rockThrow, float dropX = 0f, float[] lanes = null, int laneIndex = 0)
+    public override void Initialize(LevelConfig config, bool descending, float speed, bool shield, bool rockThrow, float dropX = 0f, float[] lanes = null, int laneIndex = 0, int? overrideBalloonHP = null)
     {
         // บอสมีโล่เสมอ บังคับ true ไปเลย
-        base.Initialize(config, descending, speed, true, rockThrow, dropX, lanes, laneIndex);
+        base.Initialize(config, descending, speed, true, rockThrow, dropX, lanes, laneIndex, overrideBalloonHP);
         remainingShieldHP = config.bossShieldHP; // ดึงเลือดโล่มาจากคอนฟิก
 
         if (balloon != null)
@@ -64,5 +64,6 @@ public class BossWolf : Wolf
         
         // ลงโทษหนักๆ ถ้าปล่อยบอสหลุด เพิ่มหมาป่าในโควต้าให้เหนื่อยเล่น 4 ตัว
         WolfTracker.Instance?.AddTargetKills(4);
+        FindAnyObjectByType<WolfSpawner>()?.ResetBossSpawned();
     }
 }

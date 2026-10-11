@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -13,6 +13,10 @@ public class GameManager : MonoBehaviour
     [Header("Stage")]
     [SerializeField] private int currentStage = 1;
     [SerializeField] private int lives = GameConstants.StartingLives;
+
+    [Header("Editor Debug / Testing")]
+    [Tooltip("ถ้าติ๊กถูก: เวลาเล่นใน Unity Editor จะบังคับใช้เลขด่าน currentStage ที่กรอกใน Inspector เสมอ")]
+    [SerializeField] private bool useInspectorStageInEditor = true;
 
     public GameState CurrentState { get; private set; } = GameState.MainMenu;
     public int CurrentStage => currentStage;
@@ -43,8 +47,18 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
-        // ถ้ามีข้อมูล GameSession ที่ส่งมาจาก MainMenu หรือ Scene ก่อนหน้า ให้ใช้ค่านั้น
+#if UNITY_EDITOR
+        // เมื่อเทสใน Editor: ให้เกียรติเลขด่านที่กรอกใน Inspector เป็นหลัก
+        if (useInspectorStageInEditor)
+        {
+            GameSession.IsActive = true;
+            GameSession.CurrentStage = currentStage;
+            GameSession.Lives = lives;
+        }
+        else if (GameSession.IsActive)
+#else
         if (GameSession.IsActive)
+#endif
         {
             currentStage = GameSession.CurrentStage;
             lives = GameSession.Lives;
@@ -254,4 +268,27 @@ public class GameManager : MonoBehaviour
 
     public bool IsPlaying => CurrentState == GameState.Playing;
     public bool IsBonus => CurrentState == GameState.BonusStage;
+
+#if UNITY_EDITOR
+    [ContextMenu("Test/Jump To Current Inspector Stage")]
+    public void TestJumpToCurrentInspectorStage()
+    {
+        GameSession.IsActive = true;
+        GameSession.CurrentStage = currentStage;
+        OnStageChanged?.Invoke(currentStage);
+        FindAnyObjectByType<StageFlowController>()?.OnStageStart(currentStage);
+    }
+
+    [ContextMenu("Test/Trigger Stage Clear (Next Stage or Bonus)")]
+    public void TestTriggerStageClear()
+    {
+        TriggerStageClear();
+    }
+
+    [ContextMenu("Test/Enter Bonus Stage Directly")]
+    public void TestEnterBonusStage()
+    {
+        EnterBonusStage();
+    }
+#endif
 }

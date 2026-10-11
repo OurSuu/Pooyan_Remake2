@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 /// <summary>
@@ -32,12 +32,23 @@ public class WolfTracker : MonoBehaviour
         if (Instance == this) Instance = null; // คืนค่าตอนโดนทำลาย กันบัค
     }
 
+    private readonly System.Collections.Generic.HashSet<Wolf> activeTargetWolves = new();
+    public int ActiveTargetCount
+    {
+        get
+        {
+            activeTargetWolves.RemoveWhere(w => w == null || !w.IsActiveTarget);
+            return activeTargetWolves.Count;
+        }
+    }
+
     // เรียกตอนเริ่มด่านใหม่ ตั้งค่าจำนวนเป้าหมาย
     public void BeginStage(int wolfKillQuota)
     {
         stageCleared = false;
         targetKills = Mathf.Max(1, wolfKillQuota);
         kills = 0;
+        activeTargetWolves.Clear();
         suppressNotifications = false;
         OnKillCountChanged?.Invoke(RemainingKills); // อัปเดต UI ให้เห็นว่าเป้าหมายมีกี่ตัว
     }
@@ -52,11 +63,19 @@ public class WolfTracker : MonoBehaviour
     public void Register(Wolf wolf)
     {
         if (wolf == null) return;
+        activeTargetWolves.Add(wolf);
 
         var notifier = wolf.GetComponent<WolfDeathNotifier>();
         if (notifier == null)
             notifier = wolf.gameObject.AddComponent<WolfDeathNotifier>();
         notifier.Initialize(this); // ผูกมันเข้ากับ Tracker ตัวนี้แหละ
+    }
+
+    // ยกเลิกการเป็นเป้าหมาย (เช่น หมาป่าหนีรอดไปได้ หรือตายแล้ว)
+    public void UnregisterTargetWolf(Wolf wolf)
+    {
+        if (wolf != null)
+            activeTargetWolves.Remove(wolf);
     }
 
     // หมาป่าโดนสอย! เข้ามาเรียกนี่เลย

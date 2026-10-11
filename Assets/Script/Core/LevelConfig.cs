@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 /// <summary>
 /// คอนฟิกความยากของแต่ละด่าน — สร้างเป็น ScriptableObject asset ไว้ใช้สะดวกๆ
@@ -14,7 +14,8 @@ public class LevelConfig : ScriptableObject
     public float spawnInterval = 3f;               // ระยะเวลาห่างในการเกิดตัวถัดไป (เพิ่มจาก 1 เป็น 3 วิ)
 
     [Header("Balloon")]
-    [Min(1)] public int balloonHP = 1;             // เลือดลูกโป่ง ยิงกี่ทีแตก
+    [Min(1)] public int balloonHP = 1;                     // เลือดลูกโป่งพื้นฐาน (1 = ปกติ)
+    [Range(0f, 1f)] public float yellowBalloonRatio = 0.3f; // โอกาสเกิดลูกโป่งสีเหลือง (2 HP) ในด่านที่รองรับ (ต้นฉบับ Famicom ด่าน 2 คือ 30%)
 
     [Header("Boss")]
     public bool hasBossWolf = true;                // ด่านนี้มีบอสไหม
