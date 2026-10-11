@@ -202,9 +202,9 @@ MonoBehaviour:
   fruitPrefab: {fileID: 923139917039987540, guid: 6a5e74d9f5021bc46b63f2dbb7bf7d11, type: 3}
   fruitSpawnInterval: 0.8
   fruitSpawnXMin: -4
-  fruitSpawnXMax: 4
-  fruitSpawnY: 5
-  wolfPrefab: {fileID: 0}
+  fruitSpawnXMax: 3.5
+  fruitSpawnY: 3
+  wolfPrefab: {fileID: 1314677705981428973, guid: eb78681b73b223343b860463bbbe1e04, type: 3}
   meatBonusSpawnPoints: []
   bonusDuration: 30
 --- !u!1 &46099338
@@ -4790,6 +4790,7 @@ MonoBehaviour:
   currentStage: 2
   lives: 3
   useInspectorStageInEditor: 1
+  startAsBonusStage: 1
 --- !u!1 &1628617896
 GameObject:
   m_ObjectHideFlags: 0
@@ -5918,7 +5919,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2122254446
 Transform:
   m_ObjectHideFlags: 0
@@ -5981,10 +5982,10 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: -2
+  m_SortingOrder: 1
   m_MaskInteraction: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.50980395}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.8235294}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0

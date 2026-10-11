@@ -42,17 +42,24 @@ public class BonusFruit : MonoBehaviour
             {
                 case BonusFruitType.Strawberry:
                     sr.color = new Color(1f, 0.25f, 0.35f);
-                    transform.localScale = Vector3.one * 0.7f;
+                    transform.localScale = Vector3.one * 3.5f;
                     break;
                 case BonusFruitType.Cherry:
                     sr.color = new Color(0.9f, 0.15f, 0.2f);
-                    transform.localScale = Vector3.one * 0.55f;
+                    transform.localScale = Vector3.one * 2.8f;
                     break;
                 case BonusFruitType.Peach:
                     sr.color = new Color(1f, 0.65f, 0.4f);
-                    transform.localScale = Vector3.one * 0.85f;
+                    transform.localScale = Vector3.one * 4.2f;
                     break;
             }
+        }
+
+        var col = GetComponent<CircleCollider2D>();
+        if (col != null)
+        {
+            // Sprite Knob ขนาดดั้งเดิมคือรัศมี 0.1 unit เมื่อคูณกับ localScale จะได้ Hitbox พอดีกับภาพ
+            col.radius = 0.1f;
         }
     }
 

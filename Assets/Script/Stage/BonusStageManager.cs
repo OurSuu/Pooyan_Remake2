@@ -27,7 +27,14 @@ public class BonusStageManager : MonoBehaviour
     {
         // ดักรอ GameManager เปลี่ยนสถานะเกม
         if (GameManager.Instance != null)
+        {
             GameManager.Instance.OnStateChanged += HandleStateChanged;
+            // ถ้าเข้ามาในฉากแล้วสถานะเป็น BonusStage อยู่แล้ว (เช่น โหลดเข้าฉาก Spring_Bonus โดยตรง) ให้เริ่มเลย
+            if (GameManager.Instance.CurrentState == GameState.BonusStage)
+            {
+                StartBonusStage();
+            }
+        }
     }
 
     private void OnDestroy()

@@ -17,6 +17,8 @@ public class GameManager : MonoBehaviour
     [Header("Editor Debug / Testing")]
     [Tooltip("ถ้าติ๊กถูก: เวลาเล่นใน Unity Editor จะบังคับใช้เลขด่าน currentStage ที่กรอกใน Inspector เสมอ")]
     [SerializeField] private bool useInspectorStageInEditor = true;
+    [Tooltip("ถ้าติ๊กถูก หรือชื่อ Scene มีคำว่า Bonus: จะเริ่มเกมในโหมด Bonus Stage ทันที")]
+    [SerializeField] private bool startAsBonusStage = false;
 
     public GameState CurrentState { get; private set; } = GameState.MainMenu;
     public int CurrentStage => currentStage;
@@ -76,6 +78,26 @@ public class GameManager : MonoBehaviour
         
         ScoreManager.Instance?.ResetScore();
         
+        // ถ้าเป็นฉากโบนัส (เช่น Spring_Bonus) หรือติ๊ก startAsBonusStage ให้เริ่มโหมดโบนัสทันที!
+        bool isBonusScene = startAsBonusStage || SceneManager.GetActiveScene().name.IndexOf("Bonus", StringComparison.OrdinalIgnoreCase) >= 0;
+        if (isBonusScene)
+        {
+            EnterBonusStage();
+            OnLivesChanged?.Invoke(lives);
+
+            var p = FindAnyObjectByType<PlayerController>();
+            if (p != null)
+            {
+                p.SetDiedFromBoulder(false);
+                p.Respawn();
+            }
+
+            OnStageChanged?.Invoke(currentStage);
+            FindAnyObjectByType<WolfSpawner>()?.StopAllSpawning();
+            FindAnyObjectByType<StageFlowController>()?.ClearAllEntities();
+            return;
+        }
+
         SetState(GameState.Playing);
         OnLivesChanged?.Invoke(lives);
 
@@ -165,7 +187,19 @@ public class GameManager : MonoBehaviour
     {
         if (currentStage % 2 == 0)
         {
-            EnterBonusStage();
+            // ถ้ามี Scene Bonus แยกต่างหาก (เช่น Spring_Bonus) ให้โหลด Scene นั้น
+            string bonusScene = GetBonusSceneNameForStage(currentStage);
+            if (Application.CanStreamedLevelBeLoaded(bonusScene))
+            {
+                GameSession.CurrentStage = currentStage;
+                GameSession.Lives = lives;
+                if (ScoreManager.Instance != null) GameSession.Score = ScoreManager.Instance.Score;
+                SceneManager.LoadScene(bonusScene);
+            }
+            else
+            {
+                EnterBonusStage();
+            }
         }
         else
         {
@@ -175,7 +209,7 @@ public class GameManager : MonoBehaviour
             if (ScoreManager.Instance != null) GameSession.Score = ScoreManager.Instance.Score;
             
             // เปลี่ยน Scene เป็นด่านใหม่ตามฤดู
-            SceneManager.LoadScene(GetSceneNameForStage(currentStage));
+            LoadStageScene(currentStage);
         }
     }
 
@@ -191,7 +225,24 @@ public class GameManager : MonoBehaviour
         GameSession.Lives = lives;
         if (ScoreManager.Instance != null) GameSession.Score = ScoreManager.Instance.Score;
         
-        SceneManager.LoadScene(GetSceneNameForStage(currentStage));
+        LoadStageScene(currentStage);
+    }
+
+    private void LoadStageScene(int stage)
+    {
+        string targetScene = GetSceneNameForStage(stage);
+        // เช็คว่ามีฉากนี้ใน Build Settings มั้ย ถ้ายังไม่มี (เช่น Summer ยังไม่เสร็จ) ให้ข้ามไปฉากที่มีอย่างปลอดภัย
+        if (!Application.CanStreamedLevelBeLoaded(targetScene))
+        {
+            if (Application.CanStreamedLevelBeLoaded("Winter")) targetScene = "Winter";
+            else if (Application.CanStreamedLevelBeLoaded("Autumn")) targetScene = "Autumn";
+        }
+        SceneManager.LoadScene(targetScene);
+    }
+
+    private string GetBonusSceneNameForStage(int stage)
+    {
+        return GetSceneNameForStage(stage) + "_Bonus";
     }
 
     private string GetSceneNameForStage(int stage)

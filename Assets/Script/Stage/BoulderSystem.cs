@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -48,25 +48,32 @@ public class BoulderSystem : MonoBehaviour
     {
         if (GameManager.Instance != null)
         {
-            // ดักรอตอนเปลี่ยนด่าน
+            // ดักรอตอนเปลี่ยนด่านและเปลี่ยนสถานะ
             GameManager.Instance.OnStageChanged += HandleStageChanged;
-            HandleStageChanged(GameManager.Instance.CurrentStage);
+            GameManager.Instance.OnStateChanged += HandleGameStateChanged;
+            UpdateBoulderVisibility();
         }
     }
 
     private void OnDestroy()
     {
         if (GameManager.Instance != null)
+        {
             GameManager.Instance.OnStageChanged -= HandleStageChanged;
+            GameManager.Instance.OnStateChanged -= HandleGameStateChanged;
+        }
         if (Instance == this) Instance = null;
     }
 
-    private void HandleStageChanged(int stage)
+    private void HandleStageChanged(int stage) => UpdateBoulderVisibility();
+    private void HandleGameStateChanged(GameState state) => UpdateBoulderVisibility();
+
+    private void UpdateBoulderVisibility()
     {
-        // เปิดใช้ก้อนหินเฉพาะในด่านหน้าผา
+        // เปิดใช้ก้อนหินเฉพาะในด่านหน้าผา (และต้องไม่ใช่ช่วงด่านโบนัส)
         if (boulder != null)
         {
-            bool isStage2 = GameManager.Instance != null && !GameManager.Instance.IsOddStage;
+            bool isStage2 = GameManager.Instance != null && !GameManager.Instance.IsOddStage && !GameManager.Instance.IsBonus;
             boulder.gameObject.SetActive(isStage2);
         }
     }

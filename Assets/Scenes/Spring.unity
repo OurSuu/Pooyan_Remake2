@@ -4790,6 +4790,7 @@ MonoBehaviour:
   currentStage: 2
   lives: 3
   useInspectorStageInEditor: 1
+  startAsBonusStage: 0
 --- !u!1 &1628617896
 GameObject:
   m_ObjectHideFlags: 0
