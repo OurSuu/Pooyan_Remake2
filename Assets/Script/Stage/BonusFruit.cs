@@ -1,65 +1,124 @@
 using UnityEngine;
 
 /// <summary>
-/// ผลไม้ใน Bonus Stage (ด่านต่อจาก Stage 2 ตามต้นฉบับ Pooyan)
-/// หมาป่าจะโยนผลไม้ข้ามฟากมาเป็นแนวโค้ง หรือร่วงลงมาให้แม่หมูยิงเก็บแต้ม
-/// ยิงโดนได้แต้ม ยิงครบ 20 ลูกได้ Perfect Bonus 10,000 คะแนน!
+/// ผลไม้ใน Bonus Stage (รองรับทั้งแบบ Famicom ทิ้งดิ่งลงมาจากบอสบนยอดไม้ และแบบ Arcade โยนวิถีโค้งจากซ้าย)
+/// มีเอฟเฟกต์เรืองแสง (Bloom Glow Aura) และละอองดาวระยิบระยับ (Sparkle Trail) ทิ้งท้ายในท้องฟ้ายามค่ำคืน!
+/// ยิงโดนได้แต้มสะสม Chain Combo สูงสุดถึง Nakamoto 8,000 แต้ม ยิงครบ 20 ลูกได้ Perfect Bonus 10,000 คะแนน!
 /// </summary>
 [RequireComponent(typeof(Collider2D))]
 public class BonusFruit : MonoBehaviour
 {
     [Header("Movement")]
-    [SerializeField] private float fallSpeed = 3f;
-    [SerializeField] private bool useArcTrajectory = true; // โยนเป็นวิถีโค้งแบบต้นฉบับ
+    [SerializeField] private float fallSpeed = 3.5f;
+    [SerializeField] private bool useArcTrajectory = true; // โยนเป็นวิถีโค้ง หรือร่วงลงมาตรงๆ
     [SerializeField] private float gravity = 9.8f;
+
+    [Header("Fruit Sprites")]
+    [SerializeField] private Sprite strawberrySprite;
+    [SerializeField] private Sprite cherrySprite;
+    [SerializeField] private Sprite peachSprite;
+
+    [Header("Glow & Particle Effects")]
+    [SerializeField] private ParticleSystem glowAuraParticles;   // ออร่าเรืองแสงรอบผลไม้
+    [SerializeField] private ParticleSystem sparkleTrailParticles; // ละอองดาวพุ่งตามหลัง
+    [SerializeField] private GameObject popFXPrefab;              // ประกายดาวแตกกระจายตอนโดนยิง
 
     private Vector2 velocity;
     private BonusFruitType fruitType;
     private bool isHit = false;
+    private Color currentColor;
 
     public BonusFruitType FruitType => fruitType;
 
-    public void Initialize(BonusFruitType type, Vector2? initialVelocity = null)
+    public void Initialize(BonusFruitType type, Vector2? initialVelocity = null, bool isArc = true)
     {
         fruitType = type;
         gameObject.tag = "Untagged"; // ลบแท็กศัตรูทิ้ง หมูชนจะได้ไม่ตาย
+        useArcTrajectory = isArc;
 
         if (initialVelocity.HasValue)
         {
             velocity = initialVelocity.Value;
-            useArcTrajectory = true;
         }
         else if (useArcTrajectory)
         {
-            // โยนจากฝั่งซ้ายพุ่งโค้งขึ้นไปทางขวาแถวกระเช้าแม่หมู
-            velocity = new Vector2(Random.Range(3.5f, 6.0f), Random.Range(5.0f, 8.5f));
+            // แบบวิถีโค้งข้ามฟาก
+            velocity = new Vector2(Random.Range(4.5f, 7.0f), Random.Range(6.0f, 9.5f));
+        }
+        else
+        {
+            // แบบ Famicom: บอสทิ้งลงมาตรงๆ หรือเอียงเล็กน้อย
+            velocity = new Vector2(Random.Range(-0.4f, 0.4f), -fallSpeed);
         }
 
         var sr = GetComponent<SpriteRenderer>();
+
+        // กำหนดสีเรืองแสง และสไปรท์ตามชนิดผลไม้
+        Sprite targetSprite = null;
+        switch (type)
+        {
+            case BonusFruitType.Strawberry:
+                targetSprite = strawberrySprite;
+                currentColor = new Color(1.0f, 0.25f, 0.45f, 1f); // ชมพูแดงนีออน (Ruby Glow)
+                transform.localScale = Vector3.one * 1.5f;
+                break;
+            case BonusFruitType.Cherry:
+                targetSprite = cherrySprite;
+                currentColor = new Color(1.0f, 0.12f, 0.28f, 1f); // แดงทับทิมนีออน (Crimson Glow)
+                transform.localScale = Vector3.one * 1.3f;
+                break;
+            case BonusFruitType.Peach:
+                targetSprite = peachSprite;
+                currentColor = new Color(1.0f, 0.72f, 0.22f, 1f); // ส้มทองอำพันนีออน (Golden Amber Glow)
+                transform.localScale = Vector3.one * 1.5f;
+                break;
+        }
+
         if (sr != null)
         {
-            switch (type)
+            if (targetSprite != null)
             {
-                case BonusFruitType.Strawberry:
-                    sr.color = new Color(1f, 0.25f, 0.35f);
-                    transform.localScale = Vector3.one * 3.5f;
-                    break;
-                case BonusFruitType.Cherry:
-                    sr.color = new Color(0.9f, 0.15f, 0.2f);
-                    transform.localScale = Vector3.one * 2.8f;
-                    break;
-                case BonusFruitType.Peach:
-                    sr.color = new Color(1f, 0.65f, 0.4f);
-                    transform.localScale = Vector3.one * 4.2f;
-                    break;
+                sr.sprite = targetSprite;
+                sr.color = Color.white; // คงความคมชัดและดีเทลของ Texture ผลไม้
             }
+            else
+            {
+                sr.color = currentColor;
+                transform.localScale = Vector3.one * 3.5f;
+            }
+            sr.sortingOrder = 20;
         }
+
+        // ปรับแต่ง Particle System ออร่าเรืองแสงและละอองดาวให้เข้ากับสีของผลไม้
+        SetupGlowParticles(currentColor);
 
         var col = GetComponent<CircleCollider2D>();
         if (col != null)
         {
-            // Sprite Knob ขนาดดั้งเดิมคือรัศมี 0.1 unit เมื่อคูณกับ localScale จะได้ Hitbox พอดีกับภาพ
-            col.radius = 0.1f;
+            col.radius = 0.35f;
+        }
+    }
+
+    private void SetupGlowParticles(Color glowColor)
+    {
+        // 1. ตั้งค่าออร่าเรืองแสงรอบตัว (Glow Aura)
+        if (glowAuraParticles != null)
+        {
+            var main = glowAuraParticles.main;
+            Color auraCol = glowColor;
+            auraCol.a = 0.85f;
+            main.startColor = auraCol;
+            if (!glowAuraParticles.isPlaying) glowAuraParticles.Play();
+        }
+
+        // 2. ตั้งค่าละอองดาวระยิบระยับ (Sparkle Trail)
+        if (sparkleTrailParticles != null)
+        {
+            var main = sparkleTrailParticles.main;
+            Color trailCol = glowColor;
+            trailCol.a = 0.9f;
+            main.startColor = trailCol;
+            if (!sparkleTrailParticles.isPlaying) sparkleTrailParticles.Play();
         }
     }
 
@@ -73,13 +132,19 @@ public class BonusFruit : MonoBehaviour
         }
         else
         {
-            // ตกลงมาตรงๆ
-            transform.position += Vector3.down * (fallSpeed * Time.deltaTime);
+            // ตกลงมาด้านล่างตามแรงโน้มถ่วง/ความเร็วตก
+            transform.position += (Vector3)(velocity * Time.deltaTime);
         }
 
-        // ตกจอ หรือเลยขอบขวาไปแล้วให้ทำลายทิ้ง
-        if (transform.position.y < -6f || transform.position.x > 10f)
+        // ตกจอ หรือเลยขอบไปแล้วให้ทำลายทิ้ง
+        if (transform.position.y < -5.5f || transform.position.x > 10f || transform.position.x < -10f)
         {
+            // ถ้าตกร่วงพ้นขอบล่างโดยไม่โดนยิง -> Chain หลุด!
+            if (!isHit && transform.position.y < -5.5f)
+            {
+                FindAnyObjectByType<BonusStageManager>()?.OnBonusFruitMissed();
+            }
+
             Destroy(gameObject);
         }
     }
@@ -100,12 +165,13 @@ public class BonusFruit : MonoBehaviour
         if (isHit) return;
         isHit = true;
 
-        // บวกคะแนน
-        ScoreManager.Instance?.AddBonusFruitScore(fruitType, transform.position);
+        // แจ้ง BonusStageManager เพื่อคำนวณคะแนน Chain Combo แบบ Famicom หรือคะแนนผลไม้ปกติ
+        FindAnyObjectByType<BonusStageManager>()?.OnBonusFruitHit(fruitType, transform.position);
+
         AudioManager.Instance?.PlayRockDestroy();
 
-        // แจ้ง BonusStageManager ว่ายิงโดน
-        FindAnyObjectByType<BonusStageManager>()?.OnBonusFruitHit();
+        // เสกเอฟเฟกต์แตกกระจายเป็นละอองดาว (FruitPopFX) สีเดียวกับผลไม้
+        SpawnPopFX();
 
         // ทำลายลูกธนูที่ยิงมาด้วย
         if (arrowObj != null)
@@ -118,5 +184,19 @@ public class BonusFruit : MonoBehaviour
         }
 
         Destroy(gameObject);
+    }
+
+    private void SpawnPopFX()
+    {
+        if (popFXPrefab != null)
+        {
+            var pop = Instantiate(popFXPrefab, transform.position, Quaternion.identity);
+            var ps = pop.GetComponent<ParticleSystem>();
+            if (ps != null)
+            {
+                var main = ps.main;
+                main.startColor = currentColor;
+            }
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -197,6 +197,12 @@ public class ScoreManager : MonoBehaviour
             BonusFruitType.Peach => GameConstants.ScoreBonusPeach,
             _ => 0
         };
+        AddScore(points);
+        OnScoreFloating?.Invoke(points, pos);
+    }
+
+    public void AddBonusChainScore(int points, Vector3 pos)
+    {
         AddScore(points);
         OnScoreFloating?.Invoke(points, pos);
     }

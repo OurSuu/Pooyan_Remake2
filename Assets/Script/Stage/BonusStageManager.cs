@@ -1,17 +1,30 @@
 using System.Collections;
 using UnityEngine;
 
+public enum BonusStageMode
+{
+    FamicomTopBoss,      // บอสหมาป่าวิ่งบนยอดไม้แล้วทิ้งผลไม้ลงมา (เวอร์ชัน Famicom/NES สุดคลาสสิก!)
+    ArcadeCliffThrowers  // หมาป่ายืนตามกิ่งไม้ฝั่งซ้ายปาวิถีโค้ง (เวอร์ชันตู้ Arcade 1982)
+}
+
 /// <summary>
-/// เฮ้ยเพื่อน ไฟล์นี้คือตัวจัดการ Bonus Stage นะ มันจะสลับไปมาระหว่างด่านเก็บผลไม้กับด่านโยนเนื้อหลังจากจบด่านเลขคู่
+/// เฮ้ยเพื่อน ไฟล์นี้คือตัวจัดการ Bonus Stage นะ!
+/// รองรับทั้งระบบ Famicom (บอสหมาป่าวิ่งบนยอดไม้ทิ้งผลไม้ + คอมโบคูณคะแนน Nakamoto Chain 100->8,000)
+/// และระบบ Arcade (หมาป่า 3 ตัวยืนบนกิ่งไม้ซากุระปาวิถีโค้ง)
 /// </summary>
 public class BonusStageManager : MonoBehaviour
 {
+    [Header("Bonus Style Selection")]
+    [SerializeField] private BonusStageMode bonusStyle = BonusStageMode.FamicomTopBoss; // ค่าเริ่มต้นคือแบบ Famicom!
+    [SerializeField] private BonusBossWolf bossWolf; // บอสหมาป่าวิ่งบนยอดไม้
+    [SerializeField] private BonusWolfThrower[] wolfThrowers; // หมาป่ากิ่งไม้ฝั่งซ้าย (Arcade)
+
     [Header("Fruit Bonus")]
     [SerializeField] private GameObject fruitPrefab; // พรีแฟบผลไม้ที่จะให้ตกมา
-    [SerializeField] private float fruitSpawnInterval = 0.8f; // ระยะห่างการเกิดของผลไม้
-    [SerializeField] private float fruitSpawnXMin = -4f; // ขอบแกน X ซ้ายสุด
-    [SerializeField] private float fruitSpawnXMax = 4f; // ขอบแกน X ขวาสุด
-    [SerializeField] private float fruitSpawnY = 5f; // ความสูงที่ผลไม้จะโผล่มา
+    [SerializeField] private float fruitSpawnInterval = 1.3f; // ระยะห่างการทิ้ง/ปาผลไม้แต่ละลูก
+    [SerializeField] private float fruitSpawnXMin = -4f; // ขอบแกน X ซ้ายสุด (สำรอง)
+    [SerializeField] private float fruitSpawnXMax = 4f; // ขอบแกน X ขวาสุด (สำรอง)
+    [SerializeField] private float fruitSpawnY = 5f; // ความสูงที่ผลไม้จะโผล่มา (สำรอง)
 
     [Header("Meat Bonus")]
     [SerializeField] private Wolf wolfPrefab; // พรีแฟบหมาป่าสำหรับโบนัสเนื้อ
@@ -20,8 +33,44 @@ public class BonusStageManager : MonoBehaviour
     [Header("Timing")]
     [SerializeField] private float bonusDuration = 30f; // เวลาของโบนัสสเตจ
 
+    // ลำดับคะแนนคอมโบ Chain ของ Famicom (100 -> 200 -> 400 -> 800 -> 1,000 -> 2,000 -> 4,000 -> 8,000 Nakamoto!)
+    private readonly int[] famicomChainScores = new int[] { 100, 200, 400, 800, 1000, 2000, 4000, 8000 };
+    private int currentChain = 0;
+
     private BonusType currentBonusType; // เก็บว่าตอนนี้เล่นโบนัสแบบไหนอยู่
     private Coroutine bonusRoutine; // เก็บ Coroutine เผื่อต้องสั่งหยุดกลางคัน
+
+    public BonusStageMode BonusStyle
+    {
+        get => bonusStyle;
+        set => bonusStyle = value;
+    }
+
+    public BonusBossWolf BossWolf
+    {
+        get => bossWolf;
+        set => bossWolf = value;
+    }
+
+    public BonusWolfThrower[] WolfThrowers
+    {
+        get => wolfThrowers;
+        set => wolfThrowers = value;
+    }
+
+    private void Awake()
+    {
+        FindEntitiesInScene();
+    }
+
+    private void FindEntitiesInScene()
+    {
+        if (bossWolf == null)
+            bossWolf = FindAnyObjectByType<BonusBossWolf>(FindObjectsInactive.Include);
+
+        if (wolfThrowers == null || wolfThrowers.Length == 0)
+            wolfThrowers = FindObjectsByType<BonusWolfThrower>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+    }
 
     private void Start()
     {
@@ -29,7 +78,6 @@ public class BonusStageManager : MonoBehaviour
         if (GameManager.Instance != null)
         {
             GameManager.Instance.OnStateChanged += HandleStateChanged;
-            // ถ้าเข้ามาในฉากแล้วสถานะเป็น BonusStage อยู่แล้ว (เช่น โหลดเข้าฉาก Spring_Bonus โดยตรง) ให้เริ่มเลย
             if (GameManager.Instance.CurrentState == GameState.BonusStage)
             {
                 StartBonusStage();
@@ -39,14 +87,12 @@ public class BonusStageManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        // เลิกฟังตอนโดนทำลาย จะได้ไม่ติดบั๊ก Memory Leak
         if (GameManager.Instance != null)
             GameManager.Instance.OnStateChanged -= HandleStateChanged;
     }
 
     private void HandleStateChanged(GameState state)
     {
-        // ถ้าสถานะเป็นโบนัสสเตจก็เริ่มเลย ไม่งั้นก็สั่งหยุดซะ
         if (state == GameState.BonusStage)
             StartBonusStage();
         else
@@ -56,10 +102,8 @@ public class BonusStageManager : MonoBehaviour
     public void StartBonusStage()
     {
         int stage = GameManager.Instance?.CurrentStage ?? 2;
-        // ด่าน 2 จบเข้า Fruit Bonus, ด่าน 4 จบเข้า Meat Bonus
         currentBonusType = (stage == 2 || ((stage / 2) % 2 != 0)) ? BonusType.Fruit : BonusType.Meat;
 
-        // เคลียร์หมาป่าและกระสุนตกค้างในฉาก และหยุดการเสกหมาป่าธรรมดา
         FindAnyObjectByType<StageFlowController>()?.ClearAllEntities();
         FindAnyObjectByType<WolfSpawner>()?.StopAllSpawning();
 
@@ -74,45 +118,130 @@ public class BonusStageManager : MonoBehaviour
             StopCoroutine(bonusRoutine);
             bonusRoutine = null;
         }
+
+        if (bossWolf != null) bossWolf.gameObject.SetActive(false);
     }
 
-    private const int FruitBonusCount = 20; // ของแท้ต้องมีผลไม้ 20 ลูกเป๊ะๆ
+    private const int FruitBonusCount = 20; // 20 ลูกเป๊ะๆ ตามต้นฉบับ
     private const int PerfectBonusScore = 10000;
     private int fruitsSpawned; 
     private int fruitsHit; 
 
-    public void OnBonusFruitHit()
+    public void OnBonusFruitHit(BonusFruitType type, Vector3 hitPosition)
     {
-        // ยิงโดนลูกนึงก็นับไปเลยเพื่อน
         fruitsHit++;
+
+        if (bonusStyle == BonusStageMode.FamicomTopBoss)
+        {
+            // คำนวณคะแนนตามสเต็ป Famicom Nakamoto Chain!
+            int scoreIndex = Mathf.Clamp(currentChain, 0, famicomChainScores.Length - 1);
+            int points = famicomChainScores[scoreIndex];
+
+            ScoreManager.Instance?.AddBonusChainScore(points, hitPosition);
+
+            currentChain++;
+            Debug.Log($"[Famicom Bonus Chain] Hit {currentChain}! +{points} pts!");
+        }
+        else
+        {
+            // แบบ Arcade ทั่วไป
+            ScoreManager.Instance?.AddBonusFruitScore(type, hitPosition);
+        }
+    }
+
+    public void OnBonusFruitMissed()
+    {
+        // ถ้าผลไม้หล่นถึงพื้นโดยไม่โดนยิง -> รีเซ็ต Chain ทันทีตามต้นฉบับ Famicom!
+        if (currentChain > 0)
+        {
+            Debug.Log($"[Famicom Bonus Chain] Missed! Chain reset from {currentChain} to 0.");
+            currentChain = 0;
+        }
     }
 
     private IEnumerator BonusRoutine()
     {
         var player = FindAnyObjectByType<PlayerController>();
+        FindEntitiesInScene();
 
         if (currentBonusType == BonusType.Fruit)
         {
-            // --- โบนัสผลไม้: ต้องเกิด 20 ลูกนะ ---
             fruitsSpawned = 0;
             fruitsHit = 0;
+            currentChain = 0;
 
+            // 1. จัดการการแสดงผลของตัวละครตามสไตล์ที่เลือก
+            if (bonusStyle == BonusStageMode.FamicomTopBoss)
+            {
+                // เปิดบอสยอดไม้ ปิดหมาป่ากิ่งไม้
+                if (bossWolf != null)
+                {
+                    bossWolf.gameObject.SetActive(true);
+                    bossWolf.SetPatrolActive(true);
+                }
+                if (wolfThrowers != null)
+                {
+                    foreach (var w in wolfThrowers) if (w != null) w.gameObject.SetActive(false);
+                }
+            }
+            else
+            {
+                // เปิดหมาป่ากิ่งไม้ ปิดบอสยอดไม้
+                if (bossWolf != null) bossWolf.gameObject.SetActive(false);
+                if (wolfThrowers != null)
+                {
+                    foreach (var w in wolfThrowers) if (w != null) w.gameObject.SetActive(true);
+                }
+            }
+
+            // 2. ลูปปล่อยผลไม้ 20 ลูก
             while (fruitsSpawned < FruitBonusCount)
             {
-                SpawnFruit();
+                if (bonusStyle == BonusStageMode.FamicomTopBoss && bossWolf != null)
+                {
+                    // บอสวิ่งด้านบนแล้วหย่อนผลไม้ร่วงลงมา!
+                    bossWolf.DropFruit(() =>
+                    {
+                        SpawnFamicomFruit(bossWolf.DropPosition);
+                    });
+                }
+                else if (wolfThrowers != null && wolfThrowers.Length > 0)
+                {
+                    // หมาป่าบนกิ่งไม้สลับกันปาวิถีโค้ง
+                    var thrower = wolfThrowers[fruitsSpawned % wolfThrowers.Length];
+                    if (thrower != null)
+                    {
+                        thrower.Throw(() =>
+                        {
+                            SpawnArcadeFruit(thrower.ThrowPosition);
+                        });
+                    }
+                    else
+                    {
+                        SpawnArcadeFruit();
+                    }
+                }
+                else
+                {
+                    SpawnArcadeFruit();
+                }
+
                 fruitsSpawned++;
                 yield return new WaitForSeconds(fruitSpawnInterval);
             }
 
-            // รอแป๊บนึงให้ผลไม้พ้นจอ
+            // รอแป๊บนึงให้ผลไม้ลูกสุดท้ายตกพ้นจอ
             yield return new WaitForSeconds(3f);
 
-            // ถ้าเก็บครบก็แจกแจ็คพ็อต 1 หมื่นแต้ม
+            // ถ้าเก็บครบ 20 ลูก ได้ Perfect Bonus 1 หมื่นแต้ม!
             if (fruitsHit >= FruitBonusCount)
             {
                 ScoreManager.Instance?.AddScore(PerfectBonusScore);
                 Debug.Log("PERFECT BONUS! +10,000 pts! โหดจัดดด");
             }
+
+            // ซ่อนบอสเมื่อจบด่าน
+            if (bossWolf != null) bossWolf.gameObject.SetActive(false);
         }
         else
         {
@@ -124,7 +253,6 @@ public class BonusStageManager : MonoBehaviour
             {
                 SpawnMeatBonusWolf();
 
-                // รีฟิลเนื้อแบบรัวๆ เลย
                 if (player != null && player.State == PlayerState.Normal && !player.IsMeatAvailable)
                 {
                     player.SetMeatAvailable(true);
@@ -133,7 +261,6 @@ public class BonusStageManager : MonoBehaviour
                 yield return new WaitForSeconds(1.5f);
                 elapsed += 1.5f;
 
-                // รีฟิลทันทีหลังโยนเสร็จด้วย
                 if (player != null && player.State == PlayerState.Normal && !player.IsMeatAvailable)
                 {
                     player.SetMeatAvailable(true);
@@ -145,46 +272,51 @@ public class BonusStageManager : MonoBehaviour
         GameManager.Instance?.CompleteBonusStage();
     }
 
-    private void SpawnFruit()
+    /// <summary>
+    /// ปล่อยผลไม้แบบ Famicom (ทิ้งดิ่งลงมาจากบอสบนยอดไม้)
+    /// </summary>
+    private void SpawnFamicomFruit(Vector3 spawnPos)
     {
-        // สุ่มตำแหน่งเกิดจากขอบผาซ้ายตามระยะที่ตั้งไว้
-        float spawnX = Mathf.Min(fruitSpawnXMin, -5.5f);
-        float spawnY = Random.Range(-2f, Mathf.Min(fruitSpawnY, 1f));
-        Vector3 spawnPos = new Vector3(spawnX, spawnY, 0f);
-        GameObject fruit;
-
-        if (fruitPrefab != null)
-        {
-            fruit = Instantiate(fruitPrefab, spawnPos, Quaternion.identity);
-        }
-        else
-        {
-            // แผนสำรองถ้าลืมใส่ Prefab ใน Inspector: สร้างขึ้นมาสดๆ เลย ไม่พังแน่นอน
-            fruit = new GameObject("BonusFruit_Procedural");
-            fruit.transform.position = spawnPos;
-            var sr = fruit.AddComponent<SpriteRenderer>();
-            var col = fruit.AddComponent<CircleCollider2D>();
-            col.isTrigger = true;
-            col.radius = 0.4f;
-        }
-
+        GameObject fruit = Instantiate(fruitPrefab, spawnPos, Quaternion.identity);
         var bonusFruit = fruit.GetComponent<BonusFruit>();
-        if (bonusFruit == null)
-            bonusFruit = fruit.AddComponent<BonusFruit>();
+        if (bonusFruit == null) bonusFruit = fruit.AddComponent<BonusFruit>();
 
-        // สปีดการโยนวิถีโค้งจากซ้ายไปขวา เข้าหาระยะยิงของแม่หมู
-        float targetX = Random.Range(Mathf.Max(fruitSpawnXMax, 2f), 5.5f);
-        float horizontalSpeed = Mathf.Lerp(4.5f, 7.0f, (targetX - 2f) / 3.5f);
-        Vector2 launchVel = new Vector2(horizontalSpeed, Random.Range(6.0f, 9.5f));
-        bonusFruit.Initialize(RandomFruitType(), launchVel);
+        // ทิ้งลงมาตรงๆ หรือมีความเร็วเฉื่อยแนวนอนเล็กน้อยตามการวิ่งของบอส
+        Vector2 dropVel = new Vector2(Random.Range(-0.3f, 0.3f), -3.8f);
+        bonusFruit.Initialize(GetFamicomFruitType(currentChain), dropVel, isArc: false);
+    }
+
+    /// <summary>
+    /// ปล่อยผลไม้แบบ Arcade (ปาวิถีโค้งจากซ้ายไปขวา)
+    /// </summary>
+    private void SpawnArcadeFruit(Vector3? customSpawnPos = null)
+    {
+        Vector3 spawnPos = customSpawnPos.HasValue ? customSpawnPos.Value : new Vector3(Mathf.Min(fruitSpawnXMin, -5.5f), Random.Range(-1.5f, 2f), 0f);
+        GameObject fruit = Instantiate(fruitPrefab, spawnPos, Quaternion.identity);
+        var bonusFruit = fruit.GetComponent<BonusFruit>();
+        if (bonusFruit == null) bonusFruit = fruit.AddComponent<BonusFruit>();
+
+        float targetX = Random.Range(Mathf.Max(fruitSpawnXMax, 2.5f), 5.5f);
+        float horizontalSpeed = Mathf.Lerp(5.0f, 7.5f, (targetX - 2.5f) / 3.0f);
+        float verticalSpeed = Random.Range(6.0f, 9.5f);
+        Vector2 launchVel = new Vector2(horizontalSpeed, verticalSpeed);
+
+        bonusFruit.Initialize(RandomFruitType(), launchVel, isArc: true);
+    }
+
+    private BonusFruitType GetFamicomFruitType(int chain)
+    {
+        // ยิ่งทำคอมโบสูง ชนิดผลไม้ก็เปลี่ยนไป
+        if (chain == 0) return BonusFruitType.Strawberry;
+        if (chain == 1) return BonusFruitType.Cherry;
+        return BonusFruitType.Peach;
     }
 
     private BonusFruitType RandomFruitType()
     {
-        // สุ่มแบบให้น้ำหนักหน่อยนึง
         float r = Random.value;
-        if (r < 0.5f) return BonusFruitType.Strawberry;
-        if (r < 0.8f) return BonusFruitType.Cherry;
+        if (r < 0.45f) return BonusFruitType.Strawberry;
+        if (r < 0.75f) return BonusFruitType.Cherry;
         return BonusFruitType.Peach;
     }
 
@@ -196,8 +328,6 @@ public class BonusStageManager : MonoBehaviour
         var config = LevelManager.Instance?.CurrentConfig ?? ScriptableObject.CreateInstance<LevelConfig>();
         var wolf = Instantiate(wolfPrefab, point.position, Quaternion.identity);
 
-        // เซ็ตให้มันเกิดมาให้โดนโยนเนื้อใส่เฉยๆ
         wolf.Initialize(config, descending: false, speed: 2.5f, shield: false, rockThrow: false);
     }
 }
-

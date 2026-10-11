@@ -171,16 +171,17 @@ MonoBehaviour:
   waitLadderAnimName: WaitLadder
   spriteFly: {fileID: 1415970837381038977, guid: cee994d7dfef3054da12b5cd76a71975, type: 3}
   spriteFall: {fileID: -638794047502580265, guid: 4ded41380a8901849a0f0ab120d24106, type: 3}
+  spritePushIdle: {fileID: 0}
+  pushAnimName: Push
   fallSpeed: 5
   walkSpeed: 5
   climbSpeed: 1.5
   shieldToggleInterval: 1.5
   rockThrowInterval: 3
-  enableDebugMode: 0
-  debugRockThrowInterval: 1
   walkGroundY: -4.2
   deadGroundY: -4.5
   cliffHitY: 4
+  groundDustPrefab: {fileID: 7824881436612407298, guid: d4f3bccbd9e9cde48aca2cb3d30e7377, type: 3}
   floatDownAnimName: Drop
   floatUpAnimName: Drop
   fallAnimName: Fall
@@ -362,6 +363,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7221660757791612777, guid: 54f2f3e7816941949987622c99e6ed77, type: 3}
+      propertyPath: popEffectPrefab
+      value: 
+      objectReference: {fileID: 2709706490718561726, guid: 16d4294e3061a9a4f8fef0f4c1eafb7a, type: 3}
     - target: {fileID: 7973977196932578580, guid: 54f2f3e7816941949987622c99e6ed77, type: 3}
       propertyPath: m_Name
       value: Balloon

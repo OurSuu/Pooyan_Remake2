@@ -6,6 +6,7 @@ public class Balloon : MonoBehaviour
 {
     [SerializeField] private Sprite[] damageStages; // สไปรท์ตอนลูกโป่งโดนยิงไปแต่ละขั้น (ถ้ามีหลายฮิต)
     [SerializeField] private float flashInterval = 0.15f; // ความเร็วตอนกระพริบ (เวลาเป็นบอส)
+    [SerializeField] private GameObject popEffectPrefab; // พรีแฟบ Particle Effect ตอนลูกโป่งแตก
 
     [Header("Balloon Colors (NES Pooyan Original)")]
     [Tooltip("สีชมพู 1 HP - สีพื้นฐานของด่าน 1 และด่านทั่วไป")]
@@ -111,35 +112,43 @@ public class Balloon : MonoBehaviour
         AudioManager.Instance?.PlayBalloonPop(); // เสียงแตก
         owner?.OnBalloonPopped(); // บอกหมาป่าว่า "เห้ย ลูกโป่งแกแตกแล้ว ร่วงไปซะ!"
 
+        SpawnPopEffect(); // ปล่อย Particle Effect ลูกโป่งแตก!
+
         StartCoroutine(PopAnimationRoutine());
     }
 
-    // อนิเมชันตอนแตก ขยายตัวนิดนึงแล้วจางหาย
+    private void SpawnPopEffect()
+    {
+        GameObject fxPrefab = popEffectPrefab;
+        if (fxPrefab == null)
+        {
+            fxPrefab = Resources.Load<GameObject>("FX/BalloonPopFX");
+        }
+
+        if (fxPrefab != null)
+        {
+            var fxObj = Instantiate(fxPrefab, transform.position, Quaternion.identity);
+            var popFX = fxObj.GetComponent<BalloonPopEffect>();
+            Color balloonCol = spriteRenderer != null ? spriteRenderer.color : pinkColor;
+            if (popFX != null)
+            {
+                popFX.InitAndPlay(balloonCol);
+            }
+        }
+    }
+
+    // อนิเมชันตอนแตก ซ่อนสไปรท์และทำลายอ็อบเจกต์ (มี Particle Effect เล่นแทนที่แล้ว)
     private IEnumerator PopAnimationRoutine()
     {
         var col = GetComponent<Collider2D>();
         if (col != null) col.enabled = false;
 
-        float duration = 0.15f;
-        float time = 0f;
-        Vector3 startScale = transform.localScale;
-        Vector3 endScale = startScale * 1.5f;
-
-        while (time < duration)
+        if (spriteRenderer != null)
         {
-            time += Time.deltaTime;
-            float t = time / duration;
-            transform.localScale = Vector3.Lerp(startScale, endScale, t); // ขยายป่องขึ้น
-
-            if (spriteRenderer != null)
-            {
-                Color c = spriteRenderer.color;
-                c.a = Mathf.Lerp(1f, 0f, t); // จางลง
-                spriteRenderer.color = c;
-            }
-            yield return null;
+            spriteRenderer.enabled = false;
         }
 
+        yield return new WaitForSeconds(0.1f);
         Destroy(gameObject);
     }
 

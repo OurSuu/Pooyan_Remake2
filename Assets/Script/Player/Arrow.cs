@@ -139,6 +139,14 @@ public class Arrow : MonoBehaviour
         if (isDestroyed) return;
         isDestroyed = true;
         onDestroy?.Invoke(this); // บอก ArrowShooter ว่าชั้นไปแล้วนะ
+
+        // ปลดเอฟเฟกต์หางลมให้ค่อยๆ สลายตัวอย่างเป็นธรรมชาติ
+        var trailFX = GetComponentInChildren<ArrowTrailEffect>();
+        if (trailFX != null)
+        {
+            trailFX.DetachAndFade();
+        }
+
         Destroy(gameObject);
     }
 

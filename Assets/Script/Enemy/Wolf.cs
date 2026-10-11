@@ -64,6 +64,7 @@ public class Wolf : MonoBehaviour
     [SerializeField] protected float walkGroundY = -3.5f;
     [SerializeField] protected float deadGroundY = -4.5f;
     [SerializeField] protected float cliffHitY = 3.5f;
+    [SerializeField] protected GameObject groundDustPrefab; // พรีแฟบ Particle System ฝุ่นตลบตอนตกถึงพื้นตาย
 
     protected bool isDescendingStage;
     protected float groundY;
@@ -510,6 +511,8 @@ public class Wolf : MonoBehaviour
         {
             transform.position = new Vector3(transform.position.x, deadGroundY, 0f);
             state = WolfState.Dead;
+
+            SpawnGroundDust(); // เสกฝุ่นฟุ้งกระจายตอนกระแทกพื้น
             
             if (animator != null)
             {
@@ -518,6 +521,24 @@ public class Wolf : MonoBehaviour
             }
             
             StartCoroutine(FadeAndDestroyRoutine());
+        }
+    }
+
+    /// <summary>
+    /// เสก Particle Effect ฝุ่นฟุ้งกระจายตรงพื้นตอนหมาป่าตกกระแทกพื้นตาย
+    /// </summary>
+    protected void SpawnGroundDust()
+    {
+        GameObject fxPrefab = groundDustPrefab;
+        if (fxPrefab == null)
+        {
+            fxPrefab = Resources.Load<GameObject>("FX/GroundDustImpactFX");
+        }
+
+        if (fxPrefab != null)
+        {
+            Vector3 spawnPos = new Vector3(transform.position.x, deadGroundY, 0f);
+            Instantiate(fxPrefab, spawnPos, Quaternion.identity);
         }
     }
 

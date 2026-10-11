@@ -15,6 +15,7 @@ MonoBehaviour:
   settings:
   - {fileID: 5310357758837855562}
   - {fileID: 3586561864735264247}
+  - {fileID: 0}
 --- !u!114 &3586561864735264247
 MonoBehaviour:
   m_ObjectHideFlags: 3
