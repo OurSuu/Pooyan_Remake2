@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 // สถานะของแม่หมู ว่าทำอะไรอยู่
 public enum PlayerState
@@ -52,15 +52,58 @@ public class PlayerController : MonoBehaviour
     private Coroutine shootSpriteRoutine;
     private Animator animator;
 
+    // จำตำแหน่งและ Layer ดั้งเดิมของแม่หมูไว้ เพื่อคืนค่าตอนเกิดใหม่
+    private Vector3 initialMamaPigLocalPos;
+    private int initialMamaPigSortingOrder;
+    private bool hasSavedMamaPigPos = false;
+
     private void Awake()
     {
         startPosition = transform.position; // จำจุดเกิดไว้
         arrowShooter = GetComponent<ArrowShooter>();
         if (arrowShooter == null) arrowShooter = GetComponentInChildren<ArrowShooter>();
+
+        CacheMamaPigReference();
+    }
+
+    // แคชตัวแม่หมูและจำตำแหน่งเริ่มต้นไว้
+    private void CacheMamaPigReference()
+    {
+        if (mamaPigRenderer == null)
+        {
+            // พยายามหาในลูกที่มีชื่อเฉพาะ
+            Transform childPig = transform.Find("WinterMamaPig");
+            if (childPig == null) childPig = transform.Find("SpringMamaPig");
+            if (childPig == null) childPig = transform.Find("MamaPig");
+            if (childPig != null) mamaPigRenderer = childPig.GetComponent<SpriteRenderer>();
+
+            // ถ้ายังไม่เจอ ให้หา SpriteRenderer ที่ไม่ใช่เกราะหรือกระเช้า
+            if (mamaPigRenderer == null)
+            {
+                SpriteRenderer[] renderers = GetComponentsInChildren<SpriteRenderer>();
+                foreach (var r in renderers)
+                {
+                    if (r.gameObject != gameObject && !r.name.Contains("Armor") && !r.name.Contains("Basket"))
+                    {
+                        mamaPigRenderer = r;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (mamaPigRenderer != null && !hasSavedMamaPigPos)
+        {
+            initialMamaPigLocalPos = mamaPigRenderer.transform.localPosition;
+            initialMamaPigSortingOrder = mamaPigRenderer.sortingOrder;
+            hasSavedMamaPigPos = true;
+        }
     }
 
     private void Start()
     {
+        CacheMamaPigReference();
+
         // พยายามหา Animator ของแม่หมูให้เจอ หาจากตัวเองก่อน
         if (mamaPigRenderer != null)
         {
@@ -76,6 +119,8 @@ public class PlayerController : MonoBehaviour
         {
             // ถ้าไม่เจอ ลองหาใน object ลูกที่ชื่อ MamaPig
             Transform mamaPigObj = transform.Find("MamaPig");
+            if (mamaPigObj == null) mamaPigObj = transform.Find("WinterMamaPig");
+            if (mamaPigObj == null) mamaPigObj = transform.Find("SpringMamaPig");
             if (mamaPigObj != null)
             {
                 animator = mamaPigObj.GetComponent<Animator>();
@@ -255,6 +300,18 @@ public class PlayerController : MonoBehaviour
 
         State = PlayerState.Dead;
         
+        CacheMamaPigReference();
+
+        // ปิดการยิงธนูและซ่อนก้อนเนื้อ
+        if (arrowShooter != null) arrowShooter.SetCanShoot(false);
+        if (heldMeatVisual != null) heldMeatVisual.SetActive(false);
+
+        // ดัน Sorting Order ของแม่หมูขึ้นมาอยู่หน้ากระเช้า เพื่อให้เวลาเด้งตกลงมา ตัวแม่หมูจะลอยออกมาข้างหน้ากระเช้าสวยๆ
+        if (mamaPigRenderer != null)
+        {
+            mamaPigRenderer.sortingOrder = 15;
+        }
+
         if (animator != null)
         {
             animator.enabled = true;
@@ -267,11 +324,12 @@ public class PlayerController : MonoBehaviour
         StartCoroutine(DeathBounceRoutine()); // เด้งร่วงลงพื้นดุ๊กดิ๊กๆ
     }
 
-    // คอร์รูทีนเด้งตาย
+    // คอร์รูทีนเด้งตาย (ขยับเฉพาะตัวแม่หมู ตัวกระเช้ายังคงลอยค้างอยู่ที่เดิม!)
     private System.Collections.IEnumerator DeathBounceRoutine()
     {
+        Transform pigTransform = mamaPigRenderer != null ? mamaPigRenderer.transform : transform;
         float t = 0;
-        Vector3 startPos = transform.position;
+        Vector3 startPos = pigTransform.position;
         
         // กระเด็นไปข้างหน้า (หันซ้าย แกน x ต้องติดลบ) และร่วงลง
         float velocityX = -2.5f; // เด้งไปทางซ้าย (พุ่งมาข้างหน้า)
@@ -289,12 +347,12 @@ public class PlayerController : MonoBehaviour
             if (newY <= deathFloorY)
             {
                 newY = deathFloorY;
-                transform.position = new Vector3(newX, newY, startPos.z);
+                pigTransform.position = new Vector3(newX, newY, startPos.z);
                 // (อนาคต: สั่งเล่นท่านอนตายตรงนี้ได้เลย ถ้างบถึงทำแอนิเมชันเพิ่ม)
                 break; // ชนพื้นละ หลุดลูปโลด
             }
 
-            transform.position = new Vector3(newX, newY, startPos.z);
+            pigTransform.position = new Vector3(newX, newY, startPos.z);
             
             yield return null; // รอเฟรมถัดไป
             if (t > 2.5f) break; // กันเหนียว เผื่อบั๊กตกทะลุโลก GameManager รีฉากใน 2 วิอยู่ละ
@@ -305,13 +363,25 @@ public class PlayerController : MonoBehaviour
     public void Respawn()
     {
         State = PlayerState.Normal;
-        transform.position = startPosition; // กลับจุดเริ่มต้น
+        transform.position = startPosition; // กระเช้ากลับจุดเริ่มต้น
         
+        // คืนตำแหน่งและ Sorting Order ของแม่หมูกลับเข้ากระเช้า
+        if (mamaPigRenderer != null && hasSavedMamaPigPos)
+        {
+            mamaPigRenderer.transform.localPosition = initialMamaPigLocalPos;
+            mamaPigRenderer.transform.localRotation = Quaternion.identity;
+            mamaPigRenderer.sortingOrder = initialMamaPigSortingOrder;
+        }
+
         if (heldMeatVisual != null) heldMeatVisual.SetActive(false); // เอาเนื้อออก
         
         if (animator != null)
         {
             animator.Play(idleAnimName); // ยืนนิ่งๆ เตรียมพร้อม
+        }
+        else if (mamaPigRenderer != null && spriteIdle != null)
+        {
+            mamaPigRenderer.sprite = spriteIdle;
         }
         
         if (arrowShooter != null)

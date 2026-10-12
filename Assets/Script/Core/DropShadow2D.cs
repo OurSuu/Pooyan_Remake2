@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 /// <summary>
 /// อันนี้ตัวทำเงาให้พวกสไปรต์ (Sprite) 2D ง่ายๆ ด้วยการสร้างเกมอ็อบเจ็กต์โคลนตัวเองขึ้นมา แล้วย้อมสีดำซ้อนไว้ข้างหลัง
@@ -47,5 +47,9 @@ public class DropShadow2D : MonoBehaviour
         // อย่าลืมเช็คเผื่อตัวแม่หันซ้ายหันขวานะ
         shadowRenderer.flipX = parentRenderer.flipX;
         shadowRenderer.flipY = parentRenderer.flipY;
+
+        // อัปเดตเลเยอร์ให้ตามตัวแม่ตลอด (เช่น ตอนแม่หมูเปลี่ยน Sorting Order ตอนกระเด็นตาย)
+        shadowRenderer.sortingLayerID = parentRenderer.sortingLayerID;
+        shadowRenderer.sortingOrder = parentRenderer.sortingOrder + sortingOrderOffset;
     }
 }

@@ -1,0 +1,442 @@
+fileFormatVersion: 2
+guid: 2de666d77efafa445a15ba8747a90512
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -1977020397124714218
+    second: Piglet_Robe_0
+  - first:
+      213: 4124431312380336179
+    second: Piglet_Robe_1
+  - first:
+      213: -7134570329804276969
+    second: Piglet_Robe_2
+  - first:
+      213: -6536145172862384392
+    second: Piglet_Robe_3
+  - first:
+      213: 3052391128550371402
+    second: Piglet_Robe_4
+  - first:
+      213: 8398396819640119776
+    second: Piglet_Robe_5
+  - first:
+      213: -6296167700592207713
+    second: Piglet_Robe_6
+  - first:
+      213: 2119479072054469309
+    second: Piglet_Robe_7
+  - first:
+      213: -3311152566471863591
+    second: Piglet_Robe_8
+  - first:
+      213: -2717729538032026579
+    second: Piglet_Robe_9
+  - first:
+      213: -966927099835974155
+    second: Piglet_Robe_10
+  - first:
+      213: 5244374483191438320
+    second: Piglet_Robe_11
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Piglet_Robe_0
+      rect:
+        serializedVersion: 2
+        x: 91
+        y: 1058
+        width: 306
+        height: 401
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6110eab6c663094e0800000000000000
+      internalID: -1977020397124714218
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Piglet_Robe_1
+      rect:
+        serializedVersion: 2
+        x: 620
+        y: 1058
+        width: 288
+        height: 400
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3389dea2d6cec3930800000000000000
+      internalID: 4124431312380336179
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Piglet_Robe_2
+      rect:
+        serializedVersion: 2
+        x: 1101
+        y: 1058
+        width: 320
+        height: 400
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 71b79fae51aecfc90800000000000000
+      internalID: -7134570329804276969
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Piglet_Robe_3
+      rect:
+        serializedVersion: 2
+        x: 1615
+        y: 1058
+        width: 318
+        height: 399
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8f647236892fa45a0800000000000000
+      internalID: -6536145172862384392
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Piglet_Robe_4
+      rect:
+        serializedVersion: 2
+        x: 70
+        y: 546
+        width: 327
+        height: 399
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a407cc42f854c5a20800000000000000
+      internalID: 3052391128550371402
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Piglet_Robe_5
+      rect:
+        serializedVersion: 2
+        x: 591
+        y: 546
+        width: 318
+        height: 399
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0e17b6d29691d8470800000000000000
+      internalID: 8398396819640119776
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Piglet_Robe_6
+      rect:
+        serializedVersion: 2
+        x: 1101
+        y: 546
+        width: 320
+        height: 400
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f98d9e7b5d48f98a0800000000000000
+      internalID: -6296167700592207713
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Piglet_Robe_7
+      rect:
+        serializedVersion: 2
+        x: 1644
+        y: 546
+        width: 288
+        height: 400
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: db26eae8cf6e96d10800000000000000
+      internalID: 2119479072054469309
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Piglet_Robe_8
+      rect:
+        serializedVersion: 2
+        x: 91
+        y: 34
+        width: 306
+        height: 401
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9d25256b84c6c02d0800000000000000
+      internalID: -3311152566471863591
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Piglet_Robe_9
+      rect:
+        serializedVersion: 2
+        x: 603
+        y: 34
+        width: 306
+        height: 401
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d2cb302626fa84ad0800000000000000
+      internalID: -2717729538032026579
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Piglet_Robe_10
+      rect:
+        serializedVersion: 2
+        x: 1115
+        y: 34
+        width: 306
+        height: 401
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5fdf39afce8c492f0800000000000000
+      internalID: -966927099835974155
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Piglet_Robe_11
+      rect:
+        serializedVersion: 2
+        x: 1627
+        y: 34
+        width: 306
+        height: 401
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0fb9fbb7ec2c7c840800000000000000
+      internalID: 5244374483191438320
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Piglet_Robe_0: -1977020397124714218
+      Piglet_Robe_1: 4124431312380336179
+      Piglet_Robe_10: -966927099835974155
+      Piglet_Robe_11: 5244374483191438320
+      Piglet_Robe_2: -7134570329804276969
+      Piglet_Robe_3: -6536145172862384392
+      Piglet_Robe_4: 3052391128550371402
+      Piglet_Robe_5: 8398396819640119776
+      Piglet_Robe_6: -6296167700592207713
+      Piglet_Robe_7: 2119479072054469309
+      Piglet_Robe_8: -3311152566471863591
+      Piglet_Robe_9: -2717729538032026579
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

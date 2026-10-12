@@ -193,7 +193,7 @@ public class WolfProjectile : MonoBehaviour
         }
 
         // ถ้าชนสิ่งกีดขวาง/พื้น/แท่นกิ่งไม้
-        if (other.CompareTag("Ground") || other.CompareTag("Platform"))
+        if (other.gameObject.tag == "Ground" || other.gameObject.tag == "Platform")
         {
             DeflectDown(fromShield: false);
             return;

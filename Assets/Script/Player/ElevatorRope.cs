@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 // สคริปต์วาดเชือกกระเช้า และคุมอนิเมชันลูกหมูที่กำลังดึงเชือก
 public class ElevatorRope : MonoBehaviour
@@ -16,6 +16,9 @@ public class ElevatorRope : MonoBehaviour
     [SerializeField] private Animator piglet2; // อนิเมเตอร์ลูกหมูตัวที่สอง
     [SerializeField] private string pullAnimParam = "PullSpeed"; // (ไม่ได้ใช้แล้วมั้ง เลิกใช้พารามิเตอร์นี้ไปแล้ว)
 
+    [Header("Death Settings")]
+    [SerializeField] private bool keepRopeOnDeath = true; // ให้เชือกยังคงอยู่ดึงกระเช้าไว้ตอนแม่หมูร่วงตก
+
     private Vector3 lastPosition;
     private Material ropeMaterial;
     private float currentTextureOffset = 0f;
@@ -32,11 +35,24 @@ public class ElevatorRope : MonoBehaviour
 
     private void LateUpdate()
     {
-        // เช็คว่าถ้าแม่หมูตาย ก็ซ่อนเชือกไปซะ
+        // เช็คสถานะแม่หมู
         var player = GetComponent<PlayerController>();
         if (player != null && player.State == PlayerState.Dead)
         {
-            if (lineRenderer != null) lineRenderer.enabled = false;
+            if (!keepRopeOnDeath)
+            {
+                if (lineRenderer != null) lineRenderer.enabled = false;
+                return;
+            }
+
+            // ถ้าเปิด keepRopeOnDeath ไว้ เชือกยังคงโชว์เพื่อห้อยกระเช้าไว้ และลูกหมูเปลี่ยนเป็นยืนพัก (Idle)
+            if (lineRenderer != null && !lineRenderer.enabled)
+            {
+                lineRenderer.enabled = true;
+            }
+            if (piglet1 != null) piglet1.Play(idleStateName);
+            if (piglet2 != null) piglet2.Play(idleStateName);
+            UpdateRopeVisual();
             return;
         }
         else if (lineRenderer != null && !lineRenderer.enabled)
