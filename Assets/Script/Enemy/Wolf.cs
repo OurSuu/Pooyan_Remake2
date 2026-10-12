@@ -106,10 +106,14 @@ public class Wolf : MonoBehaviour
             }
         }
 
-        // Auto-assign balloon if the Inspector reference is broken or missing
-        if (balloon == null)
+        // ป้องกันกรณีลืมต่อ หรือเผลอลาก Prefab Asset จาก Project มาใส่แทน Child ตัวลูกในตัวหมาป่า
+        if (balloon == null || !balloon.transform.IsChildOf(transform))
         {
-            balloon = GetComponentInChildren<Balloon>(true);
+            var childBalloon = GetComponentInChildren<Balloon>(true);
+            if (childBalloon != null)
+            {
+                balloon = childBalloon;
+            }
         }
 
         // ถ้ายังไม่มี balloon แต่มี balloonPrefab ลากไว้ใน Inspector ให้เสกออกมาเป็นลูก
