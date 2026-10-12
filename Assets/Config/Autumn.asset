@@ -18,6 +18,7 @@ MonoBehaviour:
   rockThrowRatio: 0.05
   spawnInterval: 5
   balloonHP: 1
+  yellowBalloonRatio: 0
   hasBossWolf: 1
   hasTreeTopBoss: 0
   bossShieldHP: 3

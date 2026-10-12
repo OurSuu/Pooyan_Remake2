@@ -64,6 +64,37 @@ public class PlayerController : MonoBehaviour
         if (arrowShooter == null) arrowShooter = GetComponentInChildren<ArrowShooter>();
 
         CacheMamaPigReference();
+        FindAnimator();
+    }
+
+    // ค้นหา Animator ของแม่หมูให้ครบทุกจุด ทั้งตัวเองและลูก
+    private void FindAnimator()
+    {
+        if (mamaPigRenderer != null)
+        {
+            animator = mamaPigRenderer.GetComponent<Animator>();
+        }
+        
+        if (animator == null)
+        {
+            animator = GetComponent<Animator>();
+        }
+        
+        if (animator == null)
+        {
+            Transform mamaPigObj = transform.Find("MamaPig");
+            if (mamaPigObj == null) mamaPigObj = transform.Find("WinterMamaPig");
+            if (mamaPigObj == null) mamaPigObj = transform.Find("SpringMamaPig");
+            if (mamaPigObj != null)
+            {
+                animator = mamaPigObj.GetComponent<Animator>();
+            }
+        }
+        
+        if (animator == null)
+        {
+            animator = GetComponentInChildren<Animator>();
+        }
     }
 
     // แคชตัวแม่หมูและจำตำแหน่งเริ่มต้นไว้
@@ -103,35 +134,7 @@ public class PlayerController : MonoBehaviour
     private void Start()
     {
         CacheMamaPigReference();
-
-        // พยายามหา Animator ของแม่หมูให้เจอ หาจากตัวเองก่อน
-        if (mamaPigRenderer != null)
-        {
-            animator = mamaPigRenderer.GetComponent<Animator>();
-        }
-        
-        if (animator == null)
-        {
-            animator = GetComponent<Animator>();
-        }
-        
-        if (animator == null)
-        {
-            // ถ้าไม่เจอ ลองหาใน object ลูกที่ชื่อ MamaPig
-            Transform mamaPigObj = transform.Find("MamaPig");
-            if (mamaPigObj == null) mamaPigObj = transform.Find("WinterMamaPig");
-            if (mamaPigObj == null) mamaPigObj = transform.Find("SpringMamaPig");
-            if (mamaPigObj != null)
-            {
-                animator = mamaPigObj.GetComponent<Animator>();
-            }
-        }
-        
-        if (animator == null)
-        {
-            // งั้นกวาดหาในลูกทั้งหมดเลยละกัน หมดปัญญาละ
-            animator = GetComponentInChildren<Animator>();
-        }
+        FindAnimator();
     }
 
     private void Update()
@@ -188,6 +191,8 @@ public class PlayerController : MonoBehaviour
     // เล่นอนิเมชันยิง
     private void PlayShootSprite()
     {
+        if (State == PlayerState.Dead) return; // ตายแล้ว ห้ามเริ่มท่ายิง
+
         if (animator != null)
         {
             // ถ้ามีคอร์รูทีนเก่าค้างอยู่ก็สั่งหยุดก่อน จะได้ไม่ตีกัน
@@ -206,7 +211,12 @@ public class PlayerController : MonoBehaviour
     {
         animator.Play(shootAnimName, -1, 0f); // บังคับเล่นแอนิเมชันยิงตั้งแต่เฟรมแรก
         yield return new WaitForSeconds(shootSpriteTime);
-        animator.Play(idleAnimName); // กลับมายืนปกติ
+        
+        // ต้องมั่นใจว่ายังไม่ตาย ถึงจะสั่งกลับไปเล่นท่า Idle ได้!
+        if (State != PlayerState.Dead && animator != null)
+        {
+            animator.Play(idleAnimName); // กลับมายืนปกติ
+        }
         shootSpriteRoutine = null;
     }
 
@@ -218,7 +228,10 @@ public class PlayerController : MonoBehaviour
         mamaPigRenderer.sprite = spriteShoot;
         yield return new WaitForSeconds(shootSpriteTime);
         
-        if (animator != null) animator.enabled = true;
+        if (State != PlayerState.Dead)
+        {
+            if (animator != null) animator.enabled = true;
+        }
         shootSpriteRoutine = null;
     }
 
@@ -299,6 +312,13 @@ public class PlayerController : MonoBehaviour
         if (State == PlayerState.Dead) return; // ตายซ้ำไม่ได้นะ
 
         State = PlayerState.Dead;
+
+        // สั่งหยุดคอร์รูทีนยิงธนูทันที! ป้องกันไม่ให้ดีเลย์ยิงเสร็จเด้งกลับมาสั่ง animator.Play("Idle") กลางอากาศ
+        if (shootSpriteRoutine != null)
+        {
+            StopCoroutine(shootSpriteRoutine);
+            shootSpriteRoutine = null;
+        }
         
         CacheMamaPigReference();
 
@@ -312,12 +332,17 @@ public class PlayerController : MonoBehaviour
             mamaPigRenderer.sortingOrder = 15;
         }
 
+        if (animator == null)
+        {
+            FindAnimator();
+        }
+
         if (animator != null)
         {
             animator.enabled = true;
-            animator.Update(0f);
             animator.speed = 1f;
-            animator.Play(deadAnimName, -1, 0f); // เล่นท่าตกกระเช้า
+            animator.Play(deadAnimName, -1, 0f); // เล่นท่าตกกระเช้า (Fall) ทันที
+            animator.Update(0f); // บังคับให้อนิเมเตอร์สลับเป็นสเตท Fall ทันทีในเฟรมนี้
         }
 
         GameManager.Instance?.LoseLife(diedFromBoulder); // บอกเกมว่าหัก 1 ชีวิต
@@ -339,6 +364,17 @@ public class PlayerController : MonoBehaviour
         while (State == PlayerState.Dead)
         {
             t += Time.deltaTime;
+
+            // ล็อกท่าให้เล่น Fall เสมอระหว่างกำลังกระเด็นตก ไม่ให้สเตทอื่นแซงได้
+            if (animator != null && animator.enabled)
+            {
+                var stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+                if (!stateInfo.IsName(deadAnimName))
+                {
+                    animator.Play(deadAnimName, -1, 0f);
+                }
+            }
+
             // สมการโปรเจกไทล์แบบบ้านๆ เลย
             float newX = startPos.x + (velocityX * t);
             float newY = startPos.y + (velocityY * t) - (0.5f * gravity * t * t);
@@ -364,6 +400,12 @@ public class PlayerController : MonoBehaviour
     {
         State = PlayerState.Normal;
         transform.position = startPosition; // กระเช้ากลับจุดเริ่มต้น
+
+        if (shootSpriteRoutine != null)
+        {
+            StopCoroutine(shootSpriteRoutine);
+            shootSpriteRoutine = null;
+        }
         
         // คืนตำแหน่งและ Sorting Order ของแม่หมูกลับเข้ากระเช้า
         if (mamaPigRenderer != null && hasSavedMamaPigPos)
