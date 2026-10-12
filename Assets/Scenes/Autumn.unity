@@ -14750,9 +14750,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3911d4f1643d1d042bf0538aeb05b9e1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIManager
-  scoreText: {fileID: 0}
+  scoreText: {fileID: 1899258420}
   highScoreText: {fileID: 0}
-  livesText: {fileID: 0}
+  livesText: {fileID: 404891003}
   stageText: {fileID: 1000425196}
   remainingWolvesText: {fileID: 1633343883}
   cliffCounterPanel: {fileID: 0}
@@ -17603,6 +17603,7 @@ MonoBehaviour:
   piglet1: {fileID: 897501169}
   piglet2: {fileID: 1316737529}
   pullAnimParam: PullSpeed
+  keepRopeOnDeath: 1
   idleStateName: Piglet_Idle
   pullStateName: Piglet_PullRobe
 --- !u!50 &1762214931

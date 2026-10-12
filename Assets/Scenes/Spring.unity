@@ -2104,9 +2104,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3911d4f1643d1d042bf0538aeb05b9e1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIManager
-  scoreText: {fileID: 0}
+  scoreText: {fileID: 1735076921}
   highScoreText: {fileID: 0}
-  livesText: {fileID: 0}
+  livesText: {fileID: 126062212}
   stageText: {fileID: 1408387974}
   remainingWolvesText: {fileID: 659528895}
   cliffCounterPanel: {fileID: 0}

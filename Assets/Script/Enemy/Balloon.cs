@@ -8,6 +8,12 @@ public class Balloon : MonoBehaviour
     [SerializeField] private float flashInterval = 0.15f; // ความเร็วตอนกระพริบ (เวลาเป็นบอส)
     [SerializeField] private GameObject popEffectPrefab; // พรีแฟบ Particle Effect ตอนลูกโป่งแตก
 
+    [Header("Custom Balloon Sprites (Optional)")]
+    [Tooltip("ใส่รูปสไปรท์ที่เพื่อนวาดแยกสีมาได้เลย (ถ้าใส่ช่องนี้ เกมจะไม่ย้อมสีทับ เพื่อให้เห็นสีจริงจากภาพวาด)")]
+    [SerializeField] private Sprite pinkSprite;   // รูปสีชมพู (1 HP)
+    [SerializeField] private Sprite yellowSprite; // รูปสีเหลือง (2 HP)
+    [SerializeField] private Sprite redSprite;    // รูปสีแดง (3+ HP)
+
     [Header("Balloon Colors (NES Pooyan Original)")]
     [Tooltip("สีชมพู 1 HP - สีพื้นฐานของด่าน 1 และด่านทั่วไป")]
     [SerializeField] private Color pinkColor = new Color(1f, 0.42f, 0.65f, 1f);
@@ -168,7 +174,23 @@ public class Balloon : MonoBehaviour
         float scale = 1f - (maxHP - currentHP) * 0.05f;
         transform.localScale = Vector3.one * scale;
 
-        // อัปเดตสีตามเลือดที่เหลือ (ถ้าไม่ใช่ลูกโป่งบอสที่กระพริบวิบวับ)
+        // เช็คว่ามีรูปสไปรท์แยกตามสีที่ผู้ใช้นำมาใส่เองหรือไม่
+        Sprite customColorSprite = null;
+        if (currentHP >= 3 && redSprite != null) customColorSprite = redSprite;
+        else if (currentHP == 2 && yellowSprite != null) customColorSprite = yellowSprite;
+        else if (currentHP == 1 && pinkSprite != null) customColorSprite = pinkSprite;
+
+        if (customColorSprite != null)
+        {
+            spriteRenderer.sprite = customColorSprite;
+            if (!isBossFlash)
+            {
+                spriteRenderer.color = Color.white; // ไม่ย้อมสี ให้โชว์สีจริงจากภาพวาด
+            }
+            return;
+        }
+
+        // กรณีใช้ระบบเดิม (รูปเดียวแล้วย้อมสี หรือใช้ damageStages)
         if (!isBossFlash)
         {
             spriteRenderer.color = GetColorForHP(currentHP);

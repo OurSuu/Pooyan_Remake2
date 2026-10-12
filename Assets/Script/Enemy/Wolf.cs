@@ -23,6 +23,7 @@ public class Wolf : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] protected Balloon balloon;
+    [SerializeField] protected GameObject balloonPrefab; // เผื่ออยากลาก Balloon Prefab มาใส่ใน Inspector
     [SerializeField] protected Transform shieldTransform;
     [SerializeField] protected GameObject rockPrefab;
 
@@ -110,6 +111,25 @@ public class Wolf : MonoBehaviour
         {
             balloon = GetComponentInChildren<Balloon>(true);
         }
+
+        // ถ้ายังไม่มี balloon แต่มี balloonPrefab ลากไว้ใน Inspector ให้เสกออกมาเป็นลูก
+        if (balloon == null && balloonPrefab != null)
+        {
+            var bObj = Instantiate(balloonPrefab, transform);
+            bObj.transform.localPosition = new Vector3(-0.16f, 2.16f, 0f);
+            balloon = bObj.GetComponent<Balloon>();
+        }
+
+        // ถ้าลูกโป่งตัวลูกยังไม่มี Sprite แต่มี balloonPrefab ให้ดึง Sprite จาก prefab มาใส่ให้อัตโนมัติ
+        if (balloon != null && balloonPrefab != null)
+        {
+            var mySr = balloon.GetComponent<SpriteRenderer>();
+            var prefabSr = balloonPrefab.GetComponent<SpriteRenderer>();
+            if (mySr != null && mySr.sprite == null && prefabSr != null && prefabSr.sprite != null)
+            {
+                mySr.sprite = prefabSr.sprite;
+            }
+        }
     }
 
     public void DisableTeaseBounces()
@@ -164,16 +184,21 @@ public class Wolf : MonoBehaviour
         {
             targetBalloonHP = config.balloonHP;
         }
-        else if (!descending) // ด่านลอยขึ้น (Stage 2)
-        {
-            // ต้นฉบับ Famicom / NES: โอกาส ~30% ได้ลูกโป่งสีเหลือง (2 HP), 70% สีชมพู (1 HP)
-            float yellowChance = (config != null) ? config.yellowBalloonRatio : 0.3f;
-            targetBalloonHP = (Random.value < yellowChance) ? 2 : 1;
-        }
         else
         {
-            // ด่าน 1 ลอยลง: สีชมพู 1 HP
-            targetBalloonHP = 1;
+            // ถ้า config กำหนดโอกาสลูกโป่งเหลือง (yellowBalloonRatio > 0) ให้สุ่มตามนั้นเลย (รวมถึงด่านลอยลง เช่น Winter)
+            // หรือถ้าเป็นด่านลอยขึ้น (!descending) ตามต้นฉบับ Famicom จะมีโอกาส ~30%
+            float yellowChance = 0f;
+            if (config != null && config.yellowBalloonRatio > 0f)
+            {
+                yellowChance = config.yellowBalloonRatio;
+            }
+            else if (!descending)
+            {
+                yellowChance = 0.3f; // ต้นฉบับ Famicom ด่าน 2
+            }
+
+            targetBalloonHP = (Random.value < yellowChance) ? 2 : 1;
         }
 
         if (balloon != null)

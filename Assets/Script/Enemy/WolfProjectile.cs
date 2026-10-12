@@ -139,28 +139,9 @@ public class WolfProjectile : MonoBehaviour
         // ขยับไปตามทิศทางที่เล็งไว้
         transform.position += (Vector3)(velocity * Time.deltaTime);
 
-        // เช็คการชนกับแท่นกิ่งไม้ที่หมาป่าโดดลงมาในด่านคี่ (Odd Stage)
-        CheckBranchCollision();
-
         // ถ้าร่วงเลยจอ หรือหลุดออกนอกจอไปไกลๆ ก็ทำลายทิ้งซะ
         if (transform.position.y < destroyY || transform.position.x < -12f || transform.position.x > 12f)
             Destroy(gameObject);
-    }
-
-    // เช็คว่าหินลอยไปชนขอบแท่น/ใต้กิ่งไม้ที่หมาป่าโดดลงมาหรือไม่
-    private void CheckBranchCollision()
-    {
-        if (isDeflected || destroyed) return;
-
-        bool isOdd = GameManager.Instance == null || GameManager.Instance.IsOddStage;
-        if (!isOdd) return;
-
-        // ในด่านคี่ แท่นกิ่งไม้ที่หมาป่าเดินโดดลงมาจะอยู่ที่ช่วง X <= 1.65f และระดับความสูงขอบล่างกิ่งไม้ Y >= 3.35f
-        // ถ้าหินกำลังพุ่งขึ้นแล้วลอยไปชนใต้แท่น หรือลอยเกินเพดานฉาก ให้ติดแท่นแล้วเด้งร่วงลงทันที
-        if ((transform.position.x <= 1.65f && transform.position.y >= 3.35f && velocity.y > 0f) || transform.position.y >= 3.8f)
-        {
-            DeflectDown(fromShield: false);
-        }
     }
 
     // เวลาชนกับอะไรซักอย่าง
@@ -216,9 +197,9 @@ public class WolfProjectile : MonoBehaviour
         }
         else
         {
-            // ชนติดแท่นกิ่งไม้แล้วเด้งร่วงลงมาตรงๆ ตามต้นฉบับ Arcade!
-            velocity = new Vector2(velocity.x * 0.15f, -4.5f);
-            AudioManager.Instance?.PlayRockDestroy(); // เล่นเสียงหินกระทบไม้
+            // ถ้าชนขอบสิ่งกีดขวาง ให้ยังคงรักษาแรงพุ่งไปข้างหน้า (ไปทางแม่หมู) แล้วแฉลบร่วงลงมา
+            velocity = new Vector2(Mathf.Max(3f, Mathf.Abs(velocity.x) * 0.75f), -3.5f);
+            AudioManager.Instance?.PlayRockDestroy(); // เล่นเสียงหินกระทบ
         }
 
         hasGravity = true;

@@ -164,6 +164,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Wolf
   balloon: {fileID: 5619366016631827803}
+  balloonPrefab: {fileID: 0}
   shieldTransform: {fileID: 0}
   rockPrefab: {fileID: 1926483307685132397, guid: 34cd0122affc40848b25901f10d3ba12, type: 3}
   spriteDrop: {fileID: 1781254230411818056, guid: cee994d7dfef3054da12b5cd76a71975, type: 3}
@@ -239,10 +240,10 @@ BoxCollider2D:
   m_Offset: {x: 0.050621837, y: 0.30182838}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0, y: 0}
-    oldSize: {x: 0, y: 0}
-    newSize: {x: 0, y: 0}
-    adaptiveTilingThreshold: 0
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 7.4625006, y: 5.2142763}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
@@ -297,7 +298,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 3
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: e360a17f218bf274db937298618caba8, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -305,7 +306,7 @@ SpriteRenderer:
   m_Size: {x: 1, y: 1}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 0
+  m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
 --- !u!1001 &3009391555651957298
 PrefabInstance:
@@ -317,11 +318,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3390908244868679514, guid: 54f2f3e7816941949987622c99e6ed77, type: 3}
       propertyPath: m_Radius
-      value: 0.86
+      value: 1.35
       objectReference: {fileID: 0}
     - target: {fileID: 3390908244868679514, guid: 54f2f3e7816941949987622c99e6ed77, type: 3}
       propertyPath: m_Offset.x
-      value: 0.3
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3390908244868679514, guid: 54f2f3e7816941949987622c99e6ed77, type: 3}
+      propertyPath: m_Offset.y
+      value: 0.45
       objectReference: {fileID: 0}
     - target: {fileID: 3874334878448062542, guid: 54f2f3e7816941949987622c99e6ed77, type: 3}
       propertyPath: m_LocalPosition.x
@@ -362,6 +367,18 @@ PrefabInstance:
     - target: {fileID: 3874334878448062542, guid: 54f2f3e7816941949987622c99e6ed77, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6832097310141589789, guid: 54f2f3e7816941949987622c99e6ed77, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6832097310141589789, guid: 54f2f3e7816941949987622c99e6ed77, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6832097310141589789, guid: 54f2f3e7816941949987622c99e6ed77, type: 3}
+      propertyPath: m_Color.r
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7221660757791612777, guid: 54f2f3e7816941949987622c99e6ed77, type: 3}
       propertyPath: popEffectPrefab

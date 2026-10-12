@@ -50,6 +50,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Wolf
   balloon: {fileID: 6325817741007917777}
+  balloonPrefab: {fileID: 0}
   shieldTransform: {fileID: 0}
   rockPrefab: {fileID: 1926483307685132397, guid: 34cd0122affc40848b25901f10d3ba12, type: 3}
   spriteDrop: {fileID: 1781254230411818056, guid: cee994d7dfef3054da12b5cd76a71975, type: 3}
@@ -276,8 +277,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
-  m_Color: {r: 0.8113208, g: 0.011480933, b: 0.011480933, a: 1}
+  m_Sprite: {fileID: 21300000, guid: e360a17f218bf274db937298618caba8, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -320,8 +321,8 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.3, y: 0}
-  m_Radius: 0.86
+  m_Offset: {x: 0, y: 0.45}
+  m_Radius: 1.35
 --- !u!114 &6325817741007917777
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -337,6 +338,9 @@ MonoBehaviour:
   damageStages: []
   flashInterval: 0.15
   popEffectPrefab: {fileID: 0}
+  pinkSprite: {fileID: 0}
+  yellowSprite: {fileID: 0}
+  redSprite: {fileID: 0}
   pinkColor: {r: 1, g: 0.42, b: 0.65, a: 1}
   yellowColor: {r: 1, g: 0.88, b: 0.15, a: 1}
   redColor: {r: 1, g: 0.25, b: 0.2, a: 1}
