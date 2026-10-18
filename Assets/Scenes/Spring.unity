@@ -1937,6 +1937,11 @@ MonoBehaviour:
   mamaWalkState: Cutscene_Walk
   pigletWalkState: Cutscene_Walk
   pigletJumpState: Cutscene_Jump
+  stage1IntroBGM: {fileID: 0}
+  stage2IntroBGM: {fileID: 8300000, guid: 27ad190b202110e46b328cd00bf962e1, type: 3}
+  stage2ClearBGM: {fileID: 8300000, guid: f3e346c9e1b3b1341be4812900ee4741, type: 3}
+  defaultCutsceneBGM: {fileID: 0}
+  loopCutsceneBGM: 0
 --- !u!1 &572242111
 GameObject:
   m_ObjectHideFlags: 0

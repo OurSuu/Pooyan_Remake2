@@ -47,7 +47,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10ca58dd8fecdbb4a8f2d75eabdfe628, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AudioManager
-  bgmMainMenu: {fileID: 0}
+  bgmMainMenu: {fileID: 8300000, guid: 848db7f86b05e0c439a0e6db5beddbc8, type: 3}
   bgmAutumn: {fileID: 8300000, guid: 3a41ec1a809ec8e408be5825ee39a730, type: 3}
   bgmSpring: {fileID: 8300000, guid: a7b99d86c5a41724fa97bbbb5ee5eebe, type: 3}
   bgmWinter: {fileID: 8300000, guid: 2500444a9251bce4e86e832113b45fa2, type: 3}
@@ -57,7 +57,9 @@ MonoBehaviour:
   bgmBonusMeat: {fileID: 0}
   bgmBonusFruit: {fileID: 0}
   bgmStageIntro: {fileID: 0}
+  bgmStage2Intro: {fileID: 0}
   bgmStageClear: {fileID: 0}
+  bgmStage2Clear: {fileID: 0}
   bgmGameOver: {fileID: 0}
   seArrowFire: {fileID: 8300000, guid: 3401462112dc02c49b37486dd3de8b60, type: 3}
   seMeatPickup: {fileID: 8300000, guid: ba211aa0dee6fb84482d5dc80ae92525, type: 3}
