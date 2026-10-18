@@ -15533,7 +15533,7 @@ MonoBehaviour:
   mamaWalkState: CutScene_Walk
   pigletWalkState: CutScene_WalkPiglet
   pigletJumpState: Cutscene_Jump
-  stage1IntroBGM: {fileID: 8300000, guid: 3a41ec1a809ec8e408be5825ee39a730, type: 3}
+  stage1IntroBGM: {fileID: 8300000, guid: 27d0a5804ab383f49b0053a6d2b91718, type: 3}
   stage2IntroBGM: {fileID: 0}
   stage2ClearBGM: {fileID: 0}
   defaultCutsceneBGM: {fileID: 0}

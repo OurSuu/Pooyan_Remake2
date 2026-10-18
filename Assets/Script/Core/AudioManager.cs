@@ -152,7 +152,21 @@ public class AudioManager : MonoBehaviour
             GameManager.Instance.OnStateChanged += HandleStateChanged;
             GameManager.Instance.OnGameOver += HandleGameOver;
             GameManager.Instance.OnStageClear += HandleStageClear;
-            HandleStateChanged(GameManager.Instance.CurrentState);
+
+            // ตรวจสอบสถานะเริ่มต้น: หากอยู่ใน Cutscene หรือกำลังเตรียมเริ่มคัทซีน อย่าเพิ่งเปิด MainMenu BGM หรือ Season BGM ทันที
+            if (GameManager.Instance.CurrentState != GameState.Cutscene)
+            {
+                string sceneName = SceneManager.GetActiveScene().name;
+                bool isMainMenuScene = sceneName.IndexOf("MainMenu", StringComparison.OrdinalIgnoreCase) >= 0;
+                if (isMainMenuScene)
+                {
+                    PlayMainMenuBGM();
+                }
+                else if (GameManager.Instance.IsPlaying)
+                {
+                    PlayBGM(GetCurrentSeasonBGM(), true);
+                }
+            }
         }
         else
         {
@@ -179,6 +193,9 @@ public class AudioManager : MonoBehaviour
         {
             case GameState.MainMenu:
                 PlayMainMenuBGM();
+                break;
+            case GameState.Cutscene:
+                // ระหว่างเล่นคัทซีน ปล่อยให้ StageCutsceneController ควบคุมการเปิด/ปิดเพลงคัทซีนเอง
                 break;
             case GameState.Playing:
                 PlayBGM(GetCurrentSeasonBGM(), true);
@@ -297,7 +314,7 @@ public class AudioManager : MonoBehaviour
         if (clip != null)
             PlayBGM(clip, false);
         else
-            ResumeStageBGM();
+            StopBGM();
     }
 
     public void PlayStageClearBGM()

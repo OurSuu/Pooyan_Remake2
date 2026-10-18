@@ -56,10 +56,10 @@ MonoBehaviour:
   bgmBonus: {fileID: 0}
   bgmBonusMeat: {fileID: 0}
   bgmBonusFruit: {fileID: 0}
-  bgmStageIntro: {fileID: 0}
-  bgmStage2Intro: {fileID: 0}
-  bgmStageClear: {fileID: 0}
-  bgmStage2Clear: {fileID: 0}
+  bgmStageIntro: {fileID: 8300000, guid: 27d0a5804ab383f49b0053a6d2b91718, type: 3}
+  bgmStage2Intro: {fileID: 8300000, guid: 27ad190b202110e46b328cd00bf962e1, type: 3}
+  bgmStageClear: {fileID: 8300000, guid: f3e346c9e1b3b1341be4812900ee4741, type: 3}
+  bgmStage2Clear: {fileID: 8300000, guid: f3e346c9e1b3b1341be4812900ee4741, type: 3}
   bgmGameOver: {fileID: 0}
   seArrowFire: {fileID: 8300000, guid: 3401462112dc02c49b37486dd3de8b60, type: 3}
   seMeatPickup: {fileID: 8300000, guid: ba211aa0dee6fb84482d5dc80ae92525, type: 3}

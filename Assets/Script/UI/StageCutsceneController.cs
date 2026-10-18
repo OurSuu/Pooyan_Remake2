@@ -199,12 +199,20 @@ public class StageCutsceneController : MonoBehaviour
     {
         AudioClip clipToPlay = clip != null ? clip : defaultCutsceneBGM;
 
-        if (clipToPlay == null && AudioManager.Instance != null)
+        // ดักกรณีเผลอใส่คลิปเพลงเดียวกับเพลงประจำฤดู/ด่าน (เช่น เผลอใส่ Autumn_BGM แทนที่จะเป็น Cutscene_Autumn)
+        bool isAccidentallySeasonalBGM = clipToPlay != null && AudioManager.Instance != null && clipToPlay == AudioManager.Instance.GetCurrentSeasonBGM();
+
+        if ((clipToPlay == null || isAccidentallySeasonalBGM) && AudioManager.Instance != null)
         {
-            if (isClear)
-                clipToPlay = AudioManager.Instance.Stage2ClearBGM;
-            else
-                clipToPlay = AudioManager.Instance.GetStageIntroBGM(stage);
+            AudioClip properClip = isClear ? AudioManager.Instance.Stage2ClearBGM : AudioManager.Instance.GetStageIntroBGM(stage);
+            if (properClip != null && properClip != AudioManager.Instance.GetCurrentSeasonBGM())
+            {
+                clipToPlay = properClip;
+            }
+            else if (isAccidentallySeasonalBGM)
+            {
+                clipToPlay = null;
+            }
         }
 
         if (clipToPlay != null)
@@ -228,10 +236,8 @@ public class StageCutsceneController : MonoBehaviour
         }
         else
         {
-            if (isClear)
-                AudioManager.Instance?.PlayStageClearBGM();
-            else
-                AudioManager.Instance?.PlayStageIntroBGM(stage);
+            // ถ้าไม่มีเพลงคัทซีนจริงๆ ให้หยุด BGM ชั่วคราวระหว่างคัทซีน (อย่าไปเปิดเพลงด่านล่วงหน้า)
+            AudioManager.Instance?.StopBGM();
         }
     }
 
