@@ -48,9 +48,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AudioManager
   bgmMainMenu: {fileID: 0}
-  bgmAutumn: {fileID: 0}
-  bgmSpring: {fileID: 0}
-  bgmWinter: {fileID: 0}
+  bgmAutumn: {fileID: 8300000, guid: 3a41ec1a809ec8e408be5825ee39a730, type: 3}
+  bgmSpring: {fileID: 8300000, guid: a7b99d86c5a41724fa97bbbb5ee5eebe, type: 3}
+  bgmWinter: {fileID: 8300000, guid: 2500444a9251bce4e86e832113b45fa2, type: 3}
   bgmSummer: {fileID: 0}
   bgmMain: {fileID: 0}
   bgmBonus: {fileID: 0}
@@ -86,7 +86,7 @@ MonoBehaviour:
   bgmSource: {fileID: 812698098138415274}
   sfxSource: {fileID: 3875713040282341428}
   ropeLoopSource: {fileID: 8706137738314456517}
-  bgmVolume: 0.7
+  bgmVolume: 0.427
   sfxVolume: 0.763
   ropePullVolume: 0.347
 --- !u!82 &812698098138415274
