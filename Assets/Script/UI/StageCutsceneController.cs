@@ -37,15 +37,23 @@ public class StageCutsceneController : MonoBehaviour
     [Tooltip("ออฟเซ็ตความสูงกระเช้าจาก groundY")]
     public float basketYOffset = 0.35f;
 
-    [Header("Animation State Names (เมื่อสร้างคลิปท่าเสร็จ สามารถระบุชื่อ State ใน Animator ได้)")]
-    [Tooltip("ชื่อ State ท่าวิ่งของหมาป่าใน Animator")]
-    public string wolfRunState = "Run";
-    [Tooltip("ชื่อ State ท่ายืน/เดินของแม่หมูใน Animator")]
-    public string mamaWalkState = "Idle";
-    [Tooltip("ชื่อ State ท่าเดินของลูกหมูใน Animator")]
-    public string pigletWalkState = "Piglet_Idle";
-    [Tooltip("ชื่อ State ท่ากระโดดดีใจของลูกหมูใน Animator")]
-    public string pigletJumpState = "Piglet_Idle";
+    [Header("Cutscene Animator Controllers (ลาก Animator Controller ใส่ได้เมื่อทำเสร็จ หากยังไม่ใส่จะแสดงภาพตัวอย่าง)")]
+    [Tooltip("Animator Controller ของหมาป่าในคัทซีน")]
+    public RuntimeAnimatorController wolfCutsceneAnimator;
+    [Tooltip("Animator Controller ของแม่หมูในคัทซีน")]
+    public RuntimeAnimatorController mamaCutsceneAnimator;
+    [Tooltip("Animator Controller ของลูกหมูในคัทซีน")]
+    public RuntimeAnimatorController pigletCutsceneAnimator;
+
+    [Header("Cutscene Animation State Names (มี Cutscene_ นำหน้าเพื่อไม่ให้ซ้ำกับท่าในเกม)")]
+    [Tooltip("ชื่อ State ท่าวิ่งของหมาป่าใน Animator (เช่น Cutscene_Run หรือ Cutscene_WolfRun)")]
+    public string wolfRunState = "Cutscene_Run";
+    [Tooltip("ชื่อ State ท่าเดินของแม่หมูใน Animator (เช่น Cutscene_Walk หรือ Cutscene_MamaWalk)")]
+    public string mamaWalkState = "Cutscene_Walk";
+    [Tooltip("ชื่อ State ท่าเดินของลูกหมูใน Animator (เช่น Cutscene_Walk หรือ Cutscene_PigletWalk)")]
+    public string pigletWalkState = "Cutscene_Walk";
+    [Tooltip("ชื่อ State ท่ากระโดดดีใจของลูกหมูใน Animator (เช่น Cutscene_Jump หรือ Cutscene_PigletJump)")]
+    public string pigletJumpState = "Cutscene_Jump";
 
     public bool IsPlayingCutscene { get; private set; }
 
@@ -183,10 +191,16 @@ public class StageCutsceneController : MonoBehaviour
         if (cutsceneBasket != null) cutsceneBasket.gameObject.SetActive(false);
         if (cutsceneMama != null) cutsceneMama.gameObject.SetActive(false);
 
+        // เล่นท่าแอนิเมชันสำหรับคัทซีนด่าน 1
+        PlayActorAnim(cutscenePiglet1, pigletWalkState, pigletCutsceneAnimator);
+        PlayActorAnim(cutscenePiglet2, pigletWalkState, pigletCutsceneAnimator);
+        PlayActorAnim(cutsceneWolf, wolfRunState, wolfCutsceneAnimator);
+
         AudioManager.Instance?.PlayStageIntroBGM();
 
         float duration = 5.4f;
         float elapsed = 0f;
+        bool mamaAnimStarted = false;
 
         while (elapsed < duration)
         {
@@ -246,6 +260,11 @@ public class StageCutsceneController : MonoBehaviour
                 // แม่หมู: วิ่งไล่ตามออกมาจากบ้านทางขวาตอน 2.8 วินาที
                 if (elapsed >= 2.8f)
                 {
+                    if (!mamaAnimStarted)
+                    {
+                        mamaAnimStarted = true;
+                        PlayActorAnim(cutsceneMama, mamaWalkState, mamaCutsceneAnimator);
+                    }
                     float tMama = Mathf.Clamp01((elapsed - 2.8f) / 1.8f);
                     float mamaX = Mathf.Lerp(7.0f, -6.5f, tMama);
                     SetActor(cutsceneMama, new Vector3(mamaX, groundY + mamaYOffset + walkBob, 0f), faceLeft: true, isWolf: false);
@@ -280,6 +299,12 @@ public class StageCutsceneController : MonoBehaviour
         cutsceneRoot.SetActive(true);
 
         if (cutsceneBasket != null) cutsceneBasket.gameObject.SetActive(false);
+
+        // เล่นท่าแอนิเมชันสำหรับคัทซีนด่าน 2
+        PlayActorAnim(cutsceneWolf, wolfRunState, wolfCutsceneAnimator);
+        PlayActorAnim(cutscenePiglet1, pigletWalkState, pigletCutsceneAnimator);
+        PlayActorAnim(cutscenePiglet2, pigletWalkState, pigletCutsceneAnimator);
+        PlayActorAnim(cutsceneMama, mamaWalkState, mamaCutsceneAnimator);
 
         AudioManager.Instance?.PlayStageIntroBGM();
 
@@ -374,6 +399,7 @@ public class StageCutsceneController : MonoBehaviour
         float walkDuration = 1.8f;
         Vector3 mamaExitStart = new Vector3(groundGondolaPos.x, groundY + mamaYOffset, 0f);
         Vector3 mamaTargetPos = new Vector3(0.3f, groundY + mamaYOffset, 0f);
+        PlayActorAnim(cutsceneMama, mamaWalkState, mamaCutsceneAnimator);
 
         while (elapsed < walkDuration)
         {
@@ -390,6 +416,9 @@ public class StageCutsceneController : MonoBehaviour
         // เฟส 3: แม่หมูอยู่ดีใจกับลูกหมู 2 ตัว (2.4 วินาที)
         elapsed = 0f;
         float celebrateDuration = 2.4f;
+        PlayActorAnim(cutscenePiglet1, pigletJumpState, pigletCutsceneAnimator);
+        PlayActorAnim(cutscenePiglet2, pigletJumpState, pigletCutsceneAnimator);
+
         while (elapsed < celebrateDuration)
         {
             elapsed += Time.deltaTime;
@@ -410,6 +439,9 @@ public class StageCutsceneController : MonoBehaviour
         elapsed = 0f;
         float marchDuration = 2.0f;
         Vector3 mamaForestTarget = new Vector3(-8.5f, groundY + mamaYOffset, 0f);
+        PlayActorAnim(cutsceneMama, mamaWalkState, mamaCutsceneAnimator);
+        PlayActorAnim(cutscenePiglet1, pigletWalkState, pigletCutsceneAnimator);
+        PlayActorAnim(cutscenePiglet2, pigletWalkState, pigletCutsceneAnimator);
 
         while (elapsed < marchDuration)
         {
@@ -453,16 +485,16 @@ public class StageCutsceneController : MonoBehaviour
         cutsceneRoot.transform.rotation = Quaternion.identity;
         cutsceneRoot.transform.localScale = Vector3.one;
 
-        cutsceneMama = CreateActor("Cutscene_Mama", cutsceneRoot.transform, sampleMamaSprite, 15);
-        cutscenePiglet1 = CreateActor("Cutscene_Piglet1", cutsceneRoot.transform, samplePigletSprite, 14);
-        cutscenePiglet2 = CreateActor("Cutscene_Piglet2", cutsceneRoot.transform, samplePigletSprite, 14);
-        cutsceneWolf = CreateActor("Cutscene_Wolf", cutsceneRoot.transform, sampleWolfSprite, 16);
+        cutsceneMama = CreateActor("Cutscene_Mama", cutsceneRoot.transform, sampleMamaSprite, 15, mamaCutsceneAnimator);
+        cutscenePiglet1 = CreateActor("Cutscene_Piglet1", cutsceneRoot.transform, samplePigletSprite, 14, pigletCutsceneAnimator);
+        cutscenePiglet2 = CreateActor("Cutscene_Piglet2", cutsceneRoot.transform, samplePigletSprite, 14, pigletCutsceneAnimator);
+        cutsceneWolf = CreateActor("Cutscene_Wolf", cutsceneRoot.transform, sampleWolfSprite, 16, wolfCutsceneAnimator);
         cutsceneBasket = CreateActor("Cutscene_Basket", cutsceneRoot.transform, sampleBasketSprite, 13);
 
         cutsceneRoot.SetActive(false);
     }
 
-    private SpriteRenderer CreateActor(string name, Transform parent, Sprite sprite, int sortingOrder)
+    private SpriteRenderer CreateActor(string name, Transform parent, Sprite sprite, int sortingOrder, RuntimeAnimatorController animController = null)
     {
         var go = new GameObject(name, typeof(SpriteRenderer));
         go.transform.SetParent(parent, false);
@@ -471,8 +503,42 @@ public class StageCutsceneController : MonoBehaviour
         sr.sprite = sprite;
         sr.sortingLayerName = "Default";
         sr.sortingOrder = sortingOrder;
+
+        if (animController != null)
+        {
+            var anim = go.AddComponent<Animator>();
+            anim.runtimeAnimatorController = animController;
+        }
+
         go.SetActive(false);
         return sr;
+    }
+
+    /// <summary>
+    /// สั่งเล่นท่าแอนิเมชันของตัวละครคัทซีนตามชื่อ State ใน Animator (หากใส่ Animator Controller ไว้)
+    /// </summary>
+    private void PlayActorAnim(SpriteRenderer actor, string stateName, RuntimeAnimatorController fallbackController = null)
+    {
+        if (actor == null) return;
+
+        var anim = actor.GetComponent<Animator>();
+        if (anim == null && fallbackController != null)
+        {
+            anim = actor.gameObject.AddComponent<Animator>();
+            anim.runtimeAnimatorController = fallbackController;
+        }
+        else if (anim != null && anim.runtimeAnimatorController == null && fallbackController != null)
+        {
+            anim.runtimeAnimatorController = fallbackController;
+        }
+
+        if (anim != null && anim.runtimeAnimatorController != null && !string.IsNullOrEmpty(stateName))
+        {
+            if (anim.HasState(0, Animator.StringToHash(stateName)))
+            {
+                anim.Play(stateName);
+            }
+        }
     }
 
     private void SetActor(SpriteRenderer actor, Vector3 worldPos, bool faceLeft, bool isWolf = false)

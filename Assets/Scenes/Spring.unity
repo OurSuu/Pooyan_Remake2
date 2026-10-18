@@ -1925,22 +1925,17 @@ MonoBehaviour:
   enableCutscenes: 1
   groundY: -3.75
   actorScale: 0.26
-  allowSkip: 1
-  mamaYOffset: 0.7
-  wolfYOffset: 0.66
+  mamaYOffset: 0.25
+  wolfYOffset: 0.25
   pigletYOffset: 0
-  basketYOffset: 0.35
-  mamaWalkSprites: []
-  mamaIdleSprites: []
-  pigletWalkSprites: []
-  pigletJumpSprites: []
-  wolfWalkSprites: []
-  wolfKidnapSprites: []
-  spriteSheetFPS: 10
-  fallbackMamaSprite: {fileID: 0}
-  fallbackPigletSprite: {fileID: 0}
-  fallbackWolfSprite: {fileID: 0}
-  fallbackBasketSprite: {fileID: 0}
+  basketYOffset: 0.1
+  wolfCutsceneAnimator: {fileID: 0}
+  mamaCutsceneAnimator: {fileID: 0}
+  pigletCutsceneAnimator: {fileID: 0}
+  wolfRunState: Cutscene_Run
+  mamaWalkState: Cutscene_Walk
+  pigletWalkState: Cutscene_Walk
+  pigletJumpState: Cutscene_Jump
 --- !u!1 &572242111
 GameObject:
   m_ObjectHideFlags: 0
