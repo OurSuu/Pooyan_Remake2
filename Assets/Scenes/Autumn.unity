@@ -15524,7 +15524,7 @@ MonoBehaviour:
   actorScale: 0.26
   mamaYOffset: 0.38
   wolfYOffset: 0.38
-  pigletYOffset: -0.3
+  pigletYOffset: 0
   basketYOffset: 0.1
   wolfCutsceneAnimator: {fileID: 9100000, guid: f26dd99843b02694aa5d2c564d2f43d8, type: 2}
   mamaCutsceneAnimator: {fileID: 9100000, guid: 143972cf4c38e3a4e84717e3a234d15e, type: 2}
