@@ -150,7 +150,11 @@ public class StageCutsceneController : MonoBehaviour
             return;
         }
 
-        if (activeCutsceneRoutine != null) StopCoroutine(activeCutsceneRoutine);
+        if (activeCutsceneRoutine != null)
+        {
+            StopCoroutine(activeCutsceneRoutine);
+            activeCutsceneRoutine = null;
+        }
         activeCutsceneRoutine = StartCoroutine(Stage2ClearReunionRoutine(onComplete));
     }
 
@@ -445,20 +449,37 @@ public class StageCutsceneController : MonoBehaviour
         IsPlayingCutscene = true;
         PlayCutsceneBGM(stage2ClearBGM, stage: 2, isClear: true);
 
-        // มั่นใจว่าเชือก (LineRenderer) และกระเช้าของผู้เล่นยังคงแสดงอยู่และค้างไว้ตามที่ผู้เล่นจบเกม
-        var rope = FindFirstObjectByType<ElevatorRope>(FindObjectsInactive.Include);
-        if (rope != null)
-        {
-            rope.SetRopeVisible(true);
-        }
-
-        // ปิดการควบคุมของผู้เล่น (หยุดยิง / หยุดเลื่อน) ระหว่างคัทซีน แต่ไม่ปิด GameObject
+        // มั่นใจว่าตัวผู้เล่น (กระเช้า + แม่หมู) และเชือกยังคงเปิดใช้งานและแสดงผลอยู่ค้างไว้ที่เดิม
         var player = FindFirstObjectByType<PlayerController>(FindObjectsInactive.Include);
         bool prevPlayerEnabled = true;
         if (player != null)
         {
+            // ถ้าตัว Player ปิดอยู่ (เช่น ถูกซ่อนจากคัทซีนเปิดด่าน หรือกดสูตรข้ามฉาก) ให้เปิดกลับขึ้นมาทันที
+            if (!player.gameObject.activeSelf)
+            {
+                player.gameObject.SetActive(true);
+                player.Respawn();
+            }
+
+            // ตรวจสอบให้มั่นใจว่า SpriteRenderer ทุกชิ้นของแม่หมูและกระเช้าเปิดใช้งานครบถ้วน
+            foreach (var sr in player.GetComponentsInChildren<SpriteRenderer>(true))
+            {
+                if (sr.gameObject.name != "HeldMeatVisual")
+                {
+                    sr.enabled = true;
+                    sr.gameObject.SetActive(true);
+                }
+            }
+
             prevPlayerEnabled = player.enabled;
             player.enabled = false;
+        }
+
+        var rope = FindFirstObjectByType<ElevatorRope>(FindObjectsInactive.Include);
+        if (rope != null)
+        {
+            rope.enabled = true;
+            rope.SetRopeVisible(true);
         }
 
         EnsureCutsceneActors();
