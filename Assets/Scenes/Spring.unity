@@ -1930,10 +1930,10 @@ MonoBehaviour:
   wolfYOffset: 0.25
   pigletYOffset: 0
   basketYOffset: 0.1
-  wolfCutsceneAnimator: {fileID: 0}
-  mamaCutsceneAnimator: {fileID: 0}
-  pigletCutsceneAnimator: {fileID: 0}
-  wolfRunState: Cutscene_Run
+  wolfCutsceneAnimator: {fileID: 9100000, guid: 19c7b46cf4d6d744cbae4638a76054b7, type: 2}
+  mamaCutsceneAnimator: {fileID: 9100000, guid: 06efb5deea71a37438cd9dd38a474b74, type: 2}
+  pigletCutsceneAnimator: {fileID: 9100000, guid: d0dd1e540141e754d99c93e12251857b, type: 2}
+  wolfRunState: CutScene_WolfWalk_Spring
   mamaWalkState: Cutscene_Walk
   pigletWalkState: Cutscene_Walk
   pigletJumpState: Cutscene_Jump

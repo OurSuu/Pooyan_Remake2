@@ -244,14 +244,23 @@ public class StageCutsceneController : MonoBehaviour
             else
             {
                 // เฟส 3 (3.5s เป็นต้นไป): หมาป่าอุ้มลูกหมู 2 วิ่งหนีไปทางซ้าย (ช้าลง นุ่มนวล)
-                // 1. หมาป่าวิ่งจาก 1.0f ไป -8.5f (พอถึงขอบซ้าย <= -7.5f จะหายตัวเข้าป่าไปเลย)
+                // 1. หมาป่าวิ่งจาก 1.0f ไป -8.5f (พอถึงขอบซ้าย <= -7.5f จะหายตัวเข้าป่าไปก่อน)
                 float tWolf = Mathf.Clamp01((elapsed - 3.5f) / 2.0f);
                 float wolfX = Mathf.Lerp(1.0f, -8.5f, tWolf);
                 SetActor(cutsceneWolf, new Vector3(wolfX, groundY + wolfYOffset + walkBob, 0f), faceLeft: true, isWolf: true);
 
-                // ลูกหมู 2: โดนอุ้มอยู่ด้านหลังหมาป่า (x = wolfX + 0.45f)
-                float struggleBob = Mathf.Sin(elapsed * 18f) * 0.04f;
-                SetActor(cutscenePiglet2, new Vector3(wolfX + 0.45f, groundY + pigletYOffset + 0.18f + struggleBob, 0f), faceLeft: false, isWolf: false);
+                // 2. ลูกหมู 2: โดนอุ้มอยู่ด้านหลังหมาป่า (x = wolfX + 0.45f)
+                // พอพิกัดลูกหมู 2 ถึงขอบซ้าย (<= -7.5f) ก็จะหายตัวเข้าป่าตามหลังหมาป่าทันที (หายหลังหมาป่า และหายก่อนแม่หมู!)
+                float pig2X = wolfX + 0.45f;
+                if (pig2X <= LEFT_EXIT_X)
+                {
+                    if (cutscenePiglet2.gameObject.activeSelf) cutscenePiglet2.gameObject.SetActive(false);
+                }
+                else
+                {
+                    float struggleBob = Mathf.Sin(elapsed * 18f) * 0.04f;
+                    SetActor(cutscenePiglet2, new Vector3(pig2X, groundY + pigletYOffset + 0.18f + struggleBob, 0f), faceLeft: false, isWolf: false);
+                }
 
                 // เฟส 4: แม่หมูวิ่งพุ่งตามออกมาจากบ้านตอน 4.6 วินาที (ไล่ตามหมาป่าไปทางซ้าย)
                 // 2. แม่หมูวิ่งกวดตามไปจนพ้นขอบซ้าย <= -7.5f แล้วหายตัวเข้าป่าตามไปเลย
