@@ -1934,9 +1934,9 @@ MonoBehaviour:
   mamaCutsceneAnimator: {fileID: 9100000, guid: 06efb5deea71a37438cd9dd38a474b74, type: 2}
   pigletCutsceneAnimator: {fileID: 9100000, guid: d0dd1e540141e754d99c93e12251857b, type: 2}
   wolfRunState: CutScene_WolfWalk_Spring
-  mamaWalkState: Cutscene_Walk
-  pigletWalkState: Cutscene_Walk
-  pigletJumpState: Cutscene_Jump
+  mamaWalkState: CutScene_Walk_Spring
+  pigletWalkState: CutScene_WalkPiglet_Spring
+  pigletJumpState: CutScene_WalkPiglet_Spring
   stage1IntroBGM: {fileID: 0}
   stage2IntroBGM: {fileID: 8300000, guid: 27ad190b202110e46b328cd00bf962e1, type: 3}
   stage2ClearBGM: {fileID: 8300000, guid: f3e346c9e1b3b1341be4812900ee4741, type: 3}
