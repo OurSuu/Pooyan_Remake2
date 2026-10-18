@@ -645,6 +645,8 @@ public class StageCutsceneController : MonoBehaviour
                         sampleWolfSprite = sr.sprite;
                         break;
                     }
+                }
+
                 if (wolfCutsceneAnimator == null)
                 {
                     var anim = ws.WolfPrefab.GetComponentInChildren<Animator>();
