@@ -31,10 +31,14 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private AudioClip bgmBonusMeat;
     [Tooltip("เพลงด่านโบนัสยิงผลไม้โดยเฉพาะ (ถ้าไม่ใส่ จะใช้ bgmBonus แทน)")]
     [SerializeField] private AudioClip bgmBonusFruit;
-    [Tooltip("เพลงจิงเกิ้ลตอนคัทซีนเปิดด่าน / เปลี่ยนด่าน")]
+    [Tooltip("เพลงจิงเกิ้ลตอนคัทซีนเปิดด่าน 1 (Autumn) / เพลงเปิดด่านเริ่มต้น")]
     [SerializeField] private AudioClip bgmStageIntro;
+    [Tooltip("เพลงจิงเกิ้ลตอนคัทซีนเปิดด่าน 2 (Spring) (ถ้าไม่ใส่ จะใช้ bgmStageIntro แทน)")]
+    [SerializeField] private AudioClip bgmStage2Intro;
     [Tooltip("เพลงจิงเกิ้ลตอนเคลียร์ด่าน (Stage Clear)")]
     [SerializeField] private AudioClip bgmStageClear;
+    [Tooltip("เพลงจิงเกิ้ลตอนคัทซีนเคลียร์ด่าน 2 รวมญาติ (ถ้าไม่ใส่ จะใช้ bgmStageClear แทน)")]
+    [SerializeField] private AudioClip bgmStage2Clear;
     [Tooltip("เพลงตอนจบเกม (Game Over)")]
     [SerializeField] private AudioClip bgmGameOver;
 
@@ -273,14 +277,33 @@ public class AudioManager : MonoBehaviour
         if (bgmSource != null) bgmSource.Stop();
     }
 
+    public AudioClip StageIntroBGM => bgmStageIntro;
+    public AudioClip Stage2IntroBGM => bgmStage2Intro;
+    public AudioClip StageClearBGM => bgmStageClear;
+    public AudioClip Stage2ClearBGM => bgmStage2Clear != null ? bgmStage2Clear : bgmStageClear;
+
+    public AudioClip GetStageIntroBGM(int stage = 1)
+    {
+        if (stage == 2 && bgmStage2Intro != null)
+            return bgmStage2Intro;
+        return bgmStageIntro;
+    }
+
     public void PlayMainMenuBGM() => PlayBGM(bgmMainMenu != null ? bgmMainMenu : GetCurrentSeasonBGM(), true);
 
-    public void PlayStageIntroBGM()
+    public void PlayStageIntroBGM(int stage = 1)
     {
-        if (bgmStageIntro != null)
-            PlayBGM(bgmStageIntro, false);
+        AudioClip clip = GetStageIntroBGM(stage);
+        if (clip != null)
+            PlayBGM(clip, false);
         else
             ResumeStageBGM();
+    }
+
+    public void PlayStageClearBGM()
+    {
+        if (bgmStageClear != null)
+            PlayBGM(bgmStageClear, false);
     }
 
     public void ResumeStageBGM()

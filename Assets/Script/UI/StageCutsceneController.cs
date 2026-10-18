@@ -55,6 +55,18 @@ public class StageCutsceneController : MonoBehaviour
     [Tooltip("ชื่อ State ท่ากระโดดดีใจของลูกหมูใน Animator (เช่น Cutscene_Jump หรือ Cutscene_PigletJump)")]
     public string pigletJumpState = "Cutscene_Jump";
 
+    [Header("Cutscene Audio (ใส่ไฟล์เสียง BGM แยกตามฉากได้)")]
+    [Tooltip("เพลง BGM คัทซีนก่อนเริ่มด่าน 1 (Autumn - ลูกหมูโดนลักพาตัว)")]
+    public AudioClip stage1IntroBGM;
+    [Tooltip("เพลง BGM คัทซีนก่อนเริ่มด่าน 2 (Spring - วิ่งไล่กวดหมาป่า)")]
+    public AudioClip stage2IntroBGM;
+    [Tooltip("เพลง BGM คัทซีนเคลียร์ด่าน 2 รวมญาติก่อนเข้าโบนัส (Stage Clear / Reunion)")]
+    public AudioClip stage2ClearBGM;
+    [Tooltip("เพลง BGM คัทซีนสำรองทั่วไป (หากช่องเฉพาะด้านบนว่างไว้ จะใช้เพลงนี้)")]
+    public AudioClip defaultCutsceneBGM;
+    [Tooltip("ให้เพลงคัทซีนเล่นวนลูปหรือไม่ (ถ้าไม่ติ๊กจะเล่นรอบเดียวแบบ Jingle)")]
+    public bool loopCutsceneBGM = false;
+
     public bool IsPlayingCutscene { get; private set; }
 
     // สไปรต์ตัวอย่างที่ระบบดึงจากเกมมาแสดงให้อัตโนมัติ (ไม่รกใน Inspector)
@@ -80,6 +92,10 @@ public class StageCutsceneController : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (IsPlayingCutscene)
+        {
+            SetGameplayPlayerVisible(true);
+        }
         if (cutsceneRoot != null) Destroy(cutsceneRoot);
         if (Instance == this) Instance = null;
     }
@@ -153,21 +169,77 @@ public class StageCutsceneController : MonoBehaviour
             }
         }
 
-        // ปิด/เปิดเส้นเชือกกระเช้า เพื่อไม่ให้มีเส้นสลิงห้อยลอยค้างอยู่บนฟ้า
-        var rope = FindFirstObjectByType<ElevatorRope>(FindObjectsInactive.Include);
-        if (rope != null)
+        // ปิด/เปิดเส้นเชือกกระเช้า (LineRenderer) ทั้งหมดในฉาก ให้ซ่อนสนิทตอนเล่นคัทซีน และเปิดกลับมาเมื่อเริ่มเล่นเกม
+        var lineRenderers = FindObjectsByType<LineRenderer>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (var lr in lineRenderers)
         {
-            var lr = rope.GetComponentInChildren<LineRenderer>(true);
-            if (lr != null) lr.enabled = visible;
+            if (lr != null)
+            {
+                lr.enabled = visible;
+                lr.gameObject.SetActive(visible);
+            }
+        }
+
+        var ropes = FindObjectsByType<ElevatorRope>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (var rope in ropes)
+        {
+            if (rope != null)
+            {
+                rope.SetRopeVisible(visible);
+            }
+        }
+    }
+
+    // =========================================================================================
+    // จัดการเพลง BGM ระหว่างเล่นคัทซีน
+    // =========================================================================================
+    private AudioSource internalAudioSource;
+
+    private void PlayCutsceneBGM(AudioClip clip, int stage = 1, bool isClear = false)
+    {
+        AudioClip clipToPlay = clip != null ? clip : defaultCutsceneBGM;
+
+        if (clipToPlay == null && AudioManager.Instance != null)
+        {
+            if (isClear)
+                clipToPlay = AudioManager.Instance.Stage2ClearBGM;
+            else
+                clipToPlay = AudioManager.Instance.GetStageIntroBGM(stage);
+        }
+
+        if (clipToPlay != null)
+        {
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayBGM(clipToPlay, loopCutsceneBGM);
+            }
+            else
+            {
+                if (internalAudioSource == null)
+                {
+                    internalAudioSource = gameObject.GetComponent<AudioSource>();
+                    if (internalAudioSource == null) internalAudioSource = gameObject.AddComponent<AudioSource>();
+                }
+                internalAudioSource.clip = clipToPlay;
+                internalAudioSource.loop = loopCutsceneBGM;
+                internalAudioSource.volume = 0.8f;
+                internalAudioSource.Play();
+            }
         }
         else
         {
-            var lrObj = GameObject.Find("Visual/L_RopeVisual") ?? GameObject.Find("L_RopeVisual");
-            if (lrObj != null)
-            {
-                var lr = lrObj.GetComponent<LineRenderer>();
-                if (lr != null) lr.enabled = visible;
-            }
+            if (isClear)
+                AudioManager.Instance?.PlayStageClearBGM();
+            else
+                AudioManager.Instance?.PlayStageIntroBGM(stage);
+        }
+    }
+
+    private void StopCutsceneBGM()
+    {
+        if (internalAudioSource != null && internalAudioSource.isPlaying)
+        {
+            internalAudioSource.Stop();
         }
     }
 
@@ -196,7 +268,7 @@ public class StageCutsceneController : MonoBehaviour
         PlayActorAnim(cutscenePiglet2, pigletWalkState, pigletCutsceneAnimator);
         PlayActorAnim(cutsceneWolf, wolfRunState, wolfCutsceneAnimator);
 
-        AudioManager.Instance?.PlayStageIntroBGM();
+        PlayCutsceneBGM(stage1IntroBGM, stage: 1, isClear: false);
 
         float duration = 7.6f;
         float elapsed = 0f;
@@ -285,6 +357,7 @@ public class StageCutsceneController : MonoBehaviour
 
         IsPlayingCutscene = false;
         activeCutsceneRoutine = null;
+        StopCutsceneBGM();
         AudioManager.Instance?.ResumeStageBGM();
 
         onComplete?.Invoke();
@@ -313,7 +386,7 @@ public class StageCutsceneController : MonoBehaviour
         PlayActorAnim(cutscenePiglet2, pigletWalkState, pigletCutsceneAnimator);
         PlayActorAnim(cutsceneMama, mamaWalkState, mamaCutsceneAnimator);
 
-        AudioManager.Instance?.PlayStageIntroBGM();
+        PlayCutsceneBGM(stage2IntroBGM, stage: 2, isClear: false);
 
         // ปรับความเร็วให้ช้าลงตามคำขอ (6.8 วินาที วิ่งไล่กันแบบช้าๆ ชิลๆ คอมเมดี้)
         float duration = 6.8f;
@@ -349,6 +422,7 @@ public class StageCutsceneController : MonoBehaviour
 
         IsPlayingCutscene = false;
         activeCutsceneRoutine = null;
+        StopCutsceneBGM();
         AudioManager.Instance?.ResumeStageBGM();
 
         onComplete?.Invoke();
@@ -364,6 +438,7 @@ public class StageCutsceneController : MonoBehaviour
     private IEnumerator Stage2ClearReunionRoutine(Action onComplete)
     {
         IsPlayingCutscene = true;
+        PlayCutsceneBGM(stage2ClearBGM, stage: 2, isClear: true);
 
         var player = FindFirstObjectByType<PlayerController>(FindObjectsInactive.Include);
         Vector3 startGondolaPos = player != null ? player.transform.position : new Vector3(3.81f, 0.88f, 0f);
@@ -473,6 +548,7 @@ public class StageCutsceneController : MonoBehaviour
 
         IsPlayingCutscene = false;
         activeCutsceneRoutine = null;
+        StopCutsceneBGM();
 
         onComplete?.Invoke();
     }

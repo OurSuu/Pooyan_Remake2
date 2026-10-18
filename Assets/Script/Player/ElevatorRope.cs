@@ -22,6 +22,22 @@ public class ElevatorRope : MonoBehaviour
     private Vector3 lastPosition;
     private Material ropeMaterial;
     private float currentTextureOffset = 0f;
+    private bool isRopeSuppressed = false;
+
+    public LineRenderer LineRenderer => lineRenderer;
+
+    /// <summary>
+    /// สั่งซ่อนหรือแสดงเชือก (เช่น ตอนเล่นคัทซีนก่อนเริ่มด่าน 1 และด่าน 2)
+    /// </summary>
+    public void SetRopeVisible(bool visible)
+    {
+        isRopeSuppressed = !visible;
+        if (lineRenderer != null)
+        {
+            lineRenderer.enabled = visible;
+            lineRenderer.gameObject.SetActive(visible);
+        }
+    }
 
     private void Start()
     {
@@ -30,11 +46,23 @@ public class ElevatorRope : MonoBehaviour
         {
             ropeMaterial = lineRenderer.material; // ดึง Material มาไว้ขยับ Texture
         }
-        UpdateRopeVisual(); // อัปเดตเชือกตั้งแต่เฟรมแรกเลย
+        if (!isRopeSuppressed)
+        {
+            UpdateRopeVisual(); // อัปเดตเชือกตั้งแต่เฟรมแรกเลย
+        }
     }
 
     private void LateUpdate()
     {
+        if (isRopeSuppressed)
+        {
+            if (lineRenderer != null && lineRenderer.enabled)
+            {
+                lineRenderer.enabled = false;
+            }
+            return;
+        }
+
         // เช็คสถานะแม่หมู
         var player = GetComponent<PlayerController>();
         if (player != null && player.State == PlayerState.Dead)
