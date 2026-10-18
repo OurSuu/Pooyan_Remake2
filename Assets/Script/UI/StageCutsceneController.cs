@@ -439,29 +439,35 @@ public class StageCutsceneController : MonoBehaviour
     }
 
     // =========================================================================================
-    // 3. คัทซีนตอนจบด่าน 2 (Stage 2 Clear Cutscene):
-    //    - เชือกและกระเช้าแม่หมูยังคงอยู่ และค้างไว้ที่ตำแหน่งเดิมบนอากาศ ไม่หายไปไหน
-    //    - ลูกหมู 2 ตัวที่ได้รับการช่วยเหลือ วิ่งออกมาดีใจและกระโดดฉลองอย่างมีความสุขบนพื้น
-    //    - เมื่อจบเสียงเพลง Cutscene_EndSpring ก็ส่งต่อเข้าสู่ด่านโบนัส
+    // 3. คัทซีนตอนจบด่าน 2 (Stage 2 Clear Reunion Cutscene):
+    //    - เฟส 1: กระเช้าที่แม่หมูนั่งอยู่เลื่อนลงมาล่างสุดจนถึงพื้น พร้อมเชือกที่เชื่อมต่ออยู่ตลอด
+    //    - เฟส 2: กระเช้ายังคงอยู่ที่พื้น ไม่หายไปไหน! แม่หมูก้าวออกจากกระเช้าด้วยแอนิเมชัน CutScene_Walk_Spring เดินไปหาลูกหมู
+    //    - เฟส 3: แม่หมูกับลูกหมูกระโดดดีใจทักทายคุยกันสักครู่
+    //    - เฟส 4: แม่หมูเดินมุ่งหน้าต่อไปทางซ้ายเพื่อเข้าสู่ด่านโบนัส (ลูกหมูเดินตาม/ส่งแม่)
     // =========================================================================================
     private IEnumerator Stage2ClearReunionRoutine(Action onComplete)
     {
         IsPlayingCutscene = true;
         PlayCutsceneBGM(stage2ClearBGM, stage: 2, isClear: true);
 
-        // มั่นใจว่าตัวผู้เล่น (กระเช้า + แม่หมู) และเชือกยังคงเปิดใช้งานและแสดงผลอยู่ค้างไว้ที่เดิม
+        // 1. จัดการตัวผู้เล่น (กระเช้า + แม่หมู) และเชือกให้พร้อม
         var player = FindFirstObjectByType<PlayerController>(FindObjectsInactive.Include);
         bool prevPlayerEnabled = true;
+        Transform inBasketMama = null;
+
         if (player != null)
         {
-            // ถ้าตัว Player ปิดอยู่ (เช่น ถูกซ่อนจากคัทซีนเปิดด่าน หรือกดสูตรข้ามฉาก) ให้เปิดกลับขึ้นมาทันที
             if (!player.gameObject.activeSelf)
             {
                 player.gameObject.SetActive(true);
                 player.Respawn();
             }
 
-            // ตรวจสอบให้มั่นใจว่า SpriteRenderer ทุกชิ้นของแม่หมูและกระเช้าเปิดใช้งานครบถ้วน
+            inBasketMama = player.transform.Find("SpringMamaPig");
+            if (inBasketMama == null) inBasketMama = player.transform.Find("WinterMamaPig");
+            if (inBasketMama == null) inBasketMama = player.transform.Find("MamaPig");
+
+            // เปิดแสดงผลสไปรต์ทุกชิ้น (เกราะกระเช้าบน, เกราะกระเช้าล่าง, แม่หมู)
             foreach (var sr in player.GetComponentsInChildren<SpriteRenderer>(true))
             {
                 if (sr.gameObject.name != "HeldMeatVisual")
@@ -486,37 +492,89 @@ public class StageCutsceneController : MonoBehaviour
         cutsceneRoot.SetActive(true);
 
         if (cutsceneWolf != null) cutsceneWolf.gameObject.SetActive(false);
-        if (cutsceneMama != null) cutsceneMama.gameObject.SetActive(false); // แม่หมูอยู่บนกระเช้าในเกมอยู่แล้ว
-        if (cutsceneBasket != null) cutsceneBasket.gameObject.SetActive(false); // ไม่ใช้กระเช้าปลอม
+        if (cutsceneBasket != null) cutsceneBasket.gameObject.SetActive(false); // ใช้กระเช้าจริงของผู้เล่น ไม่ใช้กระเช้าปลอม
+        if (cutsceneMama != null) cutsceneMama.gameObject.SetActive(false); // แม่หมูอยู่ในกระเช้าจริงก่อน
 
-        // ลูกหมู 2 ตัวเริ่มวิ่งออกมาจากทางซ้าย (บริเวณที่เคยถูกหมาป่าจับไป) มุ่งหน้ากลับมาทางขวาหาแม่หมู
+        // พิกัดจุดยืนของลูกหมู 2 ตัวบนพื้นฝั่งซ้าย
+        Vector3 pig1Pos = new Vector3(0.6f, groundY + pigletYOffset, 0f);
+        Vector3 pig2Pos = new Vector3(-0.5f, groundY + pigletYOffset, 0f);
+        SetActor(cutscenePiglet1, pig1Pos, faceLeft: false, isWolf: false);
+        SetActor(cutscenePiglet2, pig2Pos, faceLeft: false, isWolf: false);
         PlayActorAnim(cutscenePiglet1, pigletWalkState, pigletCutsceneAnimator);
         PlayActorAnim(cutscenePiglet2, pigletWalkState, pigletCutsceneAnimator);
 
-        Vector3 pig1TargetPos = new Vector3(0.5f, groundY + pigletYOffset, 0f);
-        Vector3 pig2TargetPos = new Vector3(-0.6f, groundY + pigletYOffset, 0f);
+        Vector3 startGondolaPos = player != null ? player.transform.position : new Vector3(3.81f, 0.83f, 0f);
+        // คำนวณพิกัดระดับพื้นล่างสุดที่ก้นกระเช้าแตะพื้นหญ้าพอดี (-3.75 + 0.92 = -2.83)
+        float basketGroundY = groundY + 0.92f;
+        Vector3 groundGondolaPos = new Vector3(startGondolaPos.x, basketGroundY, startGondolaPos.z);
 
-        // เฟส 1: ลูกหมูวิ่งดีใจกลับเข้ามาที่ลานหน้าบ้านใต้กระเช้า (2.0 วินาที)
+        // -----------------------------------------------------------------------------------------
+        // เฟส 1: กระเช้าแม่หมูเลื่อนลงมาแตะพื้นอย่างนุ่มนวล (2.2 วินาที) — เชือกขยายตามลงมาอย่างเป็นธรรมชาติ
+        // -----------------------------------------------------------------------------------------
         float elapsed = 0f;
-        float walkDuration = 2.0f;
+        float lowerDuration = 2.2f;
+        while (elapsed < lowerDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / lowerDuration);
+            Vector3 curGondolaPos = Vector3.Lerp(startGondolaPos, groundGondolaPos, Mathf.SmoothStep(0f, 1f, t));
+
+            if (player != null)
+            {
+                player.transform.position = curGondolaPos;
+            }
+
+            // ลูกหมูยืนรอตื่นเต้นอยู่บนพื้น
+            float pigBob = Mathf.Abs(Mathf.Sin(elapsed * 8f)) * 0.04f;
+            SetActor(cutscenePiglet1, new Vector3(pig1Pos.x, groundY + pigletYOffset + pigBob, 0f), faceLeft: false, isWolf: false);
+            SetActor(cutscenePiglet2, new Vector3(pig2Pos.x, groundY + pigletYOffset + pigBob, 0f), faceLeft: false, isWolf: false);
+
+            yield return null;
+        }
+
+        if (player != null)
+        {
+            player.transform.position = groundGondolaPos;
+        }
+
+        // -----------------------------------------------------------------------------------------
+        // เฟส 2: กระเช้ายังคงอยู่ที่พื้น! แม่หมูก้าวออกจากกระเช้า (เปลี่ยนอนิเมชันเป็น CutScene_Walk_Spring)
+        //        และเดินมุ่งหน้าไปหาลูกหมู (2.5 วินาที)
+        // -----------------------------------------------------------------------------------------
+        // ซ่อนตัวแม่หมูในกระเช้า เพื่อให้แม่หมูตัวจริงก้าวออกมา (กระเช้าและเชือกยังคงอยู่บนพื้นตามเดิม!)
+        if (inBasketMama != null) inBasketMama.gameObject.SetActive(false);
+
+        Vector3 mamaExitStart = new Vector3(groundGondolaPos.x - 0.35f, groundY + mamaYOffset, 0f);
+        Vector3 mamaMeetPos = new Vector3(1.4f, groundY + mamaYOffset, 0f);
+
+        PlayActorAnim(cutsceneMama, mamaWalkState, mamaCutsceneAnimator);
+        SetActor(cutsceneMama, mamaExitStart, faceLeft: true, isWolf: false);
+
+        elapsed = 0f;
+        float walkDuration = 2.5f;
         while (elapsed < walkDuration)
         {
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / walkDuration);
             float walkBob = Mathf.Abs(Mathf.Sin(elapsed * 12f)) * 0.04f;
 
-            float p1X = Mathf.Lerp(-3.8f, pig1TargetPos.x, t);
-            float p2X = Mathf.Lerp(-5.2f, pig2TargetPos.x, t);
+            Vector3 curMamaPos = Vector3.Lerp(mamaExitStart, mamaMeetPos, t);
+            curMamaPos.y += walkBob;
+            SetActor(cutsceneMama, curMamaPos, faceLeft: true, isWolf: false);
 
-            SetActor(cutscenePiglet1, new Vector3(p1X, groundY + pigletYOffset + walkBob, 0f), faceLeft: false, isWolf: false);
-            SetActor(cutscenePiglet2, new Vector3(p2X, groundY + pigletYOffset + walkBob, 0f), faceLeft: false, isWolf: false);
+            // ลูกหมูหันมองแม่หมูเดินเข้ามาหา
+            float pigBob = Mathf.Abs(Mathf.Sin(elapsed * 8f)) * 0.03f;
+            SetActor(cutscenePiglet1, new Vector3(pig1Pos.x, groundY + pigletYOffset + pigBob, 0f), faceLeft: false, isWolf: false);
+            SetActor(cutscenePiglet2, new Vector3(pig2Pos.x, groundY + pigletYOffset + pigBob, 0f), faceLeft: false, isWolf: false);
 
             yield return null;
         }
 
-        // เฟส 2: ลูกหมูทั้งสองตัวกระโดดฉลองดีใจอย่างมีความสุข มองขึ้นมาหาแม่หมูบนกระเช้า (2.8 วินาที)
+        // -----------------------------------------------------------------------------------------
+        // เฟส 3: แม่หมูกระโดดดีใจทักทายคุยกับลูกหมูแป๊บเดียว (2.2 วินาที)
+        // -----------------------------------------------------------------------------------------
         elapsed = 0f;
-        float celebrateDuration = 2.8f;
+        float celebrateDuration = 2.2f;
         PlayActorAnim(cutscenePiglet1, pigletJumpState, pigletCutsceneAnimator);
         PlayActorAnim(cutscenePiglet2, pigletJumpState, pigletCutsceneAnimator);
 
@@ -524,17 +582,64 @@ public class StageCutsceneController : MonoBehaviour
         {
             elapsed += Time.deltaTime;
 
-            float jump1 = Mathf.Abs(Mathf.Sin(elapsed * 9f)) * 0.38f;
-            float jump2 = Mathf.Abs(Mathf.Sin((elapsed + 0.18f) * 9f)) * 0.35f;
+            float jump1 = Mathf.Abs(Mathf.Sin(elapsed * 9f)) * 0.35f;
+            float jump2 = Mathf.Abs(Mathf.Sin((elapsed + 0.15f) * 9f)) * 0.32f;
+            SetActor(cutscenePiglet1, new Vector3(pig1Pos.x, groundY + pigletYOffset + jump1, 0f), faceLeft: false, isWolf: false);
+            SetActor(cutscenePiglet2, new Vector3(pig2Pos.x, groundY + pigletYOffset + jump2, 0f), faceLeft: false, isWolf: false);
 
-            SetActor(cutscenePiglet1, new Vector3(pig1TargetPos.x, groundY + pigletYOffset + jump1, 0f), faceLeft: false, isWolf: false);
-            SetActor(cutscenePiglet2, new Vector3(pig2TargetPos.x, groundY + pigletYOffset + jump2, 0f), faceLeft: false, isWolf: false);
+            float mamaHop = Mathf.Abs(Mathf.Sin(elapsed * 9f)) * 0.22f;
+            SetActor(cutsceneMama, new Vector3(mamaMeetPos.x, groundY + mamaYOffset + mamaHop, 0f), faceLeft: true, isWolf: false);
 
             yield return null;
         }
 
-        // คืนค่าและทำความสะอาด
+        // -----------------------------------------------------------------------------------------
+        // เฟส 4: แม่หมูเดินมุ่งหน้าต่อไปทางซ้าย เข้าสู่ด่านโบนัส! (ลูกหมูหันซ้ายเดินตาม/ส่งแม่) (2.8 วินาที)
+        // -----------------------------------------------------------------------------------------
+        elapsed = 0f;
+        float marchDuration = 2.8f;
+        Vector3 mamaExitTarget = new Vector3(-8.8f, groundY + mamaYOffset, 0f);
+
+        PlayActorAnim(cutsceneMama, mamaWalkState, mamaCutsceneAnimator);
+        PlayActorAnim(cutscenePiglet1, pigletWalkState, pigletCutsceneAnimator);
+        PlayActorAnim(cutscenePiglet2, pigletWalkState, pigletCutsceneAnimator);
+
+        Vector3 pig1StartMarch = pig1Pos;
+        Vector3 pig2StartMarch = pig2Pos;
+        Vector3 pig1TargetMarch = new Vector3(-8.0f, groundY + pigletYOffset, 0f);
+        Vector3 pig2TargetMarch = new Vector3(-8.8f, groundY + pigletYOffset, 0f);
+
+        while (elapsed < marchDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / marchDuration);
+            float walkBob = Mathf.Abs(Mathf.Sin(elapsed * 12f)) * 0.04f;
+
+            // แม่หมูเดินนำหน้าไปทางซ้าย
+            Vector3 curMamaPos = Vector3.Lerp(mamaMeetPos, mamaExitTarget, t);
+            curMamaPos.y += walkBob;
+            SetActor(cutsceneMama, curMamaPos, faceLeft: true, isWolf: false);
+
+            // ลูกหมูหันหน้าไปทางซ้ายเดินตามแม่หมู
+            Vector3 curPig1 = Vector3.Lerp(pig1StartMarch, pig1TargetMarch, t * 0.75f);
+            curPig1.y += walkBob;
+            SetActor(cutscenePiglet1, curPig1, faceLeft: true, isWolf: false);
+
+            Vector3 curPig2 = Vector3.Lerp(pig2StartMarch, pig2TargetMarch, t * 0.75f);
+            curPig2.y += walkBob;
+            SetActor(cutscenePiglet2, curPig2, faceLeft: true, isWolf: false);
+
+            yield return null;
+        }
+
+        // -----------------------------------------------------------------------------------------
+        // จบคัทซีน: ทำความสะอาด คืนค่าตัวละคร และส่งต่อไปยังด่านโบนัส
+        // -----------------------------------------------------------------------------------------
         cutsceneRoot.SetActive(false);
+        if (inBasketMama != null)
+        {
+            inBasketMama.gameObject.SetActive(true);
+        }
         if (player != null)
         {
             player.enabled = prevPlayerEnabled;
