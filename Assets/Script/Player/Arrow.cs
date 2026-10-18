@@ -60,11 +60,27 @@ public class Arrow : MonoBehaviour
         // ถ้าชนลูกโป่ง
         if (other.CompareTag(GameConstants.TagBalloon))
         {
+            if (isDeflected) return; // ถ้าลูกธนูโดนปัดไปแล้ว ไม่ให้เจาะลูกโป่งบอสซ้ำ
+
             // เช็คก่อนว่านี่บอสหรือเปล่า ถ้าใช่ก็ให้บอสรับดาเมจไป
             var boss = other.GetComponentInParent<BossWolf>();
             if (boss != null)
             {
-                boss.TryTakeArrowHit();
+                if (!boss.TryTakeArrowHit())
+                {
+                    // โล่บอสยังกันไว้ได้ -> ลูกธนูถูกปัดร่วงลงพื้นเหมือนชนโล่!
+                    isDeflected = true;
+                    transform.rotation = Quaternion.Euler(0, 0, 90f);
+                    speed = 0;
+                    direction = 0;
+                    var rbBoss = GetComponent<Rigidbody2D>();
+                    if (rbBoss != null)
+                    {
+                        rbBoss.linearVelocity = new Vector2(0f, -3f);
+                        rbBoss.gravityScale = 1.5f;
+                    }
+                    return;
+                }
                 DestroySelf();
                 return;
             }

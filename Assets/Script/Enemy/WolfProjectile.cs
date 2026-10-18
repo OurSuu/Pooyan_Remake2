@@ -21,9 +21,9 @@ public class WolfProjectile : MonoBehaviour
     private bool isDeflected; // กระดอนหรือชนกิ่งไม้/โล่แล้วหรือยัง
 
     [Header("Trajectory Mode (โหมดวิถีการปา)")]
-    [Tooltip("เปิดใช้ระบบวิถีปาหินโค้งย้อยแบบ NES 1985 (ถ้าปิด = ใช้โค้ดเดิมที่เล็งตามตัวผู้เล่นตรงๆ 100%)")]
+    [Tooltip("เปิดใช้ระบบวิถีปาหินโค้งแบบ NES 1985 (ถ้าปิด = ใช้โค้ดเดิมที่เล็งตามตัวผู้เล่นตรงๆ 100%)")]
     [SerializeField] private bool useArcadeTrajectory = true;
-    [SerializeField] private float arcGravity = 9.8f; // แรงโน้มถ่วงดึงหินให้โค้งย้อยแบบ NES
+    [SerializeField] private float arcGravity = 2.6f; // แรงโน้มถ่วงวิถีโค้งแบบ NES (โค้งพุ่งแนวราบเข้าช่องหน้ากระเช้า ไม่ใช่ปาย้อยตั้งฉากลงหลังคา)
 
     // ติดตามจำนวนหินที่กำลังบินอยู่บนจอ (จำกัด 3 ก้อนตามตู้ Arcade)
     public static int ActiveRockCount { get; private set; } = 0;
@@ -81,37 +81,39 @@ public class WolfProjectile : MonoBehaviour
     }
 
     // ==============================================================================
-    // [โหมด NES 1985] ปางัดขึ้นบนแล้วโค้งย้อยลงมาตามแรงโน้มถ่วง (Parabolic Arc)
+    // [โหมด NES 1985] ปาพุ่งวิถีโค้งแนวราบ (Shallow Parabolic Arc) เข้าช่องหน้ากระเช้าแม่หมู
     // ==============================================================================
     private void LaunchArcade(PlayerController player)
     {
         hasGravity = true;
 
+        // ใช้แรงโน้มถ่วงวิถีโค้งตื้น (ป้องกันกรณี Prefab เก่าใน Inspector เซ็ตค่า 9.8 ค้างไว้จนหินย้อยตกใส่หลังคากระเช้า)
+        if (arcGravity > 3.5f) arcGravity = 2.6f;
+
         float targetY = player != null ? player.transform.position.y : transform.position.y;
         float targetX = player != null ? player.transform.position.x : transform.position.x + 6f;
 
-        // ในด่านคี่ (Stage 1) มีการดักหน้าเล็กน้อยตามจังหวะเลื่อนของกระเช้าแม่หมู
+        // ในด่านคี่ (Stage 1, 3) มีการดักหน้าเล็กน้อยตามจังหวะเลื่อนของกระเช้าแม่หมู
         bool isOdd = GameManager.Instance == null || GameManager.Instance.IsOddStage;
         if (isOdd && player != null)
         {
             float pV = Input.GetAxisRaw("Vertical");
-            targetY += pV * 0.6f;
+            targetY += pV * 0.35f;
         }
 
-        // คำนวณระยะห่าง
-        float dx = Mathf.Max(2f, targetX - transform.position.x);
-        float dy = targetY - transform.position.y;
+        // คำนวณระยะห่างแนวนอน และจำกัดมุมเงย/ก้ม (dy) ไม่ให้หมาป่าปาหินเสยขึ้นฟ้าเหมือนจรวด
+        float dx = Mathf.Max(2.5f, targetX - transform.position.x);
+        float rawDy = targetY - transform.position.y;
+        float clampedDy = Mathf.Clamp(rawDy, -2.2f, 1.5f);
 
-        // ความเร็วพุ่งไปข้างหน้าคงที่
-        float vx = speed > 0 ? speed : 6f;
+        // ความเร็วพุ่งไปข้างหน้าแนวราบ (6.5 หน่วย/วิ เพื่อให้วิถีหินพุ่งเข้าช่องกลางกระเช้าได้พอดี)
+        float vx = Mathf.Max(6.5f, speed);
         float timeToTarget = dx / vx;
 
-        // คำนวณแรงงัดขึ้นข้างบน (Vy0) เพื่อให้โค้งย้อยไปตกที่ระดับความสูงเป้าหมาย:
-        // dy = Vy0 * t - 0.5 * g * t^2  ==>  Vy0 = (dy / t) + 0.5 * g * t
-        float vy0 = (dy / timeToTarget) + 0.5f * arcGravity * timeToTarget;
-
-        // สุ่มเพิ่มความสูง-ต่ำเล็กน้อย ให้หินแต่ละก้อนมีวิถีแตกต่างกันอย่างเป็นธรรมชาติ
-        vy0 += Random.Range(-0.3f, 0.3f);
+        // คำนวณแรงส่งแนวตั้งต้น (Vy0) ให้โค้งตื้นแบบ NES Pooyan
+        float vy0 = (clampedDy / timeToTarget) + 0.5f * arcGravity * timeToTarget;
+        vy0 += Random.Range(-0.15f, 0.15f);
+        vy0 = Mathf.Clamp(vy0, -2.5f, 3.2f);
 
         velocity = new Vector2(vx, vy0);
     }
@@ -211,13 +213,18 @@ public class WolfProjectile : MonoBehaviour
         if (destroyed) return;
         destroyed = true;
 
-        // ได้แต้มต่างกันไปตามชนิดของที่ปามา
+        // ได้แต้มและเสียงต่างกันไปตามชนิดของที่ปามา
         if (type == WolfProjectileType.Rock)
+        {
             ScoreManager.Instance?.AddRockDestroyScore(transform.position);
+            AudioManager.Instance?.PlayRockDestroy();
+        }
         else
+        {
             ScoreManager.Instance?.AddFruitDestroyScore(transform.position);
+            AudioManager.Instance?.PlayFruitHit();
+        }
 
-        AudioManager.Instance?.PlayRockDestroy(); // เสียงดังแกร๊ง!
         Destroy(gameObject); // ลบทิ้ง
     }
 }

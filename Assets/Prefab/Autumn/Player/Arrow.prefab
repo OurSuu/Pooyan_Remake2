@@ -262,7 +262,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d7753c10207a12748b51024942277a01, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Arrow
-  speed: 15
+  speed: 18.5
   destroyX: -8
   damage: 1
 --- !u!1 &8626820026515424330

@@ -4,6 +4,8 @@
 /[Oo]bj/
 /[Bb]uild/
 /[Bb]uilds/
+/[Pp]hototype/
+/[Pp]rototype/
 /[Ll]ogs/
 /[Uu]ser[Ss]ettings/
 
@@ -36,11 +38,15 @@ ExportedObj/
 *.pdb.meta
 *.mdb.meta
 
-# ไฟล์ Build และแพ็กเกจ (เช่น .apk, .app)
+# ไฟล์ Build และแพ็กเกจ (เช่น .apk, .app, .zip)
 *.apk
 *.aab
 *.unitypackage
 *.app
+*.zip
+*.7z
+*.rar
+*.tar.gz
 
 # ไฟล์แครชและอื่นๆ
 sysinfo.txt

@@ -57,6 +57,7 @@ public class Wolf : MonoBehaviour
         state == WolfState.BlowingBalloon || 
         state == WolfState.Floating;
     protected float floatSpeed;
+    protected float baseFloatSpeed;
     protected bool hasShield;
     protected bool canThrowRock;
     protected bool rapidFire = false;
@@ -136,6 +137,31 @@ public class Wolf : MonoBehaviour
         }
     }
 
+    public void CopySettingsTo(Wolf target)
+    {
+        if (target == null) return;
+        target.balloon = this.balloon;
+        target.balloonPrefab = this.balloonPrefab;
+        target.shieldTransform = this.shieldTransform;
+        target.rockPrefab = this.rockPrefab;
+        target.spriteDrop = this.spriteDrop;
+        target.spriteWaitLadder = this.spriteWaitLadder;
+        target.waitLadderAnimName = this.waitLadderAnimName;
+        target.spriteFly = this.spriteFly;
+        target.spriteFall = this.spriteFall;
+        target.spritePushIdle = this.spritePushIdle;
+        target.pushAnimName = this.pushAnimName;
+        target.fallSpeed = this.fallSpeed;
+        target.walkSpeed = this.walkSpeed;
+        target.climbSpeed = this.climbSpeed;
+        target.shieldToggleInterval = this.shieldToggleInterval;
+        target.rockThrowInterval = this.rockThrowInterval;
+        target.walkGroundY = this.walkGroundY;
+        target.deadGroundY = this.deadGroundY;
+        target.cliffHitY = this.cliffHitY;
+        target.groundDustPrefab = this.groundDustPrefab;
+    }
+
     public void DisableTeaseBounces()
     {
         teaseBounces = 0;
@@ -162,6 +188,7 @@ public class Wolf : MonoBehaviour
         
         // ONLY float speed is controlled by LevelConfig (so it can be randomized per wolf)
         // walkSpeed, climbSpeed, and fallSpeed will strictly use the values you set in the Inspector!
+        baseFloatSpeed = speed;
         floatSpeed = speed;
         hasShield = shield;
         canThrowRock = rockThrow;
@@ -184,24 +211,19 @@ public class Wolf : MonoBehaviour
         {
             targetBalloonHP = overrideBalloonHP.Value;
         }
+        else if (!descending)
+        {
+            // ต้นฉบับ NES ด่านคู่ (Stage 2, 4, ... ลอยขึ้น): ลูกโป่งสีฟ้า ทนลูกธนูได้ 2 ดอก ดอกที่ 3 แตก (3 HP)
+            targetBalloonHP = (config != null && config.balloonHP >= 3) ? config.balloonHP : 3;
+        }
         else if (config != null && config.balloonHP > 1)
         {
             targetBalloonHP = config.balloonHP;
         }
         else
         {
-            // ถ้า config กำหนดโอกาสลูกโป่งเหลือง (yellowBalloonRatio > 0) ให้สุ่มตามนั้นเลย (รวมถึงด่านลอยลง เช่น Winter)
-            // หรือถ้าเป็นด่านลอยขึ้น (!descending) ตามต้นฉบับ Famicom จะมีโอกาส ~30%
-            float yellowChance = 0f;
-            if (config != null && config.yellowBalloonRatio > 0f)
-            {
-                yellowChance = config.yellowBalloonRatio;
-            }
-            else if (!descending)
-            {
-                yellowChance = 0.3f; // ต้นฉบับ Famicom ด่าน 2
-            }
-
+            // ด่านคี่ (ลอยลง): พื้นฐาน 1 HP (หรือสุ่ม 2 HP หากตั้ง yellowBalloonRatio ไว้ในด่านหลังๆ)
+            float yellowChance = (config != null && config.yellowBalloonRatio > 0f) ? config.yellowBalloonRatio : 0f;
             targetBalloonHP = (Random.value < yellowChance) ? 2 : 1;
         }
 
@@ -224,6 +246,20 @@ public class Wolf : MonoBehaviour
         // Reset visuals
         if (cachedSR != null) cachedSR.flipX = false;
         if (animator != null) animator.enabled = true;
+    }
+
+    /// <summary>
+    /// เรียกเมื่อลูกโป่งโดนยิงแล้วยังไม่แตก — ในด่านคู่ (ลอยขึ้น) ความเร็วจะลดลงตามลูกโป่งที่หดตัวตามต้นฉบับ NES
+    /// </summary>
+    public virtual void OnBalloonDamaged(int currentHP, int maxHP)
+    {
+        if (!isDescendingStage && maxHP > 1)
+        {
+            if (currentHP == 2)
+                floatSpeed = baseFloatSpeed * 0.6f;  // โดนดอกที่ 1: ความเร็วเหลือ 60%
+            else if (currentHP <= 1)
+                floatSpeed = baseFloatSpeed * 0.35f; // โดนดอกที่ 2: ความเร็วเหลือ 35%
+        }
     }
 
     protected virtual void Update()
@@ -326,6 +362,7 @@ public class Wolf : MonoBehaviour
     {
         state = WolfState.BlowingBalloon;
         if (animator != null && animator.enabled) animator.Play("BlowBalloon");
+        AudioManager.Instance?.PlayBalloonInflate();
         StartCoroutine(BlowBalloonRoutine());
     }
 
@@ -484,11 +521,26 @@ public class Wolf : MonoBehaviour
     }
 
 
-            protected void UpdateRockThrow()
+    protected void UpdateRockThrow()
     {
         rockTimer -= Time.deltaTime;
         if (rockTimer <= 0f && rockPrefab != null)
         {
+            // ปาหินเฉพาะตอนลอยอยู่ในช่วงความสูงกลางจอ (ไม่ปาตอนเพิ่งพ้นพื้นล่างสุด หรือติดเพดานบนสุด)
+            if (transform.position.y < -2.5f || transform.position.y > 2.8f)
+            {
+                rockTimer = 0.4f;
+                return;
+            }
+
+            // ถ้าหมาป่าอยู่ต่ำกว่าแม่หมูมากๆ (เกิน 2.2 หน่วย) จะยังไม่ปาเสยขึ้นฟ้า รอให้ลอยอยู่ในระยะวิถีโค้งก่อนตามต้นฉบับ NES
+            var player = FindAnyObjectByType<PlayerController>();
+            if (player != null && (player.transform.position.y - transform.position.y) > 2.2f)
+            {
+                rockTimer = 0.4f;
+                return;
+            }
+
             // โควต้าตู้ Arcade: มีหินบนจอได้สูงสุด 3 ก้อนพร้อมกัน (ยกเว้นเปิด Debug Rapid Fire ไว้)
             if (!rapidFire && WolfProjectile.ActiveRockCount >= 3)
             {
@@ -520,6 +572,7 @@ public class Wolf : MonoBehaviour
         {
             var rock = Instantiate(rockPrefab, transform.position, Quaternion.identity);
             rock.GetComponent<WolfProjectile>()?.LaunchAtPlayer(WolfProjectileType.Rock);
+            AudioManager.Instance?.PlayRockThrow();
         }
 
         // 4. รอท่าปาหินจบ (0.3 วินาที) แล้วกลับสู่ท่าลอยตัวปกติ
@@ -540,6 +593,9 @@ public class Wolf : MonoBehaviour
         {
             transform.position = new Vector3(transform.position.x, deadGroundY, 0f);
             state = WolfState.Dead;
+
+            // นับคิลทันทีที่หมาป่าตกกระแทกพื้น (ไม่ต้องรอเฟดจาง 1 วินาที)
+            GetComponent<WolfDeathNotifier>()?.ReportKillNow();
 
             SpawnGroundDust(); // เสกฝุ่นฟุ้งกระจายตอนกระแทกพื้น
             
@@ -622,6 +678,13 @@ public class Wolf : MonoBehaviour
 
     protected virtual void OnReachedCliff()
     {
+        // ถ้าเป็นด่านโบนัสปาเนื้อ หมาป่าที่ลอยพ้นขอบบนให้หายไปเลย (ไม่ไปสะสมผลักหินยักษ์ เพราะด่านโบนัสห้ามตาย!)
+        if (GameManager.Instance != null && GameManager.Instance.IsBonus)
+        {
+            DestroyWolf();
+            return;
+        }
+
         state = WolfState.ReachedCliff;
         if (balloon != null) balloon.gameObject.SetActive(false);
         SetRunningVisual();
@@ -824,6 +887,7 @@ public class Wolf : MonoBehaviour
 
         
         state = WolfState.Falling;
+        WolfTracker.Instance?.UnregisterTargetWolf(this);
         SetFallingVisual();
         AudioManager.Instance?.PlayWolfFall();
 

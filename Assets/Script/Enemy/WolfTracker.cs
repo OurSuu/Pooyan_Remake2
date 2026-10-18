@@ -1,9 +1,10 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
 /// ระบบนับจำนวนหมาป่าที่ถูกฆ่าจริงๆ การที่มันลงพื้นหรือไปถึงหน้าผาไม่นับเป็นคิลนะ
-/// (ตามหลัก Arcade: ถ้ารอด ด่านคี่มันจะมาเติมใหม่ ถ้าด่านคู่มันไปดันหิน)
+/// (ตามหลัก Arcade/NES: ถ้ารอด ด่านคี่มันจะมาเติมใหม่ ถ้าด่านคู่มันไปดันหิน)
 /// </summary>
 public class WolfTracker : MonoBehaviour
 {
@@ -32,13 +33,31 @@ public class WolfTracker : MonoBehaviour
         if (Instance == this) Instance = null; // คืนค่าตอนโดนทำลาย กันบัค
     }
 
-    private readonly System.Collections.Generic.HashSet<Wolf> activeTargetWolves = new();
+    private readonly HashSet<Wolf> activeTargetWolves = new();
+    private readonly HashSet<WolfDeathNotifier> quotaNotifiers = new();
+
+    /// <summary>
+    /// จำนวนหมาป่าที่ยังเป็นเป้าที่มีชีวิตอยู่ในอากาศ/กำลังเดินมาเป่าลูกโป่ง (ไม่รวมตัวที่กำลังร่วงตกพื้น)
+    /// </summary>
     public int ActiveTargetCount
     {
         get
         {
             activeTargetWolves.RemoveWhere(w => w == null || !w.IsActiveTarget);
             return activeTargetWolves.Count;
+        }
+    }
+
+    /// <summary>
+    /// จำนวนหมาป่าที่เสกออกมาแล้วและยังถือโควต้าคิลอยู่ (รวมทั้งตัวที่กำลังลอย และตัวที่กำลังร่วงลงพื้นแต่ยังไม่ทันนับแต้มคิล)
+    /// ใช้คำนวณ neededToSpawn เพื่อป้องกันไม่ให้เสกหมาป่าเกินโควต้าระหว่างที่หมาป่ากำลังร่วงลงพื้น!
+    /// </summary>
+    public int InFlightQuotaCount
+    {
+        get
+        {
+            quotaNotifiers.RemoveWhere(n => n == null || !n.countsAsKill || n.HasReportedKill);
+            return quotaNotifiers.Count;
         }
     }
 
@@ -49,6 +68,7 @@ public class WolfTracker : MonoBehaviour
         targetKills = Mathf.Max(1, wolfKillQuota);
         kills = 0;
         activeTargetWolves.Clear();
+        quotaNotifiers.Clear();
         suppressNotifications = false;
         OnKillCountChanged?.Invoke(RemainingKills); // อัปเดต UI ให้เห็นว่าเป้าหมายมีกี่ตัว
     }
@@ -69,6 +89,7 @@ public class WolfTracker : MonoBehaviour
         if (notifier == null)
             notifier = wolf.gameObject.AddComponent<WolfDeathNotifier>();
         notifier.Initialize(this); // ผูกมันเข้ากับ Tracker ตัวนี้แหละ
+        quotaNotifiers.Add(notifier);
     }
 
     // ยกเลิกการเป็นเป้าหมาย (เช่น หมาป่าหนีรอดไปได้ หรือตายแล้ว)
@@ -125,7 +146,14 @@ public class WolfDeathNotifier : MonoBehaviour
     public bool countsAsKill = true; // บ่งบอกว่าตายแบบนับแต้มไหม
     private bool reported; // แจ้งไปแล้วหรือยัง
 
-    public void Initialize(WolfTracker wolfTracker) => tracker = wolfTracker;
+    public bool HasReportedKill => reported;
+
+    public void Initialize(WolfTracker wolfTracker)
+    {
+        tracker = wolfTracker;
+        countsAsKill = true;
+        reported = false;
+    }
 
     // ถ้ามันหนีรอดไปได้ ก็ไม่นับเป็นคิลแล้วนะเฟ้ย
     public void MarkEscaped()
@@ -133,13 +161,17 @@ public class WolfDeathNotifier : MonoBehaviour
         countsAsKill = false;
     }
 
+    // เรียกทันทีเมื่อหมาป่าร่วงกระแทกพื้นตาย (หรือถูกทำลายจากการตาย) เพื่อให้นับคิลทันทีโดยไม่ต้องรอเฟดจาง 1 วินาที
+    public void ReportKillNow()
+    {
+        if (reported || !countsAsKill) return;
+        reported = true;
+        tracker?.NotifyKilled();
+    }
+
     // พอ GameObject นี้ถูกทำลาย (ตาย หรือ ถูกลบ)
     private void OnDestroy()
     {
-        // ถ้าเคยแจ้งไปแล้ว หรือไม่ต้องนับแต้ม ก็ข้ามไป
-        if (reported || !countsAsKill) return;
-        reported = true;
-        tracker?.NotifyKilled(); // ไปบอก Tracker ว่าตัวนี้ตายจริง!
+        ReportKillNow();
     }
 }
-

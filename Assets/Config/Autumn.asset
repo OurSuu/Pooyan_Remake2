@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea4e129347de49849bbd6c653092c7dc, type: 3}
   m_Name: Autumn
   m_EditorClassIdentifier: Assembly-CSharp::LevelConfig
-  wolfCount: 24
-  wolfSpeedRange: {x: 1.5, y: 1}
+  wolfCount: 16
+  wolfSpeedRange: {x: 0.85, y: 1.2}
   shieldRatio: 0.05
-  rockThrowRatio: 0.05
-  spawnInterval: 5
+  rockThrowRatio: 0.15
+  spawnInterval: 2.5
   balloonHP: 1
   yellowBalloonRatio: 0
-  hasBossWolf: 1
+  hasBossWolf: 0
   hasTreeTopBoss: 0
   bossShieldHP: 3

@@ -39,6 +39,7 @@ public class ElevatorRope : MonoBehaviour
         var player = GetComponent<PlayerController>();
         if (player != null && player.State == PlayerState.Dead)
         {
+            AudioManager.Instance?.SetRopePullSound(false);
             if (!keepRopeOnDeath)
             {
                 if (lineRenderer != null) lineRenderer.enabled = false;
@@ -104,10 +105,11 @@ public class ElevatorRope : MonoBehaviour
     private void UpdatePigletAnimations()
     {
         float deltaY = transform.position.y - lastPosition.y;
-        float speed = deltaY / Time.deltaTime;
+        float speed = Time.deltaTime > 0f ? (deltaY / Time.deltaTime) : 0f;
         
         // ถ้ากระเช้าขยับอยู่ ถือว่ากำลังดึงเชือก
         bool currentlyMoving = Mathf.Abs(speed) > 0.05f;
+        AudioManager.Instance?.SetRopePullSound(currentlyMoving);
         
         // สลับ State อนิเมชัน
         if (currentlyMoving != isPulling)

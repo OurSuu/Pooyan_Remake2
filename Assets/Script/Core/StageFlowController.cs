@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 /// <summary>
 /// ตัวคุม Flow การเริ่ม/จบด่าน — คอยจัดการพวกรีเซ็ตระบบในฉาก แล้วก็สั่งเปิดปิดบอสบนต้นไม้
@@ -42,6 +42,9 @@ public class StageFlowController : MonoBehaviour
     // กำจัดหมาป่าเกลี้ยงแล้ว สั่งเคลียร์ด่านได้เลย
     private void HandleAllWolvesDefeated()
     {
+        if (treeTopBoss != null)
+            treeTopBoss.Activate(false);
+
         if (GameManager.Instance != null && GameManager.Instance.IsPlaying)
             GameManager.Instance.TriggerStageClear();
     }
@@ -55,7 +58,25 @@ public class StageFlowController : MonoBehaviour
         }
     }
 
-    // เริ่มต้นด่าน เตรียมความพร้อม
+    // เตรียมข้อมูลฉากและตัวเลขหมาป่าบน HUD ให้พร้อมก่อนเล่นคัทซีนเปิดด่าน (ยังไม่ปล่อยหมาป่า)
+    public void PrepareStageBeforeCutscene(int stage)
+    {
+        WolfTracker.Instance?.SuppressNotifications(true);
+        ClearAllEntities();
+        ladderSystem?.ResetLadder();
+        boulderSystem?.ResetCliff();
+
+        var config = LevelManager.Instance?.GetConfigForStage(stage);
+        if (config != null)
+            WolfTracker.Instance?.BeginStage(config.wolfCount);
+        else
+            WolfTracker.Instance?.ResetCount();
+
+        if (treeTopBoss != null)
+            treeTopBoss.Activate(false);
+    }
+
+    // เริ่มต้นด่าน เตรียมความพร้อมและปล่อยหมาป่าเมื่อคัทซีนจบแล้ว
     public void OnStageStart(int stage)
     {
         WolfTracker.Instance?.SuppressNotifications(true); // ปิดการแจ้งเตือนชั่วคราว
@@ -89,14 +110,8 @@ public class StageFlowController : MonoBehaviour
         WolfTracker.Instance?.SuppressNotifications(false); // ล้างฉากก่อนเลย
         ladderSystem?.ResetLadder();
         
-        if (diedFromBoulder && boulderSystem != null)
-        {
-            boulderSystem.ResetCliff(4); // ถ้าตายเพราะโดนหินทับ ให้เหลือหมาป่าที่หน้าผาไว้ 4 ตัว
-        }
-        else
-        {
-            boulderSystem?.ResetCliff();
-        }
+        // รีเซ็ตหน้าผาและก้อนหินใหม่ทั้งหมดเพื่อไม่ให้มีหมาป่าล่องหนค้างอยู่ 4 ตัวหลังตาย
+        boulderSystem?.ResetCliff(0);
 
         // เปิดปิดบอสใหม่ตาม Config ของด่าน
         var config = LevelManager.Instance?.GetConfigForStage(GameManager.Instance.CurrentStage);
@@ -114,10 +129,21 @@ public class StageFlowController : MonoBehaviour
             var objs = GameObject.FindGameObjectsWithTag(tag);
             foreach (var obj in objs)
             {
+                if (treeTopBoss != null && obj == treeTopBoss.gameObject)
+                    continue;
+
                 var notifier = obj.GetComponent<WolfDeathNotifier>();
                 if (notifier != null) notifier.countsAsKill = false;
                 Destroy(obj);
             }
+        }
+
+        // ลบลูกโป่งลอยเดี่ยวๆ ที่ไม่ได้เกาะกับตัวหมาป่าออกด้วย
+        var balloons = FindObjectsByType<Balloon>(FindObjectsSortMode.None);
+        foreach (var b in balloons)
+        {
+            if (b != null && b.transform.parent == null)
+                Destroy(b.gameObject);
         }
     }
 }

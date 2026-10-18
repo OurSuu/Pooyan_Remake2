@@ -40,6 +40,10 @@ public class BonusStageManager : MonoBehaviour
     private BonusType currentBonusType; // เก็บว่าตอนนี้เล่นโบนัสแบบไหนอยู่
     private Coroutine bonusRoutine; // เก็บ Coroutine เผื่อต้องสั่งหยุดกลางคัน
 
+    [Header("Bonus Order (NES vs Arcade)")]
+    [Tooltip("เปิดไว้ = ลำดับตาม NES 1985 (หลังด่าน 2 เป็นโบนัสปาเนื้อ, หลังด่าน 4 เป็นโบนัสยิงผลไม้)")]
+    [SerializeField] private bool useNESBonusOrder = true;
+
     public BonusStageMode BonusStyle
     {
         get => bonusStyle;
@@ -102,7 +106,13 @@ public class BonusStageManager : MonoBehaviour
     public void StartBonusStage()
     {
         int stage = GameManager.Instance?.CurrentStage ?? 2;
-        currentBonusType = (stage == 2 || ((stage / 2) % 2 != 0)) ? BonusType.Fruit : BonusType.Meat;
+        bool isFirstBonusInCycle = (stage == 2 || ((stage / 2) % 2 != 0));
+
+        // ตามต้นฉบับ NES (Famicom): โบนัสแรก (หลังด่าน 2) คือปาเนื้อ (Meat Bonus), โบนัสที่สอง (หลังด่าน 4) คือยิงผลไม้ (Fruit Bonus)
+        if (useNESBonusOrder)
+            currentBonusType = isFirstBonusInCycle ? BonusType.Meat : BonusType.Fruit;
+        else
+            currentBonusType = isFirstBonusInCycle ? BonusType.Fruit : BonusType.Meat;
 
         FindAnyObjectByType<StageFlowController>()?.ClearAllEntities();
         FindAnyObjectByType<WolfSpawner>()?.StopAllSpawning();
@@ -118,6 +128,9 @@ public class BonusStageManager : MonoBehaviour
             StopCoroutine(bonusRoutine);
             bonusRoutine = null;
         }
+
+        var player = FindAnyObjectByType<PlayerController>();
+        if (player != null) player.SetMeatBonusMode(false);
 
         if (bossWolf != null) bossWolf.gameObject.SetActive(false);
     }
@@ -245,27 +258,45 @@ public class BonusStageManager : MonoBehaviour
         }
         else
         {
-            // --- โบนัสเนื้อ: เสกเนื้อรัวๆ โยนได้ไม่อั้น ---
-            if (player != null) player.SetMeatAvailable(true);
+            // --- โบนัสเนื้อ (Meat Bonus Stage ตามต้นฉบับ NES หลังด่าน 2) ---
+            // 1. ซ่อนบอสโยนผลไม้และหมาป่าปาผลไม้ (เพราะรอบนี้เป็นโบนัสปาเนื้อ!)
+            if (bossWolf != null) bossWolf.gameObject.SetActive(false);
+            if (wolfThrowers != null)
+            {
+                foreach (var w in wolfThrowers) if (w != null) w.gameObject.SetActive(false);
+            }
 
+            // 2. ล็อกให้แม่หมูยิงลูกธนูไม่ได้ ได้แค่หยิบและปาเนื้ออย่างเดียว!
+            if (player != null) player.SetMeatBonusMode(true);
+
+            var spawner = FindAnyObjectByType<WolfSpawner>();
+            int spawnCounter = 0;
             float elapsed = 0f;
+            float spawnStep = 1.6f;
+
             while (elapsed < bonusDuration)
             {
-                SpawnMeatBonusWolf();
+                SpawnMeatBonusWolf(spawner, spawnCounter);
+                spawnCounter++;
+
+                // ทุกๆ 2 ตัว ให้ปล่อยลูกโป่งเปล่าลอยขึ้นมาด้วย เพื่อให้ปาเนื้อชนเด้งทำคอมโบตามต้นฉบับ NES!
+                if (spawnCounter % 2 == 0 && spawner != null)
+                {
+                    spawner.SpawnStandaloneBalloonAtLane(-1, Random.Range(0.95f, 1.25f));
+                }
 
                 if (player != null && player.State == PlayerState.Normal && !player.IsMeatAvailable)
                 {
                     player.SetMeatAvailable(true);
                 }
 
-                yield return new WaitForSeconds(1.5f);
-                elapsed += 1.5f;
-
-                if (player != null && player.State == PlayerState.Normal && !player.IsMeatAvailable)
-                {
-                    player.SetMeatAvailable(true);
-                }
+                yield return new WaitForSeconds(spawnStep);
+                elapsed += spawnStep;
             }
+
+            // รอให้หมาป่าชุดสุดท้ายลอยขึ้นหรือโดนเนื้อก่อนจบโบนัส
+            yield return new WaitForSeconds(2.5f);
+            if (player != null) player.SetMeatBonusMode(false);
         }
 
         // จบโบนัสแล้วจ้า
@@ -282,8 +313,9 @@ public class BonusStageManager : MonoBehaviour
         if (bonusFruit == null) bonusFruit = fruit.AddComponent<BonusFruit>();
 
         // ทิ้งลงมาตรงๆ หรือมีความเร็วเฉื่อยแนวนอนเล็กน้อยตามการวิ่งของบอส
-        Vector2 dropVel = new Vector2(Random.Range(-0.3f, 0.3f), -3.8f);
+        Vector2 dropVel = new Vector2(Random.Range(-0.3f, 0.3f), -3.2f);
         bonusFruit.Initialize(GetFamicomFruitType(currentChain), dropVel, isArc: false);
+        AudioManager.Instance?.PlayFruitDrop();
     }
 
     /// <summary>
@@ -302,6 +334,7 @@ public class BonusStageManager : MonoBehaviour
         Vector2 launchVel = new Vector2(horizontalSpeed, verticalSpeed);
 
         bonusFruit.Initialize(RandomFruitType(), launchVel, isArc: true);
+        AudioManager.Instance?.PlayFruitDrop();
     }
 
     private BonusFruitType GetFamicomFruitType(int chain)
@@ -320,14 +353,37 @@ public class BonusStageManager : MonoBehaviour
         return BonusFruitType.Peach;
     }
 
-    private void SpawnMeatBonusWolf()
+    private void SpawnMeatBonusWolf(WolfSpawner spawner, int index)
     {
-        if (wolfPrefab == null || meatBonusSpawnPoints == null || meatBonusSpawnPoints.Length == 0) return;
+        Wolf targetPrefab = wolfPrefab != null ? wolfPrefab : (spawner != null ? spawner.WolfPrefab : null);
+        if (targetPrefab == null) return;
 
-        var point = meatBonusSpawnPoints[Random.Range(0, meatBonusSpawnPoints.Length)];
+        Transform[] lanes = (meatBonusSpawnPoints != null && meatBonusSpawnPoints.Length > 0)
+            ? meatBonusSpawnPoints
+            : (spawner != null ? spawner.FlyPoints : null);
+
+        int laneCount = (lanes != null && lanes.Length > 0) ? lanes.Length : 5;
+        int laneIndex = Random.Range(0, laneCount);
+
+        float[] laneXCoords = new float[laneCount];
+        for (int i = 0; i < laneCount; i++)
+        {
+            if (lanes != null && lanes.Length > i && lanes[i] != null)
+                laneXCoords[i] = lanes[i].position.x;
+            else
+                laneXCoords[i] = -4.8f + (1.25f * i);
+        }
+
+        float dropX = laneXCoords[laneIndex];
+        float startX = (spawner != null && spawner.BottomSpawnArea != null) ? spawner.BottomSpawnArea.position.x : -7.5f;
+        float startY = (spawner != null && spawner.BottomSpawnArea != null) ? spawner.BottomSpawnArea.position.y : -3.8f;
+
         var config = LevelManager.Instance?.CurrentConfig ?? ScriptableObject.CreateInstance<LevelConfig>();
-        var wolf = Instantiate(wolfPrefab, point.position, Quaternion.identity);
+        var wolf = Instantiate(targetPrefab, new Vector3(startX, startY, 0f), Quaternion.identity);
 
-        wolf.Initialize(config, descending: false, speed: 2.5f, shield: false, rockThrow: false);
+        // ในด่านโบนัสเนื้อ: หมาป่าลอยขึ้นจากด้านล่าง ไม่ถือโล่ ไม่ปาหิน และใช้ลูกโป่ง 1 HP
+        float bonusFloatSpeed = Random.Range(0.85f, 1.15f);
+        wolf.Initialize(config, descending: false, speed: bonusFloatSpeed, shield: false, rockThrow: false, dropX: dropX, lanes: laneXCoords, laneIndex: laneIndex, overrideBalloonHP: 1);
+        wolf.DisableTeaseBounces();
     }
 }

@@ -110,6 +110,10 @@ public class BoulderSystem : MonoBehaviour
             {
                 TriggerBoulder();
             }
+            else
+            {
+                AudioManager.Instance?.PlayBoulderPush(); // เสียงหมาป่าช่วยกันดันหินขยับ!
+            }
         }
     }
 
@@ -180,6 +184,8 @@ public class BoulderSystem : MonoBehaviour
             yield return null;
         }
 
+        AudioManager.Instance?.PlayBoulderHit(); // เสียงหินยักษ์ตกกระแทกกระเช้าแม่หมู!
+
         if (player != null)
         {
             player.SetDiedFromBoulder(true); // เซ็ตสถานะให้ตายเพราะหิน
@@ -195,19 +201,25 @@ public class BoulderSystem : MonoBehaviour
     {
         // โละหมา เคลียร์หิน
         wolvesOnCliff.Clear();
-        virtualWolvesOnCliff = keepCount;
+        virtualWolvesOnCliff = Mathf.Max(0, keepCount);
         boulderFalling = false;
         
         if (boulder != null)
         {
-            bool isStage2 = GameManager.Instance != null && !GameManager.Instance.IsOddStage;
+            bool isStage2 = GameManager.Instance != null && !GameManager.Instance.IsOddStage && !GameManager.Instance.IsBonus;
             boulder.gameObject.SetActive(isStage2);
             
-            // จับหินกลับเข้าที่
-            int maxSlots = cliffWolfSlots != null ? cliffWolfSlots.Length : 5;
-            int frontSlotIndex = maxSlots - Mathf.Max(1, keepCount);
-            frontSlotIndex = Mathf.Clamp(frontSlotIndex, 0, maxSlots - 1);
-            boulder.position = GetCliffSlotPosition(frontSlotIndex) + boulderOffset;
+            if (virtualWolvesOnCliff <= 0)
+            {
+                boulder.position = initialBoulderPos;
+            }
+            else
+            {
+                int maxSlots = cliffWolfSlots != null ? cliffWolfSlots.Length : 5;
+                int frontSlotIndex = maxSlots - Mathf.Max(1, virtualWolvesOnCliff);
+                frontSlotIndex = Mathf.Clamp(frontSlotIndex, 0, maxSlots - 1);
+                boulder.position = GetCliffSlotPosition(frontSlotIndex) + boulderOffset;
+            }
         }
         
         OnCliffCountChanged?.Invoke(virtualWolvesOnCliff, WolfThreshold);

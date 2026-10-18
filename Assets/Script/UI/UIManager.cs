@@ -134,11 +134,12 @@ public class UIManager : MonoBehaviour
             case GameState.MainMenu:
                 if (titleScreen != null) titleScreen.SetActive(true);
                 break;
+            case GameState.Cutscene:
             case GameState.Playing:
                 if (cliffCounterPanel != null)
-                    cliffCounterPanel.SetActive(GameManager.Instance != null && !GameManager.Instance.IsOddStage);
+                    cliffCounterPanel.SetActive(GameManager.Instance != null && !GameManager.Instance.IsOddStage && !GameManager.Instance.IsBonusSceneActive);
                 if (stageText != null && GameManager.Instance != null)
-                    stageText.text = $"STAGE: {GameManager.Instance.CurrentStage}";
+                    stageText.text = GameManager.Instance.IsBonusSceneActive ? "BONUS STAGE" : $"STAGE: {GameManager.Instance.CurrentStage}";
                 break;
             case GameState.BonusStage:
                 if (stageText != null) stageText.text = "BONUS STAGE";
@@ -156,13 +157,22 @@ public class UIManager : MonoBehaviour
 
     private void ShowStageClear()
     {
-        // ด่านเคลียร์!! เปิด UI โชว์รัวๆ
+        int stage = GameManager.Instance != null ? GameManager.Instance.CurrentStage : 1;
+        // ถ้าเป็นด่าน 2 และมีคัทซีนก่อนเข้าโบนัส (กระเช้าเลื่อนลงมาถึงพื้น แม่หมูเดินไปหาลูกหมูกระโดดดีใจ) ให้เล่นคัทซีนก่อน!
+        if (StageCutsceneController.Instance != null && StageCutsceneController.Instance.HasClearCutsceneForStage(stage))
+        {
+            StageCutsceneController.Instance.PlayStageClearCutscene(stage, AdvanceAfterClear);
+            return;
+        }
+
+        // กรณีด่านอื่นๆ ให้ใช้หน้าจอ Stage Clear ปกติ
         if (stageClearScreen != null) stageClearScreen.SetActive(true);
         Invoke(nameof(AdvanceAfterClear), 2f); // หน่วงไว้แป๊บนึงค่อยไปด่านถัดไป
     }
 
     private void AdvanceAfterClear()
     {
+        CancelInvoke(nameof(AdvanceAfterClear));
         HideAllScreens();
         if (GameManager.Instance == null) return;
         

@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -41,12 +41,18 @@ public class WolfSpawner : MonoBehaviour
     [Header("Debug Gameplay")]
     public bool debugRapidFireRocks = false;
 
+    public Wolf WolfPrefab => wolfPrefab;
+    public Transform[] FlyPoints => flyPoints;
+    public Transform TopSpawnArea => topSpawnArea;
+    public Transform BottomSpawnArea => bottomSpawnArea;
+
     private int wolvesSpawned; // เกิดมากี่ตัวแล้ว
     private int wolvesToSpawn; // ต้องเกิดทั้งหมดกี่ตัว
     private bool bossSpawned; // บอสเกิดรึยัง
     private bool spawning; // กำลังเสกอยู่มั้ย
     private Coroutine spawnRoutine;
     private Coroutine meatRoutine;
+    private Coroutine strayBalloonRoutine;
     private PlayerController player;
 
     private void Start()
@@ -91,8 +97,18 @@ public class WolfSpawner : MonoBehaviour
         wolvesToSpawn = config.wolfCount;
         spawning = true;
 
+        if (spawnRoutine != null) StopCoroutine(spawnRoutine);
+        if (meatRoutine != null) StopCoroutine(meatRoutine);
+        if (strayBalloonRoutine != null) StopCoroutine(strayBalloonRoutine);
+
         spawnRoutine = StartCoroutine(SpawnWaveRoutine(config));
         meatRoutine = StartCoroutine(MeatSpawnRoutine(config));
+
+        // ในด่านคู่ (Stage 2, 4, ... ลอยขึ้น): มีลูกโป่งเปล่าลอยขึ้นมาจากด้านล่างเป็นระยะตามต้นฉบับ NES
+        if (GameManager.Instance != null && !GameManager.Instance.IsOddStage)
+        {
+            strayBalloonRoutine = StartCoroutine(StrayBalloonRoutine());
+        }
     }
 
     // หยุดเสกทั้งหมด
@@ -102,6 +118,7 @@ public class WolfSpawner : MonoBehaviour
         spawning = false;
         if (spawnRoutine != null) StopCoroutine(spawnRoutine);
         if (meatRoutine != null) StopCoroutine(meatRoutine);
+        if (strayBalloonRoutine != null) StopCoroutine(strayBalloonRoutine);
         player?.SetMeatAvailable(false); // ปิดการใช้เนื้อด้วย
     }
 
@@ -111,7 +128,8 @@ public class WolfSpawner : MonoBehaviour
         Debug.Log("SpawnWaveRoutine เริ่มทำงาน");
         yield return new WaitForSeconds(1f); // รอแป๊บนึงก่อนดรอป
 
-        int laneCount = (dropPoints != null && dropPoints.Length > 0) ? dropPoints.Length : 5;
+        int laneCount = (dropPoints != null && dropPoints.Length > 0) ? dropPoints.Length : ((flyPoints != null && flyPoints.Length > 0) ? flyPoints.Length : 5);
+        bool hasStageBoss = GameManager.Instance != null && !GameManager.Instance.IsOddStage && config.hasBossWolf;
 
         while (spawning)
         {
@@ -119,16 +137,51 @@ public class WolfSpawner : MonoBehaviour
             int remainingToKill = WolfTracker.Instance != null ? WolfTracker.Instance.RemainingKills : wolvesToSpawn - wolvesSpawned;
             if (remainingToKill <= 0) break; // ครบแล้วจ้า พอ!
 
-            // คำนวณจำนวนหมาป่าเป้าหมายที่กำลังลอยอยู่ในฉาก (ยังไม่รอดและยังไม่ตาย)
+            // คำนวณจำนวนหมาป่าที่เสกออกมาแล้วและยังถือโควต้าคิลอยู่ (รวมทั้งตัวที่กำลังลอย และตัวที่กำลังร่วงลงพื้นแต่ยังไม่ทันนับแต้ม)
+            // เพื่อไม่ให้เสกหมาป่าธรรมดาเกินโควต้าระหว่างที่หมาป่ากำลังร่วงลงพื้น!
+            int inFlightQuota = WolfTracker.Instance != null ? WolfTracker.Instance.InFlightQuotaCount : 0;
             int activeTargets = WolfTracker.Instance != null ? WolfTracker.Instance.ActiveTargetCount : 0;
-            int neededToSpawn = remainingToKill - activeTargets;
+            int neededToSpawn = remainingToKill - inFlightQuota;
 
-            // ถ้ามีหมาป่าลอยอยู่ในฉากเพียงพอกับจำนวนที่ต้องฆ่าแล้ว -> รอผลลัพธ์ ไม่เสกเกินโควต้า
-            // ถ้าหมาป่าหนีรอดไปได้ activeTargets จะลดลง ทำให้ neededToSpawn > 0 แล้วเสกตัวใหม่มาแทนที่ทันที!
+            // ถ้ามีหมาป่าอยู่ในฉากครบตามจำนวนที่ต้องฆ่าแล้ว -> รอผลลัพธ์ ไม่เสกเกินโควต้า
+            // ถ้าหมาป่าหนีรอดไปได้ inFlightQuota จะลดลง ทำให้ neededToSpawn > 0 แล้วเสกตัวใหม่มาแทนที่ทันที!
             if (neededToSpawn <= 0)
             {
-                yield return new WaitForSeconds(1f);
+                yield return new WaitForSeconds(0.25f);
                 continue;
+            }
+
+            float baseWait = Mathf.Max(2f, config.spawnInterval); // กันไว้ อย่างน้อยต้องห่างกัน 2 วิ
+            float waitAfterWave = baseWait;
+
+            // สำหรับด่านคู่ที่มีบอส (เช่น ด่าน 2 Spring):
+            // ล็อกโควต้าหมาป่า "1 ตัวสุดท้าย" ไว้ให้เป็น BossWolf เสมอ!
+            int spawnableNormalCount = neededToSpawn;
+            if (hasStageBoss && !bossSpawned)
+            {
+                spawnableNormalCount = neededToSpawn - 1;
+
+                // ถ้าเสกหมาป่าธรรมดาครบโควต้าแล้ว (เหลือโควต้าตัวสุดท้ายสำหรับบอส)
+                if (spawnableNormalCount <= 0)
+                {
+                    // รอให้หมาป่าธรรมดาที่ลอยอยู่โดนยิงร่วง หรือหนีขึ้นหน้าผาให้ชัดเจนก่อน
+                    // (ถ้ามีตัวหนีขึ้นหน้าผา ในรอบถัดไป spawnableNormalCount จะกลับมา > 0 เพื่อเสกตัวธรรมดามาซ่อมก่อน)
+                    if (activeTargets > 0)
+                    {
+                        yield return new WaitForSeconds(0.25f);
+                        continue;
+                    }
+
+                    // หมาป่าธรรมดาถูกจัดการครบหมดแล้ว เหลือตัวสุดท้ายของด่าน -> ปล่อยบอสหมาป่า!
+                    int bossLane = Random.Range(0, laneCount);
+                    player?.SetBossApproaching(true);
+                    SpawnWolf(config, isBoss: true, bossLane);
+                    wolvesSpawned++;
+                    bossSpawned = true;
+
+                    yield return new WaitForSeconds(baseWait);
+                    continue;
+                }
             }
 
             // ถ้ามีหมาป่าในฉากเกิน 10 ตัว ให้รอก่อน อย่าเพิ่งเสกเยอะไปเดี๋ยวแลคและยากไป
@@ -139,10 +192,7 @@ public class WolfSpawner : MonoBehaviour
                 continue;
             }
 
-            float baseWait = Mathf.Max(2f, config.spawnInterval); // กันไว้ อย่างน้อยต้องห่างกัน 2 วิ
-            float waitAfterWave = baseWait;
-
-            // สุ่มรูปแบบการดรอปของหมาป่า
+            // สุ่มรูปแบบการดรอปของหมาป่าธรรมดา
             // 0: ตัวเดียว (50%)
             // 1: สองตัวซ้อนเลนเดียวกัน (20%)
             // 2: ทแยงมุม (20%)
@@ -184,37 +234,27 @@ public class WolfSpawner : MonoBehaviour
                 else pattern = 3;
             }
 
-            // บังคับรูปแบบตามจำนวนที่ต้องการเสกเพิ่ม (neededToSpawn)
-            if (neededToSpawn == 1) pattern = 0; // ต้องการอีกตัวเดียว ก็ปล่อยตัวเดียวพอดีเป๊ะ
-            if (neededToSpawn == 2 && pattern == 3) pattern = 1; // เหลือสองตัว ไม่เอาหน้ากระดาน
+            // บังคับรูปแบบตามจำนวนหมาป่าธรรมดาที่อนุญาตให้เสกได้ (spawnableNormalCount)
+            if (spawnableNormalCount == 1) pattern = 0; // ต้องการอีกตัวเดียว ก็ปล่อยตัวเดียวพอดีเป๊ะ
+            if (spawnableNormalCount == 2 && pattern == 3) pattern = 1; // เหลือสองตัว ไม่เอาหน้ากระดาน
 
             if (pattern == 0) // ลงมาตัวเดียวเหงาๆ
             {
                 int lane = Random.Range(0, laneCount);
-                // เช็คว่าเป็นบอสได้ไหม
-                bool isBoss = !GameManager.Instance.IsOddStage && config.hasBossWolf && !bossSpawned && remainingToKill <= 2;
-                if (isBoss) player?.SetBossApproaching(true); // เตือนผู้เล่นว่าบอสมาแล้ว!
-                
-                SpawnWolf(config, isBoss, lane);
+                SpawnWolf(config, isBoss: false, lane);
                 wolvesSpawned++;
-                if (isBoss) bossSpawned = true;
-                
                 waitAfterWave = baseWait;
             }
             else if (pattern == 1) // สองตัวลงเลนเดียวกัน! งานหนักเลย
             {
                 int lane = Random.Range(0, laneCount);
-                int count = Mathf.Min(2, neededToSpawn);
+                int count = Mathf.Min(2, spawnableNormalCount);
                 float sharedSpeed = Random.Range(config.wolfSpeedRange.x, config.wolfSpeedRange.y);
                 for (int i = 0; i < count; i++)
                 {
-                    bool isBoss = !GameManager.Instance.IsOddStage && config.hasBossWolf && !bossSpawned && remainingToKill - i <= 2;
-                    if (isBoss) player?.SetBossApproaching(true);
-                    
-                    Wolf w = SpawnWolf(config, isBoss, lane, sharedSpeed);
+                    Wolf w = SpawnWolf(config, isBoss: false, lane, sharedSpeed);
                     if (w != null) w.DisableTeaseBounces(); // บังคับให้ไม่เดินหนีหลอกล่อ
                     wolvesSpawned++;
-                    if (isBoss) bossSpawned = true;
                     
                     // ทิ้งระยะห่างให้พอดีกันหน่อย
                     if (i < count - 1) yield return new WaitForSeconds(2.0f / sharedSpeed); 
@@ -224,7 +264,7 @@ public class WolfSpawner : MonoBehaviour
             else if (pattern == 2) // ทแยงมุม ลงมาเป็นสเต็ป
             {
                 int count = Random.Range(2, 4); // มา 2-3 ตัว
-                count = Mathf.Min(count, neededToSpawn);
+                count = Mathf.Min(count, spawnableNormalCount);
                 
                 bool leftToRight = Random.value > 0.5f; // ซ้ายไปขวา หรือ ขวาไปซ้าย
                 int startLane = leftToRight ? 0 : laneCount - 1;
@@ -236,13 +276,9 @@ public class WolfSpawner : MonoBehaviour
                     int lane = startLane + (i * step);
                     if (lane < 0 || lane >= laneCount) break; // เลยขอบเลนก็พอ
                     
-                    bool isBoss = !GameManager.Instance.IsOddStage && config.hasBossWolf && !bossSpawned && remainingToKill - i <= 2;
-                    if (isBoss) player?.SetBossApproaching(true);
-                    
-                    Wolf w = SpawnWolf(config, isBoss, lane, sharedSpeed);
+                    Wolf w = SpawnWolf(config, isBoss: false, lane, sharedSpeed);
                     if (w != null) w.DisableTeaseBounces();
                     wolvesSpawned++;
-                    if (isBoss) bossSpawned = true;
                     
                     if (i < count - 1) yield return new WaitForSeconds(0.5f); // ทิ้งช่วงนิดนึง
                 }
@@ -251,7 +287,7 @@ public class WolfSpawner : MonoBehaviour
             else if (pattern == 3) // หน้ากระดานเรียงหนึ่ง น่ากลัวสุดๆ
             {
                 int count = Random.Range(2, 4); // 2-3 ตัว
-                count = Mathf.Min(count, neededToSpawn);
+                count = Mathf.Min(count, spawnableNormalCount);
                 
                 int startL = Random.Range(0, laneCount - count + 1);
                 List<int> selectedLanes = new List<int>();
@@ -284,18 +320,22 @@ public class WolfSpawner : MonoBehaviour
                     float targetX = laneXCoords[lane];
                     float spawnX = targetX - furthestX + baseStartX; // คำนวณจุดเกิดให้พอดีกัน
                     
-                    bool isBoss = !GameManager.Instance.IsOddStage && config.hasBossWolf && !bossSpawned && remainingToKill - i <= 2;
-                    if (isBoss) player?.SetBossApproaching(true);
-                    
-                    Wolf w = SpawnWolf(config, isBoss, lane, sharedSpeed, spawnX);
+                    Wolf w = SpawnWolf(config, isBoss: false, lane, sharedSpeed, spawnX);
                     if (w != null) w.DisableTeaseBounces();
                     wolvesSpawned++;
-                    if (isBoss) bossSpawned = true;
                 }
                 waitAfterWave = baseWait * 1.8f; // แจกชุดใหญ่ไปแล้ว ต้องให้พักนานหน่อย
             }
 
-            yield return new WaitForSeconds(waitAfterWave); // รอชุดถัดไป
+            // รอชุดถัดไป แต่ถ้าผู้เล่นจัดการหมาป่าบนจอหมดเกลี้ยงแล้ว ให้ปล่อยชุดถัดไป (หรือบอส) ออกมาได้ไวขึ้น!
+            float waited = 0f;
+            while (waited < waitAfterWave && spawning)
+            {
+                yield return new WaitForSeconds(0.25f);
+                waited += 0.25f;
+                if (waited >= 0.75f && WolfTracker.Instance != null && WolfTracker.Instance.ActiveTargetCount == 0)
+                    break;
+            }
         }
         Debug.Log($"SpawnWaveRoutine จบแล้ว! spawning={spawning}, เกิดทั้งหมด={wolvesSpawned}");
     }
@@ -305,30 +345,39 @@ public class WolfSpawner : MonoBehaviour
     {
         yield return new WaitForSeconds(meatSpawnDelay);
 
-        // ด่านคลาสสิกอาเขต: เนื้อจะมาเมื่อเหลือหมาป่าตามหลักทวีคูณของ 8
-        // สมมติมี 32 ตัว -> เนื้อมาตอนเหลือ 24, 16, 8 ตัว
         int nextMeatKillTarget = 0;
+        float cooldownAfterThrow = 0f;
 
         while (spawning)
         {
             int remainingToKill = WolfTracker.Instance != null ? WolfTracker.Instance.RemainingKills : wolvesToSpawn - wolvesSpawned;
 
-            // บอสมาแล้ว ไม่ให้เนื้อแล้วนะ!
-            if (!GameManager.Instance.IsOddStage && config.hasBossWolf && remainingToKill <= 2)
+            // บอสมาแล้ว (หรือเหลือบอสตัวสุดท้ายตัวเดียว) ไม่ให้เนื้อใหม่บนรอกตามต้นฉบับ NES!
+            if (!GameManager.Instance.IsOddStage && config.hasBossWolf && (bossSpawned || remainingToKill <= 1))
             {
                 player?.SetBossApproaching(true);
                 yield break;
             }
 
-            // เช็คว่าเนื้อยังไม่มี และแม่หมูไม่ได้ถือเนื้ออยู่
+            // เช็คว่าเนื้อยังไม่มีบนรอก แม่หมูไม่ได้ถือเนื้ออยู่ และไม่มีก้อนเนื้อกำลังลอยอยู่ในฉาก
             if (player != null && !player.IsMeatAvailable && player.State != PlayerState.HoldingMeat)
             {
-                int currentKills = WolfTracker.Instance != null ? WolfTracker.Instance.Kills : wolvesSpawned;
-                if (currentKills >= nextMeatKillTarget && remainingToKill > 0)
+                bool meatFlying = GameObject.FindWithTag(GameConstants.TagMeat) != null;
+                if (!meatFlying)
                 {
-                    player.SetMeatAvailable(true);
-                    nextMeatKillTarget = currentKills + 8; // รอฆ่าอีก 8 ตัวถึงได้อันใหม่
+                    cooldownAfterThrow += 0.5f;
+                    int currentKills = WolfTracker.Instance != null ? WolfTracker.Instance.Kills : wolvesSpawned;
+                    if ((currentKills >= nextMeatKillTarget || cooldownAfterThrow >= 4.5f) && remainingToKill > 0)
+                    {
+                        player.SetMeatAvailable(true);
+                        nextMeatKillTarget = currentKills + 4; // ฆ่า 4 ตัว หรือรอครบจังหวะ ลูกหมูจะวางเนื้อชิ้นใหม่ให้บนรอก
+                        cooldownAfterThrow = 0f;
+                    }
                 }
+            }
+            else
+            {
+                cooldownAfterThrow = 0f;
             }
 
             yield return new WaitForSeconds(0.5f);
@@ -408,14 +457,32 @@ public class WolfSpawner : MonoBehaviour
             }
         }
 
-        // เสกบอส!
-        if (isBoss && bossWolfPrefab != null)
+        // เสกบอส! (รองรับทั้งกรณีใส่ bossWolfPrefab ไว้ และกรณีลืมใส่ให้ใช้ wolfPrefab แปลงเป็นบอสอัตโนมัติ)
+        if (isBoss)
         {
-            var boss = Instantiate(bossWolfPrefab, pos, Quaternion.identity);
-            boss.Initialize(config, descending, speed, true, rock, dropX, laneXCoords, laneIndex);
-            if (debugRapidFireRocks) boss.SetRapidFire(true);
-            WolfTracker.Instance?.Register(boss);
-            return boss;
+            if (bossWolfPrefab != null)
+            {
+                var boss = Instantiate(bossWolfPrefab, pos, Quaternion.identity);
+                boss.Initialize(config, descending, speed, true, rock, dropX, laneXCoords, laneIndex);
+                if (debugRapidFireRocks) boss.SetRapidFire(true);
+                WolfTracker.Instance?.Register(boss);
+                return boss;
+            }
+            else if (wolfPrefab != null)
+            {
+                var bossObj = Instantiate(wolfPrefab.gameObject, pos, Quaternion.identity);
+                var oldWolf = bossObj.GetComponent<Wolf>();
+                var boss = bossObj.AddComponent<BossWolf>();
+                if (oldWolf != null)
+                {
+                    oldWolf.CopySettingsTo(boss);
+                    DestroyImmediate(oldWolf);
+                }
+                boss.Initialize(config, descending, speed, true, rock, dropX, laneXCoords, laneIndex);
+                if (debugRapidFireRocks) boss.SetRapidFire(true);
+                WolfTracker.Instance?.Register(boss);
+                return boss;
+            }
         }
 
         // เสกหมาป่าปกติ
@@ -425,6 +492,62 @@ public class WolfSpawner : MonoBehaviour
         if (debugRapidFireRocks) wolf.SetRapidFire(true);
         WolfTracker.Instance?.Register(wolf);
         return wolf;
+    }
+
+    // ลูปปล่อยลูกโป่งเปล่าลอยขึ้นมาจากด้านล่างในด่านคู่ (Stage 2, 4, ...) ตามต้นฉบับ NES
+    private IEnumerator StrayBalloonRoutine()
+    {
+        yield return new WaitForSeconds(4.5f);
+        while (spawning)
+        {
+            if (GameManager.Instance == null || !GameManager.Instance.DeathFreeze)
+            {
+                SpawnStandaloneBalloonAtLane(-1, Random.Range(0.95f, 1.25f));
+            }
+            yield return new WaitForSeconds(Random.Range(6.0f, 9.0f));
+        }
+    }
+
+    /// <summary>
+    /// เสกลูกโป่งเปล่า 1 ลูกลอยขึ้นมาจากด้านล่างในเลนที่กำหนด (ถ้า laneIndex < 0 จะสุ่มเลนให้)
+    /// </summary>
+    public Balloon SpawnStandaloneBalloonAtLane(int laneIndex = -1, float floatUpSpeed = 1.1f)
+    {
+        if (wolfPrefab == null) return null;
+
+        Balloon templateBalloon = wolfPrefab.GetComponentInChildren<Balloon>(true);
+        if (templateBalloon == null) return null;
+
+        int laneCount = (flyPoints != null && flyPoints.Length > 0) ? flyPoints.Length : 5;
+        if (laneIndex < 0 || laneIndex >= laneCount)
+            laneIndex = Random.Range(0, laneCount);
+
+        float spawnX = 0f;
+        float spawnY = bottomSpawnArea != null ? bottomSpawnArea.position.y : -3.8f;
+
+        if (flyPoints != null && flyPoints.Length > laneIndex && flyPoints[laneIndex] != null)
+        {
+            spawnX = flyPoints[laneIndex].position.x;
+            spawnY = flyPoints[laneIndex].position.y;
+        }
+        else
+        {
+            float r = spawnXMax - spawnXMin;
+            spawnX = spawnXMin + r * (laneIndex / (float)Mathf.Max(1, laneCount - 1));
+        }
+
+        var balloonObj = Instantiate(templateBalloon.gameObject, new Vector3(spawnX, spawnY, 0f), Quaternion.identity);
+        balloonObj.name = "StrayBalloon";
+        balloonObj.transform.localScale = templateBalloon.transform.localScale;
+        balloonObj.SetActive(true);
+
+        var balloon = balloonObj.GetComponent<Balloon>();
+        if (balloon != null)
+        {
+            // สุ่มสีชมพู (1 HP) หรือสีเหลืองให้ดูมีสีสัน แต่ยิงนัดเดียวแตก (1 HP) และเด้งเนื้อได้
+            balloon.InitializeStandalone(floatUpSpeed, hp: 1);
+        }
+        return balloon;
     }
 
     public void ResetBossSpawned()

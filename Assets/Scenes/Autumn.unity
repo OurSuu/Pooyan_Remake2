@@ -6239,67 +6239,6 @@ Transform:
   - {fileID: 24746543}
   m_Father: {fileID: 1173762639}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &354905980
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 354905981}
-  - component: {fileID: 354905982}
-  m_Layer: 0
-  m_Name: AudioManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &354905981
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 354905980}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1787232563}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &354905982
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 354905980}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 10ca58dd8fecdbb4a8f2d75eabdfe628, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AudioManager
-  bgmMain: {fileID: 0}
-  bgmBonus: {fileID: 0}
-  bgmStageClear: {fileID: 0}
-  bgmGameOver: {fileID: 0}
-  seArrowFire: {fileID: 0}
-  seBalloonPop: {fileID: 0}
-  seWolfFall: {fileID: 0}
-  seMeatThrow: {fileID: 0}
-  seMeatHit: {fileID: 0}
-  seRockHit: {fileID: 0}
-  seRockDestroy: {fileID: 0}
-  seShieldBlock: {fileID: 0}
-  seLadderClimb: {fileID: 0}
-  seWolfBite: {fileID: 0}
-  seBoulderFall: {fileID: 0}
-  bgmSource: {fileID: 0}
-  sfxSource: {fileID: 0}
 --- !u!1 &387887923
 GameObject:
   m_ObjectHideFlags: 0
@@ -6796,6 +6735,7 @@ MonoBehaviour:
   wolfPrefab: {fileID: 0}
   meatBonusSpawnPoints: []
   bonusDuration: 30
+  useNESBonusOrder: 1
 --- !u!1 &492951075
 GameObject:
   m_ObjectHideFlags: 0
@@ -15311,6 +15251,68 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &1300645486
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1787232563}
+    m_Modifications:
+    - target: {fileID: 2166235005168936379, guid: 367c30bcbbbcd284dac7d1b98b32a55b, type: 3}
+      propertyPath: m_Name
+      value: AudioManager
+      objectReference: {fileID: 0}
+    - target: {fileID: 4826355544516559278, guid: 367c30bcbbbcd284dac7d1b98b32a55b, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4826355544516559278, guid: 367c30bcbbbcd284dac7d1b98b32a55b, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4826355544516559278, guid: 367c30bcbbbcd284dac7d1b98b32a55b, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4826355544516559278, guid: 367c30bcbbbcd284dac7d1b98b32a55b, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4826355544516559278, guid: 367c30bcbbbcd284dac7d1b98b32a55b, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4826355544516559278, guid: 367c30bcbbbcd284dac7d1b98b32a55b, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4826355544516559278, guid: 367c30bcbbbcd284dac7d1b98b32a55b, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4826355544516559278, guid: 367c30bcbbbcd284dac7d1b98b32a55b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4826355544516559278, guid: 367c30bcbbbcd284dac7d1b98b32a55b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4826355544516559278, guid: 367c30bcbbbcd284dac7d1b98b32a55b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 367c30bcbbbcd284dac7d1b98b32a55b, type: 3}
+--- !u!4 &1300645487 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4826355544516559278, guid: 367c30bcbbbcd284dac7d1b98b32a55b, type: 3}
+  m_PrefabInstance: {fileID: 1300645486}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1303305094
 GameObject:
   m_ObjectHideFlags: 0
@@ -15473,6 +15475,69 @@ MonoBehaviour:
   shadowOffset: {x: 0.15, y: -0.15}
   shadowColor: {r: 0, g: 0, b: 0, a: 0.5}
   sortingOrderOffset: -1
+--- !u!1 &1327379467
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1327379468}
+  - component: {fileID: 1327379469}
+  m_Layer: 0
+  m_Name: StageCutsceneController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1327379468
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1327379467}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1730314043}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1327379469
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1327379467}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e289f871dba5036489c6a131b856a905, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StageCutsceneController
+  enableCutscenes: 1
+  groundY: -3.75
+  actorScale: 0.26
+  allowSkip: 0
+  mamaYOffset: 0.7
+  wolfYOffset: 0.66
+  pigletYOffset: 0
+  basketYOffset: 0.35
+  mamaWalkSprites: []
+  mamaIdleSprites: []
+  pigletWalkSprites: []
+  pigletJumpSprites: []
+  wolfWalkSprites: []
+  wolfKidnapSprites: []
+  spriteSheetFPS: 10
+  fallbackMamaSprite: {fileID: 0}
+  fallbackPigletSprite: {fileID: 0}
+  fallbackWolfSprite: {fileID: 0}
+  fallbackBasketSprite: {fileID: 0}
 --- !u!1 &1367539169
 GameObject:
   m_ObjectHideFlags: 0
@@ -16981,6 +17046,7 @@ Transform:
   - {fileID: 1908097783}
   - {fileID: 86264693}
   - {fileID: 726928920}
+  - {fileID: 1327379468}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1730988675
@@ -17362,11 +17428,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 941028763c830814c8d94a6672f050b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  moveSpeed: 3
+  moveSpeed: 4.2
   minY: -1.7
   maxY: 2.7
-  topPickupThreshold: 0.05
-  meatSpawnPoint: {fileID: 0}
+  topPickupThreshold: 0.22
+  meatSpawnPoint: {fileID: 1955031450}
   meatPrefab: {fileID: 1414832299550202536, guid: e1c97fe577878ce4eb366f7fe958797d, type: 3}
   meatIndicator: {fileID: 93680485}
   heldMeatVisual: {fileID: 1989150520}
@@ -17750,8 +17816,8 @@ Transform:
   - {fileID: 833896725}
   - {fileID: 764581503}
   - {fileID: 819753384}
-  - {fileID: 354905981}
   - {fileID: 2089495230}
+  - {fileID: 1300645487}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!21 &1807774395
@@ -18690,7 +18756,7 @@ Transform:
   m_GameObject: {fileID: 1989150520}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.5, y: 0, z: 0}
+  m_LocalPosition: {x: -0.55, y: 0.05, z: 0}
   m_LocalScale: {x: 0.5, y: 0.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

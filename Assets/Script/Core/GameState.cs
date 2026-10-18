@@ -1,7 +1,8 @@
-﻿// เก็บ Enum ต่างๆ สำหรับสถานะในเกม
+// เก็บ Enum ต่างๆ สำหรับสถานะในเกม
 public enum GameState
 {
     MainMenu,
+    Cutscene,    // กำลังเล่นคัทซีนเปิดด่าน/เปลี่ยนด่าน (เกมเพลย์ยังไม่เริ่มจนกว่าคัทซีนจะจบ)
     Playing,
     BonusStage,
     StageClear,

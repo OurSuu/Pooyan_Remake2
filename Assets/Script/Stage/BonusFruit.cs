@@ -168,7 +168,7 @@ public class BonusFruit : MonoBehaviour
         // แจ้ง BonusStageManager เพื่อคำนวณคะแนน Chain Combo แบบ Famicom หรือคะแนนผลไม้ปกติ
         FindAnyObjectByType<BonusStageManager>()?.OnBonusFruitHit(fruitType, transform.position);
 
-        AudioManager.Instance?.PlayRockDestroy();
+        AudioManager.Instance?.PlayFruitHit();
 
         // เสกเอฟเฟกต์แตกกระจายเป็นละอองดาว (FruitPopFX) สีเดียวกับผลไม้
         SpawnPopFX();

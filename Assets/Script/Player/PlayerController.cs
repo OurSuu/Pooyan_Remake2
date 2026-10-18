@@ -15,10 +15,10 @@ public enum PlayerState
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement")]
-    [SerializeField] private float moveSpeed = 5f; // ความเร็วขยับกระเช้า
+    [SerializeField] private float moveSpeed = 4.2f; // ความเร็วขยับกระเช้า (ปรับให้คล่องตัวตามต้นฉบับ NES)
     [SerializeField] private float minY = -3.5f; // ขอบล่างสุดที่ลงได้
     [SerializeField] private float maxY = 3.5f; // ขอบบนสุดที่ขึ้นได้
-    [SerializeField] private float topPickupThreshold = 0.05f; // ระยะที่ยอมให้หยิบเนื้อได้ตอนอยู่บนสุด
+    [SerializeField] private float topPickupThreshold = 0.22f; // ระยะที่ยอมให้หยิบเนื้อได้ตอนขึ้นไปถึงรอกด้านบน
 
     [Header("Meat Pickup")]
     [SerializeField] private Transform meatSpawnPoint; // จุดที่จะปาเนื้อออกไป
@@ -42,8 +42,8 @@ public class PlayerController : MonoBehaviour
     public float MinY => minY;
     public float MaxY => maxY;
     
-    // เช็คว่าแม่หมูอยู่บนสุดหรือยัง
-    public bool IsAtTop => Mathf.Abs(transform.position.y - maxY) <= topPickupThreshold;
+    // เช็คว่าแม่หมูอยู่บนสุดหรือยัง (ใช้ระยะเผื่ออย่างน้อย 0.20 หน่วยเพื่อให้หยิบเนื้อได้ลื่นไหล)
+    public bool IsAtTop => Mathf.Abs(transform.position.y - maxY) <= Mathf.Max(0.20f, topPickupThreshold);
 
     private ArrowShooter arrowShooter;
     private bool meatAvailable; // มีเนื้อโผล่ให้เก็บมั้ย
@@ -62,6 +62,12 @@ public class PlayerController : MonoBehaviour
         startPosition = transform.position; // จำจุดเกิดไว้
         arrowShooter = GetComponent<ArrowShooter>();
         if (arrowShooter == null) arrowShooter = GetComponentInChildren<ArrowShooter>();
+
+        if (meatSpawnPoint == null)
+        {
+            Transform fp = transform.Find("FirePoint");
+            if (fp != null) meatSpawnPoint = fp;
+        }
 
         CacheMamaPigReference();
         FindAnimator();
@@ -181,6 +187,12 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
+        // ในด่านโบนัสปาเนื้อ (Meat Bonus Stage) แม่หมูจะยิงลูกธนูไม่ได้เลย ได้แค่หยิบและปาเนื้ออย่างเดียว!
+        if (isMeatBonusMode)
+        {
+            return;
+        }
+
         if (State == PlayerState.Normal)
         {
             if (arrowShooter.TryShoot()) // ถ้ายิงธนูออก
@@ -251,6 +263,27 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private bool isMeatBonusMode = false;
+
+    /// <summary>
+    /// เปิด/ปิดโหมดด่านโบนัสเนื้อ (ยิงธนูไม่ได้ ได้แค่หยิบและปาเนื้อรัวๆ ตามต้นฉบับ NES)
+    /// </summary>
+    public void SetMeatBonusMode(bool enabled)
+    {
+        isMeatBonusMode = enabled;
+        if (enabled)
+        {
+            bossApproaching = false;
+            if (arrowShooter != null) arrowShooter.SetCanShoot(false);
+            SetMeatAvailable(true);
+        }
+        else
+        {
+            if (State == PlayerState.Normal && arrowShooter != null)
+                arrowShooter.SetCanShoot(true);
+        }
+    }
+
     // บอกแม่หมูว่ามีเนื้อให้เก็บนะ
     public void SetMeatAvailable(bool available)
     {
@@ -280,6 +313,7 @@ public class PlayerController : MonoBehaviour
         arrowShooter.SetCanShoot(false); // ปิดการยิงธนู
         if (heldMeatVisual != null) heldMeatVisual.SetActive(true); // โชว์กราฟิกถือเนื้อ
         ScoreManager.Instance?.AddMeatPickupScore(transform.position); // ได้คะแนนหยิบเนื้อด้วย
+        AudioManager.Instance?.PlayMeatPickup(); // เสียงหยิบเนื้อจากรอกด้านบน!
     }
 
     // ปาเนื้อออออ!
@@ -287,7 +321,7 @@ public class PlayerController : MonoBehaviour
     {
         if (meatPrefab != null)
         {
-            Vector3 spawnPos = meatSpawnPoint != null ? meatSpawnPoint.position : transform.position;
+            Vector3 spawnPos = meatSpawnPoint != null ? meatSpawnPoint.position : (transform.position + new Vector3(-0.9f, 0f, 0f));
             Instantiate(meatPrefab, spawnPos, Quaternion.identity); // ปล่อยก้อนเนื้อออกไป!
             AudioManager.Instance?.PlayMeatThrow(); // เล่นเสียงฟึบ!
         }
@@ -295,8 +329,27 @@ public class PlayerController : MonoBehaviour
         ScoreManager.Instance?.ResetMeatCombo(); // รีเซ็ตคอมโบนับใหม่
 
         State = PlayerState.Normal; // กลับมาว่างเปล่า
-        arrowShooter.SetCanShoot(true); // ยิงธนูต่อได้
         if (heldMeatVisual != null) heldMeatVisual.SetActive(false); // ซ่อนกราฟิกถือเนื้อ
+
+        if (isMeatBonusMode)
+        {
+            // ในโหมดโบนัสเนื้อ: ห้ามยิงธนู และเสกเนื้อก้อนใหม่รอที่ด้านบนทันทีหลังปาเสร็จ!
+            arrowShooter.SetCanShoot(false);
+            StartCoroutine(ReloadBonusMeatRoutine());
+        }
+        else
+        {
+            arrowShooter.SetCanShoot(true); // ยิงธนูต่อได้ในด่านปกติ
+        }
+    }
+
+    private System.Collections.IEnumerator ReloadBonusMeatRoutine()
+    {
+        yield return new WaitForSeconds(0.25f);
+        if (isMeatBonusMode && State == PlayerState.Normal)
+        {
+            SetMeatAvailable(true);
+        }
     }
 
     private bool diedFromBoulder = false; // เช็คว่าตายเพราะโดนหินทับมั้ย (อาจจะมีอนิเมชันต่างกัน)
@@ -312,6 +365,8 @@ public class PlayerController : MonoBehaviour
         if (State == PlayerState.Dead) return; // ตายซ้ำไม่ได้นะ
 
         State = PlayerState.Dead;
+        AudioManager.Instance?.SetRopePullSound(false);
+        AudioManager.Instance?.PlayPlayerFall(); // เสียงแม่หมูร่วงตกกระเช้า!
 
         // สั่งหยุดคอร์รูทีนยิงธนูทันที! ป้องกันไม่ให้ดีเลย์ยิงเสร็จเด้งกลับมาสั่ง animator.Play("Idle") กลางอากาศ
         if (shootSpriteRoutine != null)
@@ -399,6 +454,7 @@ public class PlayerController : MonoBehaviour
     public void Respawn()
     {
         State = PlayerState.Normal;
+        diedFromBoulder = false;
         transform.position = startPosition; // กระเช้ากลับจุดเริ่มต้น
 
         if (shootSpriteRoutine != null)

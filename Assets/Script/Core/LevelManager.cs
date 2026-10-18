@@ -47,34 +47,46 @@ public class LevelManager : MonoBehaviour
         if (stageOverrides != null && stage >= 1 && stage <= stageOverrides.Length && stageOverrides[stage - 1] != null)
             return stageOverrides[stage - 1];
 
-        // ถ้าไม่มี Default เลย ก็สร้างใหม่แล้วคำนวณความยากเอา
+        // ถ้าไม่มี Default เลย ก็สร้างใหม่แล้วคำนวณความยากตามด่าน
         if (defaultConfig == null)
         {
             CurrentConfig = ScriptableObject.CreateInstance<LevelConfig>();
-            ApplyScaling(CurrentConfig, stage);
+            ApplyScaling(CurrentConfig, stage, isCustomStageAsset: false);
             return CurrentConfig;
         }
 
-        // ดึงจาก Default มาเพิ่มระดับความยากตามเลขด่าน (Scaling)
+        // ดึงจาก Default ของซีนนั้นๆ มาใช้ โดยเคารพค่าที่ตั้งไว้ใน Asset ของด่าน 1-4
+        // และค่อยเพิ่มความยากเมื่อวนลูปด่านสูงขึ้น (Stage 5+)
         var config = Instantiate(defaultConfig);
-        ApplyScaling(config, stage);
+        ApplyScaling(config, stage, isCustomStageAsset: true);
         CurrentConfig = config;
         return config;
     }
 
-    // ยิ่งเล่นลึกยิ่งยาก ระบบอัพสเกลความโหด
-    private static void ApplyScaling(LevelConfig config, int stage)
+    // ยิ่งเล่นลึกยิ่งยาก ระบบอัพสเกลความโหดโดยไม่ทับค่าที่ตั้งไว้ในแต่ละซีนตอนรอบแรก
+    private static void ApplyScaling(LevelConfig config, int stage, bool isCustomStageAsset)
     {
-        int tier = Mathf.Max(0, stage - 1);
-        config.wolfCount = Mathf.Min(99, config.wolfCount + tier * 8); // หมาป่าเยอะขึ้น (สูงสุด 99 แบบตู้)
-        config.wolfSpeedRange += new Vector2(0.1f, 0.2f) * tier;       // วิ่งไวขึ้น
-        config.shieldRatio = Mathf.Min(0.7f, config.shieldRatio + tier * 0.05f);     // ถือโล่กันเยอะขึ้น
-        config.rockThrowRatio = Mathf.Min(0.5f, config.rockThrowRatio + tier * 0.03f); // ปาหินรัวๆ
-        config.balloonHP = Mathf.Min(3, 1 + (tier / 2));               // ลูกโป่งอึดขึ้นด้วย
-        config.yellowBalloonRatio = Mathf.Min(0.6f, 0.3f + tier * 0.05f); // สัดส่วนลูกโป่งสีเหลืองเพิ่มขึ้นตามด่าน
-        config.spawnInterval = Mathf.Max(0.5f, config.spawnInterval - tier * 0.05f); // เกิดไวขึ้น
-        config.hasTreeTopBoss = stage >= 3;                            // หลังด่าน 3 มีบอสบนต้นไม้แล้ว
-        config.hasBossWolf = stage % 2 == 0;                           // ด่านคู่จะมีบอสโผล่มา
+        // ถ้าซีนมี Asset ของตัวเองอยู่แล้ว จะเพิ่มสเกลเฉพาะตอนวนรอบใหม่ (ด่าน 5 เป็นต้นไป)
+        int tier = isCustomStageAsset
+            ? Mathf.Max(0, (stage - 1) / 4)
+            : Mathf.Max(0, stage - 1);
+
+        if (tier > 0)
+        {
+            config.wolfCount = Mathf.Min(99, config.wolfCount + tier * 4);
+            config.wolfSpeedRange += new Vector2(0.06f, 0.10f) * tier;
+            config.shieldRatio = Mathf.Min(0.6f, config.shieldRatio + tier * 0.05f);
+            config.rockThrowRatio = Mathf.Min(0.45f, config.rockThrowRatio + tier * 0.04f);
+            config.yellowBalloonRatio = Mathf.Min(0.6f, config.yellowBalloonRatio + tier * 0.08f);
+            config.spawnInterval = Mathf.Max(1.2f, config.spawnInterval - tier * 0.15f);
+        }
+
+        // บังคับกฎบอสตามลำดับด่านต้นฉบับ Pooyan
+        if (stage >= 3 && stage % 2 == 1)
+            config.hasTreeTopBoss = true; // ด่านคี่ตั้งแต่ด่าน 3 (Winter) มีบอสวิ่งปาผลไม้ข้างบน
+
+        if (stage % 2 == 0)
+            config.hasBossWolf = true;    // ด่านคู่ (Spring / Summer) มีบอสหมาป่าลูกโป่งกระพริบท้ายด่าน
     }
 }
 
