@@ -15526,12 +15526,12 @@ MonoBehaviour:
   wolfYOffset: 0.38
   pigletYOffset: -0.3
   basketYOffset: 0.1
-  wolfCutsceneAnimator: {fileID: 0}
-  mamaCutsceneAnimator: {fileID: 0}
-  pigletCutsceneAnimator: {fileID: 0}
-  wolfRunState: Cutscene_Run
-  mamaWalkState: Cutscene_Walk
-  pigletWalkState: Cutscene_Walk
+  wolfCutsceneAnimator: {fileID: 9100000, guid: f26dd99843b02694aa5d2c564d2f43d8, type: 2}
+  mamaCutsceneAnimator: {fileID: 9100000, guid: 143972cf4c38e3a4e84717e3a234d15e, type: 2}
+  pigletCutsceneAnimator: {fileID: 9100000, guid: 4268a7f311fb8a8459a1289bd8c76165, type: 2}
+  wolfRunState: Run
+  mamaWalkState: CutScene_Walk
+  pigletWalkState: CutScene_WalkPiglet
   pigletJumpState: Cutscene_Jump
 --- !u!1 &1367539169
 GameObject:

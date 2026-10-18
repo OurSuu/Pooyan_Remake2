@@ -476,22 +476,44 @@ public class StageCutsceneController : MonoBehaviour
     // =========================================================================================
     private void EnsureCutsceneActors()
     {
-        if (cutsceneRoot != null) return;
-
         ExtractSampleVisuals();
 
-        cutsceneRoot = new GameObject("[InSceneCutsceneActors]");
-        cutsceneRoot.transform.position = Vector3.zero;
-        cutsceneRoot.transform.rotation = Quaternion.identity;
-        cutsceneRoot.transform.localScale = Vector3.one;
+        if (cutsceneRoot == null)
+        {
+            cutsceneRoot = new GameObject("[InSceneCutsceneActors]");
+            cutsceneRoot.transform.position = Vector3.zero;
+            cutsceneRoot.transform.rotation = Quaternion.identity;
+            cutsceneRoot.transform.localScale = Vector3.one;
 
-        cutsceneMama = CreateActor("Cutscene_Mama", cutsceneRoot.transform, sampleMamaSprite, 15, mamaCutsceneAnimator);
-        cutscenePiglet1 = CreateActor("Cutscene_Piglet1", cutsceneRoot.transform, samplePigletSprite, 14, pigletCutsceneAnimator);
-        cutscenePiglet2 = CreateActor("Cutscene_Piglet2", cutsceneRoot.transform, samplePigletSprite, 14, pigletCutsceneAnimator);
-        cutsceneWolf = CreateActor("Cutscene_Wolf", cutsceneRoot.transform, sampleWolfSprite, 16, wolfCutsceneAnimator);
-        cutsceneBasket = CreateActor("Cutscene_Basket", cutsceneRoot.transform, sampleBasketSprite, 13);
+            cutsceneMama = CreateActor("Cutscene_Mama", cutsceneRoot.transform, sampleMamaSprite, 15, mamaCutsceneAnimator);
+            cutscenePiglet1 = CreateActor("Cutscene_Piglet1", cutsceneRoot.transform, samplePigletSprite, 14, pigletCutsceneAnimator);
+            cutscenePiglet2 = CreateActor("Cutscene_Piglet2", cutsceneRoot.transform, samplePigletSprite, 14, pigletCutsceneAnimator);
+            cutsceneWolf = CreateActor("Cutscene_Wolf", cutsceneRoot.transform, sampleWolfSprite, 16, wolfCutsceneAnimator);
+            cutsceneBasket = CreateActor("Cutscene_Basket", cutsceneRoot.transform, sampleBasketSprite, 13);
+        }
+        else
+        {
+            UpdateActorAnimator(cutsceneMama, mamaCutsceneAnimator);
+            UpdateActorAnimator(cutscenePiglet1, pigletCutsceneAnimator);
+            UpdateActorAnimator(cutscenePiglet2, pigletCutsceneAnimator);
+            UpdateActorAnimator(cutsceneWolf, wolfCutsceneAnimator);
+        }
 
         cutsceneRoot.SetActive(false);
+    }
+
+    private void UpdateActorAnimator(SpriteRenderer actor, RuntimeAnimatorController controller)
+    {
+        if (actor == null || controller == null) return;
+        var anim = actor.GetComponent<Animator>();
+        if (anim == null)
+        {
+            anim = actor.gameObject.AddComponent<Animator>();
+        }
+        if (anim.runtimeAnimatorController != controller)
+        {
+            anim.runtimeAnimatorController = controller;
+        }
     }
 
     private SpriteRenderer CreateActor(string name, Transform parent, Sprite sprite, int sortingOrder, RuntimeAnimatorController animController = null)
@@ -510,7 +532,6 @@ public class StageCutsceneController : MonoBehaviour
             anim.runtimeAnimatorController = animController;
         }
 
-        go.SetActive(false);
         return sr;
     }
 
@@ -521,22 +542,34 @@ public class StageCutsceneController : MonoBehaviour
     {
         if (actor == null) return;
 
+        // สำคัญมาก: ต้องเปิดให้ GameObject Active ก่อนเสมอ! ไม่งั้น Animator จะไม่อัปเดตสถานะและ HasState จะคืนค่า false
+        if (!actor.gameObject.activeSelf)
+        {
+            actor.gameObject.SetActive(true);
+        }
+
         var anim = actor.GetComponent<Animator>();
         if (anim == null && fallbackController != null)
         {
             anim = actor.gameObject.AddComponent<Animator>();
             anim.runtimeAnimatorController = fallbackController;
         }
-        else if (anim != null && anim.runtimeAnimatorController == null && fallbackController != null)
+        else if (anim != null && fallbackController != null && anim.runtimeAnimatorController != fallbackController)
         {
             anim.runtimeAnimatorController = fallbackController;
         }
 
         if (anim != null && anim.runtimeAnimatorController != null && !string.IsNullOrEmpty(stateName))
         {
+            anim.enabled = true;
             if (anim.HasState(0, Animator.StringToHash(stateName)))
             {
-                anim.Play(stateName);
+                anim.Play(stateName, 0, 0f);
+                anim.Update(0f); // บังคับให้ Animator คำนวณเฟรมแรกทันที
+            }
+            else
+            {
+                Debug.LogWarning($"[Cutscene] Animator Controller '{anim.runtimeAnimatorController.name}' does not contain state: '{stateName}'");
             }
         }
     }
@@ -611,6 +644,13 @@ public class StageCutsceneController : MonoBehaviour
                     {
                         sampleWolfSprite = sr.sprite;
                         break;
+                    }
+                if (wolfCutsceneAnimator == null)
+                {
+                    var anim = ws.WolfPrefab.GetComponentInChildren<Animator>();
+                    if (anim != null && anim.runtimeAnimatorController != null)
+                    {
+                        wolfCutsceneAnimator = anim.runtimeAnimatorController;
                     }
                 }
             }
