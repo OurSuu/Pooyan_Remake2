@@ -198,75 +198,72 @@ public class StageCutsceneController : MonoBehaviour
 
         AudioManager.Instance?.PlayStageIntroBGM();
 
-        float duration = 5.4f;
+        float duration = 7.6f;
         float elapsed = 0f;
         bool mamaAnimStarted = false;
 
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            float walkBob = Mathf.Abs(Mathf.Sin(elapsed * 16f)) * 0.08f;
+            // walkBob เบาๆ นุ่มนวล ไม่ขัดกับอนิเมชันขยับขา
+            float walkBob = Mathf.Abs(Mathf.Sin(elapsed * 12f)) * 0.04f;
 
-            if (elapsed < 1.8f)
+            if (elapsed < 2.5f)
             {
-                // เฟส 1: ลูกหมู 2 ตัวเดินกลับบ้านไปทางขวา (หันขวา)
-                // หมาป่าวิ่งชาร์จเข้ามาข้างหลังจากฝั่งซ้าย (หันขวา)
-                float t1 = elapsed / 1.8f;
+                // เฟส 1 (0 - 2.5s): ลูกหมู 2 ตัวเดินกลับบ้านไปทางขวาอย่างช้าๆ ชิลๆ (หันขวา faceLeft=false)
+                // หมาป่าวิ่งชาร์จเข้ามาข้างหลังจากฝั่งซ้าย (หันขวา faceLeft=false)
+                float t1 = elapsed / 2.5f;
 
-                // ลูกหมู 1 (ตัวนำ): เดินกลับบ้านไปทางขวา (หันขวา)
-                float pig1X = Mathf.Lerp(-1.0f, 4.0f, t1);
+                // ลูกหมู 1 (ตัวนำ): เดินกลับบ้านไปทางขวา
+                float pig1X = Mathf.Lerp(-1.2f, 3.8f, t1);
                 SetActor(cutscenePiglet1, new Vector3(pig1X, groundY + pigletYOffset + walkBob, 0f), faceLeft: false, isWolf: false);
 
-                // ลูกหมู 2 (ตัวตามหลัง): เดินตามหลังมาทางขวา (หันขวา)
-                float pig2X = Mathf.Lerp(-2.8f, 1.2f, t1);
+                // ลูกหมู 2 (ตัวตามหลัง): เดินตามหลังมาทางขวา
+                float pig2X = Mathf.Lerp(-3.2f, 1.2f, t1);
                 SetActor(cutscenePiglet2, new Vector3(pig2X, groundY + pigletYOffset + walkBob, 0f), faceLeft: false, isWolf: false);
 
-                // หมาป่า: วิ่งชาร์จพุ่งตามเข้ามาจากทางซ้าย (หันขวา)
+                // หมาป่า: วิ่งชาร์จพุ่งตามเข้ามาจากทางซ้าย
                 float wolfX = Mathf.Lerp(-8.5f, 0.8f, t1);
                 SetActor(cutsceneWolf, new Vector3(wolfX, groundY + wolfYOffset + walkBob, 0f), faceLeft: false, isWolf: true);
             }
-            else if (elapsed < 2.5f)
+            else if (elapsed < 3.5f)
             {
-                // เฟส 2: หมาป่าตามทันลูกหมูตัวที่ 2! ลูกหมูตัวที่ 1 วิ่งหนีเข้าบ้านทางขวาทัน
-                float t2 = (elapsed - 1.8f) / 0.7f;
+                // เฟส 2 (2.5 - 3.5s): หมาป่าตามทันลูกหมูตัวที่ 2! ลูกหมูตัวที่ 1 วิ่งหนีเข้าบ้านทางขวาทัน
+                float t2 = (elapsed - 2.5f) / 1.0f;
 
-                // ลูกหมู 1: วิ่งหนีเข้าบ้านไปทางขวาสุดจอ (รอดปลอดภัย!)
-                float pig1X = Mathf.Lerp(4.0f, 7.5f, t2);
-                SetActor(cutscenePiglet1, new Vector3(pig1X, groundY + pigletYOffset + walkBob * 1.5f, 0f), faceLeft: false, isWolf: false);
-                if (pig1X >= 7.2f && cutscenePiglet1.gameObject.activeSelf)
-                {
-                    cutscenePiglet1.gameObject.SetActive(false); // วิ่งเข้าบ้านไปแล้ว
-                }
+                // ลูกหมู 1: วิ่งหนีเข้าบ้านไปทางขวาสุดจอ (เมื่อถึงขอบขวาจะหายเข้าบ้านทันที)
+                float pig1X = Mathf.Lerp(3.8f, 7.5f, t2);
+                SetActor(cutscenePiglet1, new Vector3(pig1X, groundY + pigletYOffset + walkBob * 1.2f, 0f), faceLeft: false, isWolf: false);
 
-                // หมาป่าจับลูกหมู 2 ได้ที่ x = 1.2f แล้วเตรียมสลับทิศหันกลับไปทางซ้าย (หันซ้าย)
-                SetActor(cutsceneWolf, new Vector3(1.2f, groundY + wolfYOffset + walkBob, 0f), faceLeft: true, isWolf: true);
+                // หมาป่าจับลูกหมู 2 ได้ที่ x = 1.0f แล้วสลับทิศหันกลับไปทางซ้าย (หันซ้าย faceLeft=true)
+                SetActor(cutsceneWolf, new Vector3(1.0f, groundY + wolfYOffset + walkBob, 0f), faceLeft: true, isWolf: true);
 
-                // ลูกหมู 2 ถูกจับตัวดิ้นอยู่ด้านหลังหมาป่า
-                SetActor(cutscenePiglet2, new Vector3(1.65f, groundY + pigletYOffset + 0.22f, 0f), faceLeft: false, isWolf: false);
+                // ลูกหมู 2 ถูกจับตัวดิ้นอยู่ด้านหลังหมาป่า (หันหน้าดิ้นไปทางขวาตรงข้ามหมาป่า)
+                SetActor(cutscenePiglet2, new Vector3(1.45f, groundY + pigletYOffset + 0.18f, 0f), faceLeft: false, isWolf: false);
             }
             else
             {
-                // เฟส 3: หมาป่าอุ้มลูกหมู 2 วิ่งหนีเตลิดไปทางซ้ายสุดจอ! และแม่หมูวิ่งตามออกมาไล่กวด
-                float t3 = Mathf.Clamp01((elapsed - 2.5f) / 1.8f);
-
-                // หมาป่า: วิ่งหนีไปทางซ้าย (หันซ้าย)
-                float wolfX = Mathf.Lerp(1.2f, -9.5f, t3);
+                // เฟส 3 (3.5s เป็นต้นไป): หมาป่าอุ้มลูกหมู 2 วิ่งหนีไปทางซ้าย (ช้าลง นุ่มนวล)
+                // 1. หมาป่าวิ่งจาก 1.0f ไป -8.5f (พอถึงขอบซ้าย <= -7.5f จะหายตัวเข้าป่าไปเลย)
+                float tWolf = Mathf.Clamp01((elapsed - 3.5f) / 2.0f);
+                float wolfX = Mathf.Lerp(1.0f, -8.5f, tWolf);
                 SetActor(cutsceneWolf, new Vector3(wolfX, groundY + wolfYOffset + walkBob, 0f), faceLeft: true, isWolf: true);
 
                 // ลูกหมู 2: โดนอุ้มอยู่ด้านหลังหมาป่า (x = wolfX + 0.45f)
-                float struggleBob = Mathf.Sin(elapsed * 24f) * 0.05f;
-                SetActor(cutscenePiglet2, new Vector3(wolfX + 0.45f, groundY + pigletYOffset + 0.22f + struggleBob, 0f), faceLeft: false, isWolf: false);
+                float struggleBob = Mathf.Sin(elapsed * 18f) * 0.04f;
+                SetActor(cutscenePiglet2, new Vector3(wolfX + 0.45f, groundY + pigletYOffset + 0.18f + struggleBob, 0f), faceLeft: false, isWolf: false);
 
-                // แม่หมู: วิ่งไล่ตามออกมาจากบ้านทางขวาตอน 2.8 วินาที
-                if (elapsed >= 2.8f)
+                // เฟส 4: แม่หมูวิ่งพุ่งตามออกมาจากบ้านตอน 4.6 วินาที (ไล่ตามหมาป่าไปทางซ้าย)
+                // 2. แม่หมูวิ่งกวดตามไปจนพ้นขอบซ้าย <= -7.5f แล้วหายตัวเข้าป่าตามไปเลย
+                if (elapsed >= 4.6f)
                 {
                     if (!mamaAnimStarted)
                     {
                         mamaAnimStarted = true;
                         PlayActorAnim(cutsceneMama, mamaWalkState, mamaCutsceneAnimator);
                     }
-                    float tMama = Mathf.Clamp01((elapsed - 2.8f) / 1.8f);
-                    float mamaX = Mathf.Lerp(7.0f, -6.5f, tMama);
+                    float tMama = Mathf.Clamp01((elapsed - 4.6f) / 2.2f);
+                    float mamaX = Mathf.Lerp(7.0f, -8.5f, tMama);
                     SetActor(cutsceneMama, new Vector3(mamaX, groundY + mamaYOffset + walkBob, 0f), faceLeft: true, isWolf: false);
                 }
             }
@@ -289,6 +286,7 @@ public class StageCutsceneController : MonoBehaviour
     //    - หมาป่าวิ่งหนีตาตั้งไปทางซ้าย (หันหน้าไปทางซ้ายตามทิศวิ่ง)
     //    - แม่หมูกับลูกหมู 2 ตัว วิ่งไล่กวดหมาป่าไปทางซ้ายแบบช้าๆ คอมเมดี้
     //    - ขบวนวิ่ง: หมาป่า -> ลูกหมู 1 -> ลูกหมู 2 -> แม่หมู
+    //    - แต่ละตัวเมื่อวิ่งถึงขอบซ้าย (เข้าป่า) จะหายตัวไปทีละตัวตามลำดับ 1, 2, 3, 4!
     // =========================================================================================
     private IEnumerator Stage2IntroRoutine(Action onComplete)
     {
@@ -308,31 +306,30 @@ public class StageCutsceneController : MonoBehaviour
 
         AudioManager.Instance?.PlayStageIntroBGM();
 
-        // ปรับความเร็วให้ช้าลงตามคำขอ (5.6 วินาที วิ่งไล่กันแบบช้าๆ ชิลๆ คอมเมดี้)
-        float duration = 5.6f;
+        // ปรับความเร็วให้ช้าลงตามคำขอ (6.8 วินาที วิ่งไล่กันแบบช้าๆ ชิลๆ คอมเมดี้)
+        float duration = 6.8f;
         float elapsed = 0f;
 
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
             float t = elapsed / duration;
-            // ก้าวช้าลงอย่างนุ่มนวล
-            float walkBob = Mathf.Abs(Mathf.Sin(elapsed * 12f)) * 0.08f;
+            float walkBob = Mathf.Abs(Mathf.Sin(elapsed * 12f)) * 0.04f;
 
-            // 1. หมาป่า: วิ่งหนีตาตั้งไปทางซ้าย (หันหน้าไปทางซ้ายตามทิศวิ่ง)
-            float wolfX = Mathf.Lerp(2.0f, -9.5f, Mathf.Clamp01(t * 1.08f));
+            // 1. หมาป่า: วิ่งหนีตาตั้งไปทางซ้าย (ถึงขอบซ้ายแล้วหายตัวไปก่อนเป็นตัวแรก: 1)
+            float wolfX = Mathf.Lerp(3.2f, -9.0f, Mathf.Clamp01(t * 1.18f));
             SetActor(cutsceneWolf, new Vector3(wolfX, groundY + wolfYOffset + walkBob, 0f), faceLeft: true, isWolf: true);
 
-            // 2. ลูกหมู 1 (วิ่งนำหน้าสุด): วิ่งไล่กวดหมาป่าไปทางซ้าย (หันซ้าย)
-            float pig1X = Mathf.Lerp(4.5f, -7.5f, Mathf.Clamp01(t * 1.08f));
+            // 2. ลูกหมู 1 (วิ่งนำหน้าสุด): วิ่งไล่กวดหมาป่าไปทางซ้าย (หายไปเป็นตัวที่: 2)
+            float pig1X = Mathf.Lerp(4.8f, -9.0f, Mathf.Clamp01(t * 1.12f));
             SetActor(cutscenePiglet1, new Vector3(pig1X, groundY + pigletYOffset + walkBob, 0f), faceLeft: true, isWolf: false);
 
-            // 3. ลูกหมู 2 (วิ่งอยู่หน้าแม่หมู): วิ่งเคียงข้างไปทางซ้าย (หันซ้าย)
-            float pig2X = Mathf.Lerp(5.8f, -6.5f, Mathf.Clamp01(t * 1.08f));
+            // 3. ลูกหมู 2 (วิ่งอยู่หน้าแม่หมู): วิ่งเคียงข้างไปทางซ้าย (หายไปเป็นตัวที่: 3)
+            float pig2X = Mathf.Lerp(6.0f, -9.0f, Mathf.Clamp01(t * 1.06f));
             SetActor(cutscenePiglet2, new Vector3(pig2X, groundY + pigletYOffset + walkBob, 0f), faceLeft: true, isWolf: false);
 
-            // 4. แม่หมู: วิ่งตามหลังลูกๆ ไล่กวดหมาป่าไปทางซ้าย (หันซ้าย)
-            float mamaX = Mathf.Lerp(7.2f, -5.5f, Mathf.Clamp01(t * 1.08f));
+            // 4. แม่หมู: วิ่งตามหลังลูกๆ ไล่กวดหมาป่าไปทางซ้าย (หายไปเป็นตัวที่: 4)
+            float mamaX = Mathf.Lerp(7.5f, -9.0f, Mathf.Clamp01(t * 1.00f));
             SetActor(cutsceneMama, new Vector3(mamaX, groundY + mamaYOffset + walkBob, 0f), faceLeft: true, isWolf: false);
 
             yield return null;
@@ -574,23 +571,35 @@ public class StageCutsceneController : MonoBehaviour
         }
     }
 
+    private const float LEFT_EXIT_X = -7.5f;
+    private const float RIGHT_EXIT_X = 7.2f;
+
     private void SetActor(SpriteRenderer actor, Vector3 worldPos, bool faceLeft, bool isWolf = false)
     {
         if (actor == null) return;
+
+        // ถ้าวิ่งเลยขอบซ้ายของจอเข้าป่า -> หายตัวไปเลยทันที
+        if (faceLeft && worldPos.x <= LEFT_EXIT_X)
+        {
+            if (actor.gameObject.activeSelf) actor.gameObject.SetActive(false);
+            return;
+        }
+
+        // ถ้าวิ่งเลยขอบขวาของจอเข้าบ้าน -> หายตัวเข้าบ้านไปเลยทันที
+        if (!faceLeft && worldPos.x >= RIGHT_EXIT_X)
+        {
+            if (actor.gameObject.activeSelf) actor.gameObject.SetActive(false);
+            return;
+        }
+
         if (!actor.gameObject.activeSelf) actor.gameObject.SetActive(true);
 
         actor.transform.position = worldPos;
 
-        if (isWolf)
-        {
-            // สไปรต์หมาป่าเริ่มต้นหันขวา (ตาม Wolf.cs: วิ่งซ้าย flipX=true, วิ่งขวา flipX=false)
-            actor.flipX = faceLeft;
-        }
-        else
-        {
-            // สไปรต์แม่หมูและลูกหมูเริ่มต้นหันซ้าย (วิ่งซ้าย flipX=false, วิ่งขวา flipX=true)
-            actor.flipX = !faceLeft;
-        }
+        // สไปรต์ต้นฉบับทุกตัว (หมาป่า, แม่หมู, ลูกหมู) วาดหันหน้าไปทางขวา
+        // - วิ่งไปทางซ้าย (faceLeft = true) -> flipX = true เพื่อหันซ้าย
+        // - วิ่งไปทางขวา (faceLeft = false) -> flipX = false เพื่อหันขวาตามสไปรต์ต้นฉบับ
+        actor.flipX = faceLeft;
     }
 
     /// <summary>
