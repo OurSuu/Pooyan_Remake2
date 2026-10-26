@@ -381,9 +381,9 @@ public class BonusStageManager : MonoBehaviour
         var config = LevelManager.Instance?.CurrentConfig ?? ScriptableObject.CreateInstance<LevelConfig>();
         var wolf = Instantiate(targetPrefab, new Vector3(startX, startY, 0f), Quaternion.identity);
 
-        // ในด่านโบนัสเนื้อ: หมาป่าลอยขึ้นจากด้านล่าง ไม่ถือโล่ ไม่ปาหิน และใช้ลูกโป่ง 1 HP
+        // ในด่านโบนัสเนื้อ (ตามต้นฉบับ NES หลังด่าน 2): หมาป่าลอยขึ้นจากด้านล่างด้วยลูกโป่งสีฟ้าอ่อนล้วน (1 HP) ไม่ถือโล่ ไม่ปาหิน
         float bonusFloatSpeed = Random.Range(0.85f, 1.15f);
-        wolf.Initialize(config, descending: false, speed: bonusFloatSpeed, shield: false, rockThrow: false, dropX: dropX, lanes: laneXCoords, laneIndex: laneIndex, overrideBalloonHP: 1);
+        wolf.Initialize(config, descending: false, speed: bonusFloatSpeed, shield: false, rockThrow: false, dropX: dropX, lanes: laneXCoords, laneIndex: laneIndex, overrideBalloonHP: 1, overrideColorType: BalloonColorType.LightBlue);
         wolf.DisableTeaseBounces();
     }
 }

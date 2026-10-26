@@ -163,7 +163,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b094ad51dff35d4394f4434ad8805c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Wolf
-  balloon: {fileID: 7221660757791612777, guid: 54f2f3e7816941949987622c99e6ed77, type: 3}
+  balloon: {fileID: 5079889705220623930}
   balloonPrefab: {fileID: 0}
   shieldTransform: {fileID: 0}
   rockPrefab: {fileID: 1926483307685132397, guid: 34cd0122affc40848b25901f10d3ba12, type: 3}
@@ -356,6 +356,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6832097310141589789, guid: 54f2f3e7816941949987622c99e6ed77, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6832097310141589789, guid: 54f2f3e7816941949987622c99e6ed77, type: 3}
+      propertyPath: m_Color.g
+      value: 0.85
+      objectReference: {fileID: 0}
+    - target: {fileID: 6832097310141589789, guid: 54f2f3e7816941949987622c99e6ed77, type: 3}
+      propertyPath: m_Color.r
+      value: 0.28
+      objectReference: {fileID: 0}
     - target: {fileID: 7973977196932578580, guid: 54f2f3e7816941949987622c99e6ed77, type: 3}
       propertyPath: m_Name
       value: Balloon (1)
@@ -370,3 +382,14 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3874334878448062542, guid: 54f2f3e7816941949987622c99e6ed77, type: 3}
   m_PrefabInstance: {fileID: 2469972571972096339}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &5079889705220623930 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7221660757791612777, guid: 54f2f3e7816941949987622c99e6ed77, type: 3}
+  m_PrefabInstance: {fileID: 2469972571972096339}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f500c0a6894ecc48a619394de683ba6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Balloon

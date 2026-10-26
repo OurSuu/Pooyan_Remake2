@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea4e129347de49849bbd6c653092c7dc, type: 3}
   m_Name: Spring
   m_EditorClassIdentifier: Assembly-CSharp::LevelConfig
-  wolfCount: 20
+  wolfCount: 36
   wolfSpeedRange: {x: 0.75, y: 1.05}
   shieldRatio: 0.2
   rockThrowRatio: 0.2
   spawnInterval: 2.5
-  balloonHP: 1
-  yellowBalloonRatio: 0.35
+  balloonHP: 3
+  yellowBalloonRatio: 0
   hasBossWolf: 1
   hasTreeTopBoss: 0
-  bossShieldHP: 3
+  bossShieldHP: 7

@@ -169,7 +169,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 880b73653ddca834f97f13d1fc6e752c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BossWolf
-  balloon: {fileID: 7221660757791612777, guid: 54f2f3e7816941949987622c99e6ed77, type: 3}
+  balloon: {fileID: 1861643012835110995}
   balloonPrefab: {fileID: 0}
   shieldTransform: {fileID: 0}
   rockPrefab: {fileID: 1926483307685132397, guid: 34cd0122affc40848b25901f10d3ba12, type: 3}
@@ -393,7 +393,7 @@ SpriteRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: e360a17f218bf274db937298618caba8, type: 3}
-  m_Color: {r: 0.8113208, g: 0.011480933, b: 0.011480933, a: 1}
+  m_Color: {r: 1, g: 0.42, b: 0.65, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0

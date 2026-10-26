@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 /// ไฟล์นี้โคตรพ่อโคตรแม่จัดการ UI บนหน้าจอเลยเพื่อน ทั้งคะแนน เลือด ฉากจบ หน้าเกมโอเวอร์ อยู่ในนี้หมด
@@ -9,8 +11,12 @@ public class UIManager : MonoBehaviour
     [Header("HUD")]
     [SerializeField] private TextMeshProUGUI scoreText; // ช่องแสดงแต้ม
     [SerializeField] private TextMeshProUGUI highScoreText; // สถิติแต้มสูงสุด
-    [SerializeField] private TextMeshProUGUI livesText; // จำนวนชีวิตหมู
+    [SerializeField] private TextMeshProUGUI livesText; // จำนวนชีวิตหมู (แบบตัวเลขเผื่อใช้งาน)
+    [SerializeField] private Transform livesContainer; // กล่องใส่ไอคอนชีวิต
+    [SerializeField] private GameObject lifeIconPrefab; // Prefab หรือไอคอนต้นแบบ (เผื่อได้ชีวิตเพิ่มเกิน 3 รูป)
+    [SerializeField] private List<GameObject> lifeIcons = new List<GameObject>(); // รายการไอคอนชีวิต (3 รูป)
     [SerializeField] private TextMeshProUGUI stageText; // ตอนนี้เล่นอยู่ฉากไหน
+    [SerializeField] private GameObject wolfIcon; // รูปไอคอนหมาป่า (แสดงคู่กับจำนวนหมาป่าที่เหลือ)
     [SerializeField] private TextMeshProUGUI remainingWolvesText; // ตัวเลขหมาป่าที่ต้องตบให้หมด
     [SerializeField] private GameObject cliffCounterPanel; // แผงนับจำนวนหมาป่าที่ขึ้นหน้าผาไปได้
     [SerializeField] private TextMeshProUGUI cliffCounterText; // Text ข้างในแผงบนอีกที
@@ -25,6 +31,16 @@ public class UIManager : MonoBehaviour
 
     private void Start()
     {
+        // หากมี livesContainer และยังไม่ได้ใส่ไอคอนใน list ให้ดึง child มาใส่เป็นค่าเริ่มต้น
+        if (livesContainer != null && (lifeIcons == null || lifeIcons.Count == 0))
+        {
+            if (lifeIcons == null) lifeIcons = new List<GameObject>();
+            for (int i = 0; i < livesContainer.childCount; i++)
+            {
+                lifeIcons.Add(livesContainer.GetChild(i).gameObject);
+            }
+        }
+
         // สมัครรับข่าวสารตอนคะแนนเปลี่ยน
         if (ScoreManager.Instance != null)
         {
@@ -87,11 +103,19 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    private void UpdateRemainingWolves(int remaining)
+    public void UpdateRemainingWolves(int remaining)
     {
+        if (wolfIcon != null) wolfIcon.SetActive(true);
         if (remainingWolvesText != null)
         {
-            remainingWolvesText.text = $"WOLVES: {remaining}";
+            if (wolfIcon != null)
+            {
+                remainingWolvesText.text = $": {remaining}";
+            }
+            else
+            {
+                remainingWolvesText.text = $"WOLVES: {remaining}";
+            }
         }
     }
 
@@ -105,9 +129,41 @@ public class UIManager : MonoBehaviour
         if (highScoreText != null) highScoreText.text = $"HIGH: {highScore}";
     }
 
-    private void UpdateLives(int lives)
+    public void UpdateLives(int lives)
     {
-        if (livesText != null) livesText.text = $"LIVES: {lives}";
+        bool hasIcons = (lifeIcons != null && lifeIcons.Count > 0) || livesContainer != null;
+        if (livesText != null)
+        {
+            if (hasIcons)
+            {
+                livesText.gameObject.SetActive(false); // ซ่อน text เพราะแสดงเป็นรูปไอคอนแทนแล้ว
+            }
+            else
+            {
+                livesText.text = $"LIVES: {lives}";
+            }
+        }
+
+        if (hasIcons)
+        {
+            // ถ้าชีวิตเพิ่มขึ้นเกินจำนวนไอคอนที่มี (เช่น ได้ 1-UP) ให้ก็อปปี้ไอคอนเพิ่มอัตโนมัติ
+            while (lifeIcons.Count < lives && (lifeIconPrefab != null || (lifeIcons.Count > 0 && lifeIcons[0] != null)))
+            {
+                GameObject template = lifeIconPrefab != null ? lifeIconPrefab : lifeIcons[0];
+                Transform parent = livesContainer != null ? livesContainer : template.transform.parent;
+                GameObject newIcon = Instantiate(template, parent);
+                newIcon.name = $"LifeIcon_{lifeIcons.Count + 1}";
+                lifeIcons.Add(newIcon);
+            }
+
+            for (int i = 0; i < lifeIcons.Count; i++)
+            {
+                if (lifeIcons[i] != null)
+                {
+                    lifeIcons[i].SetActive(i < lives);
+                }
+            }
+        }
     }
 
     private void UpdateStage(int stage)
@@ -144,6 +200,7 @@ public class UIManager : MonoBehaviour
             case GameState.BonusStage:
                 if (stageText != null) stageText.text = "BONUS STAGE";
                 if (cliffCounterPanel != null) cliffCounterPanel.SetActive(false);
+                if (wolfIcon != null) wolfIcon.SetActive(false);
                 if (remainingWolvesText != null) remainingWolvesText.text = "BONUS TIME!";
                 break;
             case GameState.NameEntry:

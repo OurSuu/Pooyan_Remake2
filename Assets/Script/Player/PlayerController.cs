@@ -38,6 +38,11 @@ public class PlayerController : MonoBehaviour
     [SerializeField] public float deathFloorY = -4.5f; // จุดตกถึงพื้นตอนตาย
     [SerializeField] private string idleAnimName = "Idle"; // ชื่อแอนิเมชันยืนเฉยๆ
 
+    [Header("NES Easter Egg #1: Hidden Leaf (4,000 Pts)")]
+    [Tooltip("ขยับกระเช้าขึ้น-ลงต่อเนื่องครบ 4 วินาที จะมีใบไม้ลับลอยออกมาให้ยิงเก็บ 4,000 คะแนน ตามต้นฉบับ NES!")]
+    [SerializeField] private Sprite secretLeafSprite;
+    [SerializeField] private float secretLeafRequiredMoveTime = 4.0f;
+
     public PlayerState State { get; private set; } = PlayerState.Normal;
     public float MinY => minY;
     public float MaxY => maxY;
@@ -248,6 +253,10 @@ public class PlayerController : MonoBehaviour
     }
 
     // เลื่อนกระเช้าขึ้นลง
+    private float continuousMoveTimer = 0f;
+    private float moveStopGraceTimer = 0f;
+    private bool hasSpawnedSecretLeaf = false;
+
     private void HandleMovement()
     {
         float v = Input.GetAxisRaw("Vertical"); // รับค่า ขึ้น-ลง (W/S หรือลูกศร)
@@ -256,11 +265,48 @@ public class PlayerController : MonoBehaviour
         pos.y = Mathf.Clamp(pos.y, minY, maxY); // ล็อกไม่ให้ทะลุเพดานหรือมุดดิน
         transform.position = pos;
 
+        // เช็คเงื่อนไข Easter Egg #1 (ใบไม้ลับ 4,000 คะแนน): ขยับกระเช้าขึ้น-ลงต่อเนื่องครบ 4 วินาทีโดยไม่หยุด
+        UpdateSecretLeafEasterEgg(v);
+
         // ถ้าถึงยอดแล้วมีเนื้อให้เก็บ ก็หยิบเลย!
         if (State == PlayerState.Normal && meatAvailable && IsAtTop)
         {
             PickUpMeat();
         }
+    }
+
+    private void UpdateSecretLeafEasterEgg(float verticalInput)
+    {
+        if (hasSpawnedSecretLeaf) return;
+
+        if (Mathf.Abs(verticalInput) > 0.01f)
+        {
+            moveStopGraceTimer = 0f;
+            continuousMoveTimer += Time.deltaTime;
+            if (continuousMoveTimer >= secretLeafRequiredMoveTime)
+            {
+                hasSpawnedSecretLeaf = true;
+                SpawnSecretLeaf();
+            }
+        }
+        else
+        {
+            // เผื่อจังหวะสลับนิ้วกด ขึ้น <-> ลง เล็กน้อย (0.18 วินาที) ไม่ให้ตัวนับหลุดทันทีตอนกลับทิศทางกระเช้า
+            moveStopGraceTimer += Time.deltaTime;
+            if (moveStopGraceTimer > 0.18f)
+            {
+                continuousMoveTimer = 0f;
+            }
+        }
+    }
+
+    private void SpawnSecretLeaf()
+    {
+        var leafObj = new GameObject("SecretLeaf_EasterEgg_4000Pts");
+        leafObj.transform.position = new Vector3(0.2f, 3.8f, 0f);
+        var leafTarget = leafObj.AddComponent<SecretLeafTarget>();
+        leafTarget.Initialize(secretLeafSprite);
+        Debug.Log("[NES Easter Egg] ใบไม้ลับปรากฏตัวแล้ว! ยิงให้โดนเพื่อรับ 4,000 คะแนน!");
     }
 
     private bool isMeatBonusMode = false;

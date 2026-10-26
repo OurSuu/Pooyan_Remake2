@@ -90,7 +90,7 @@ MonoBehaviour:
   ropeLoopSource: {fileID: 8706137738314456517}
   bgmVolume: 0.427
   sfxVolume: 0.763
-  ropePullVolume: 0.347
+  ropePullVolume: 0.08
 --- !u!82 &812698098138415274
 AudioSource:
   m_ObjectHideFlags: 0

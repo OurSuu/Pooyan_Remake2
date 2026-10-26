@@ -544,8 +544,10 @@ public class WolfSpawner : MonoBehaviour
         var balloon = balloonObj.GetComponent<Balloon>();
         if (balloon != null)
         {
-            // สุ่มสีชมพู (1 HP) หรือสีเหลืองให้ดูมีสีสัน แต่ยิงนัดเดียวแตก (1 HP) และเด้งเนื้อได้
-            balloon.InitializeStandalone(floatUpSpeed, hp: 1);
+            // ตามต้นฉบับ NES ท่อลูกโป่งที่พื้น 3 ท่อจะปล่อยลูกโป่งสีส้ม/เหลือง, สีเขียว และสีฟ้าอ่อนลอยขึ้นมา (ยิงแตกได้ 200 แต้ม และเด้งเนื้อได้)
+            BalloonColorType[] tubeColors = { BalloonColorType.YellowOrange, BalloonColorType.Green, BalloonColorType.LightBlue };
+            BalloonColorType chosenColor = tubeColors[laneIndex % tubeColors.Length];
+            balloon.InitializeStandalone(floatUpSpeed, hp: 1, colorType: chosenColor);
         }
         return balloon;
     }

@@ -14,16 +14,16 @@ public class BossWolf : Wolf
     [SerializeField] private Color bossBodyTint = new Color(1f, 0.68f, 0.85f, 1f); // สีชมพูตามต้นฉบับ NES (ボスオオカミ・ピンク)
 
     // ตอนเกิดเรียกฟังก์ชันนี้ ตั้งค่าสเตตัสต่างๆ
-    public override void Initialize(LevelConfig config, bool descending, float speed, bool shield, bool rockThrow, float dropX = 0f, float[] lanes = null, int laneIndex = 0, int? overrideBalloonHP = null)
+    public override void Initialize(LevelConfig config, bool descending, float speed, bool shield, bool rockThrow, float dropX = 0f, float[] lanes = null, int laneIndex = 0, int? overrideBalloonHP = null, BalloonColorType? overrideColorType = null)
     {
         // บอสมีโล่เสมอ และเคลื่อนที่ไวขึ้นเล็กน้อย
-        base.Initialize(config, descending, speed * 1.15f, true, rockThrow, dropX, lanes, laneIndex, 1);
+        base.Initialize(config, descending, speed * 1.15f, true, rockThrow, dropX, lanes, laneIndex, 1, BalloonColorType.PinkRed);
         remainingShieldHP = (config != null && config.bossShieldHP > 0) ? config.bossShieldHP : GameConstants.BossShieldHits;
         stageClearTriggered = false;
 
         if (balloon != null)
         {
-            balloon.Initialize(this, 1, bossFlash: true); // ลูกโป่งบอสเลือด 1 แต่กระพริบวิบวับ
+            balloon.Initialize(this, 1, bossFlash: true, colorType: BalloonColorType.PinkRed); // ลูกโป่งบอสเลือด 1 แต่กระพริบวิบวับ
             balloon.gameObject.SetActive(false); // ซ่อนไว้ก่อนจนกว่าจะเดินถึงจุดเป่าลูกโป่ง
         }
 

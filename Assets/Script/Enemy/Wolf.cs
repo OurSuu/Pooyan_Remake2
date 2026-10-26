@@ -182,7 +182,8 @@ public class Wolf : MonoBehaviour
         float dropX = 0f,
         float[] lanes = null,
         int laneIndex = 0,
-        int? overrideBalloonHP = null)
+        int? overrideBalloonHP = null,
+        BalloonColorType? overrideColorType = null)
     {
         isDescendingStage = descending;
         
@@ -205,31 +206,54 @@ public class Wolf : MonoBehaviour
         
         gameObject.tag = GameConstants.TagEnemy;
 
-        // คำนวณเลือดและสีของลูกโป่งตามต้นฉบับ NES Pooyan
+        // คำนวณเลือดและสีของลูกโป่งตามระดับความอึดของลูกโป่ง:
+        // แดง = 1 ทีแตก (1 HP - ด่าน 1)
+        // เหลือง = 2 ทีแตก (2 HP)
+        // ฟ้า = 3 ทีแตก (3 HP - ด่าน 2 และ ด่าน 3)
         int targetBalloonHP = 1;
+        BalloonColorType targetColor = BalloonColorType.AutoByHP;
+
         if (overrideBalloonHP.HasValue)
         {
             targetBalloonHP = overrideBalloonHP.Value;
-        }
-        else if (!descending)
-        {
-            // ต้นฉบับ NES ด่านคู่ (Stage 2, 4, ... ลอยขึ้น): ลูกโป่งสีฟ้า ทนลูกธนูได้ 2 ดอก ดอกที่ 3 แตก (3 HP)
-            targetBalloonHP = (config != null && config.balloonHP >= 3) ? config.balloonHP : 3;
         }
         else if (config != null && config.balloonHP > 1)
         {
             targetBalloonHP = config.balloonHP;
         }
+        else if (!descending)
+        {
+            // ด่านคู่ (ลอยขึ้น): ใช้ลูกโป่งสีฟ้า 3 ทีแตกเป็นค่าพื้นฐาน
+            targetBalloonHP = 3;
+        }
         else
         {
-            // ด่านคี่ (ลอยลง): พื้นฐาน 1 HP (หรือสุ่ม 2 HP หากตั้ง yellowBalloonRatio ไว้ในด่านหลังๆ)
+            // ด่านคี่ (ลอยลง): ถ้าตั้ง yellowBalloonRatio ไว้จะสุ่มลูกโป่ง 2 HP ผสม มิฉะนั้นเป็น 1 HP (สีแดง)
             float yellowChance = (config != null && config.yellowBalloonRatio > 0f) ? config.yellowBalloonRatio : 0f;
             targetBalloonHP = (Random.value < yellowChance) ? 2 : 1;
         }
 
+        // ผูกสีตามเลือดลูกโป่ง (เว้นแต่จะถูกบังคับสีพิเศษ เช่น ด่านโบนัส หรือ บอส)
+        if (overrideColorType.HasValue)
+        {
+            targetColor = overrideColorType.Value;
+        }
+        else if (targetBalloonHP >= 3)
+        {
+            targetColor = BalloonColorType.LightBlue;    // 3 ทีแตก = สีฟ้า
+        }
+        else if (targetBalloonHP == 2)
+        {
+            targetColor = BalloonColorType.YellowOrange; // 2 ทีแตก = สีเหลือง
+        }
+        else
+        {
+            targetColor = BalloonColorType.PinkRed;      // 1 ทีแตก = สีแดง
+        }
+
         if (balloon != null)
         {
-            balloon.Initialize(this, targetBalloonHP);
+            balloon.Initialize(this, targetBalloonHP, bossFlash: false, colorType: targetColor);
             balloon.gameObject.SetActive(false);
         }
 
@@ -249,16 +273,16 @@ public class Wolf : MonoBehaviour
     }
 
     /// <summary>
-    /// เรียกเมื่อลูกโป่งโดนยิงแล้วยังไม่แตก — ในด่านคู่ (ลอยขึ้น) ความเร็วจะลดลงตามลูกโป่งที่หดตัวตามต้นฉบับ NES
+    /// เรียกเมื่อลูกโป่งโดนยิงแล้วยังไม่แตก — ความเร็วจะลดลงตามลูกโป่งที่หดตัว
     /// </summary>
     public virtual void OnBalloonDamaged(int currentHP, int maxHP)
     {
-        if (!isDescendingStage && maxHP > 1)
+        if (maxHP > 1)
         {
             if (currentHP == 2)
-                floatSpeed = baseFloatSpeed * 0.6f;  // โดนดอกที่ 1: ความเร็วเหลือ 60%
+                floatSpeed = baseFloatSpeed * 0.65f; // โดนดอกที่ 1: ความเร็วเหลือ 65%
             else if (currentHP <= 1)
-                floatSpeed = baseFloatSpeed * 0.35f; // โดนดอกที่ 2: ความเร็วเหลือ 35%
+                floatSpeed = baseFloatSpeed * 0.40f; // โดนดอกที่ 2: ความเร็วเหลือ 40%
         }
     }
 

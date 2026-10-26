@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -15,6 +15,10 @@ public class MainMenuController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI player2Text;
     [SerializeField] private Color selectedColor = Color.yellow;
     [SerializeField] private Color unselectedColor = Color.white;
+
+    [Header("Balloon Cursor")]
+    [SerializeField] private RectTransform balloonCursor; // รูปลูกโป่งหน้าตัวเลือก
+    [SerializeField] private float balloonXOffset = -45f; // ระยะห่างทางซ้ายของข้อความ
 
     private int selectedOption = 0; // 0 = 1 Player, 1 = 2 Players
     private bool isShowingLeaderboard = false;
@@ -90,6 +94,18 @@ public class MainMenuController : MonoBehaviour
             player1Text.color = selectedOption == 0 ? selectedColor : unselectedColor;
         if (player2Text != null) 
             player2Text.color = selectedOption == 1 ? selectedColor : unselectedColor;
+
+        if (balloonCursor != null)
+        {
+            balloonCursor.gameObject.SetActive(true);
+            TextMeshProUGUI targetText = selectedOption == 0 ? player1Text : player2Text;
+            if (targetText != null)
+            {
+                targetText.ForceMeshUpdate();
+                float textHalfWidth = targetText.preferredWidth * 0.5f;
+                balloonCursor.anchoredPosition = new Vector2(-textHalfWidth + balloonXOffset, targetText.rectTransform.anchoredPosition.y);
+            }
+        }
     }
 
     private void ShowTitle()

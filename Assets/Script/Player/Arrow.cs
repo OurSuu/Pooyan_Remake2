@@ -57,6 +57,15 @@ public class Arrow : MonoBehaviour
             return;
         }
 
+        // ถ้าชนใบไม้ลับ Easter Egg (4,000 แต้ม)
+        var secretLeaf = other.GetComponent<SecretLeafTarget>();
+        if (secretLeaf != null)
+        {
+            secretLeaf.TakeHit(gameObject);
+            DestroySelf();
+            return;
+        }
+
         // ถ้าชนลูกโป่ง
         if (other.CompareTag(GameConstants.TagBalloon))
         {
