@@ -74,6 +74,26 @@ public class PlayerController : MonoBehaviour
             if (fp != null) meatSpawnPoint = fp;
         }
 
+        // ป้องกันกรณีเผลอลาก Prefab Asset จาก Project มาใส่ช่อง heldMeatVisual แทนอ็อบเจกต์ลูกใน Scene
+        if (heldMeatVisual == null || !heldMeatVisual.scene.IsValid())
+        {
+            Transform hmv = transform.Find("HeldMeatVisual");
+            if (hmv != null) heldMeatVisual = hmv.gameObject;
+        }
+
+        // อัปเดตรูปเนื้อในมือแม่หมู (HeldMeatVisual) ให้ตรงกับ Sprite ของ meatPrefab ในฤดูนั้นๆ อัตโนมัติ
+        if (heldMeatVisual != null && heldMeatVisual.scene.IsValid() && meatPrefab != null)
+        {
+            var hmvSr = heldMeatVisual.GetComponent<SpriteRenderer>();
+            var prefabSr = meatPrefab.GetComponent<SpriteRenderer>();
+            if (hmvSr != null && prefabSr != null && prefabSr.sprite != null)
+            {
+                hmvSr.sprite = prefabSr.sprite;
+                hmvSr.color = Color.white;
+                heldMeatVisual.transform.localScale = new Vector3(1.8f, 0.9f, 1f);
+            }
+        }
+
         CacheMamaPigReference();
         FindAnimator();
     }
@@ -368,7 +388,8 @@ public class PlayerController : MonoBehaviour
         if (meatPrefab != null)
         {
             Vector3 spawnPos = meatSpawnPoint != null ? meatSpawnPoint.position : (transform.position + new Vector3(-0.9f, 0f, 0f));
-            Instantiate(meatPrefab, spawnPos, Quaternion.identity); // ปล่อยก้อนเนื้อออกไป!
+            var meatObj = Instantiate(meatPrefab, spawnPos, Quaternion.identity); // ปล่อยก้อนเนื้อออกไป!
+            if (!meatObj.activeSelf) meatObj.SetActive(true); // ป้องกันกรณี Prefab ถูกเซฟตอนปิดตาไว้
             AudioManager.Instance?.PlayMeatThrow(); // เล่นเสียงฟึบ!
         }
 
