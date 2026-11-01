@@ -8,16 +8,29 @@ public class Arrow : MonoBehaviour
     [SerializeField] private float destroyX = -12f; // พิกัด X ที่จะทำลายลูกธนูทิ้ง (กันขยะล้นจอ)
     [SerializeField] private int damage = 1; // ดาเมจพื้นฐาน
 
+    [Header("Ground Stick & Fade Settings")]
+    [Tooltip("ระดับความสูงแกน Y ของผิวดินที่ลูกธนูจะปัก (ค่าเริ่มต้น -3.5f)")]
+    [SerializeField] private float stickGroundY = -3.5f;
+    [Tooltip("ระยะเวลาที่ลูกธนูปักอยู่ที่พื้นก่อนจะเริ่มจาง (วินาที)")]
+    [SerializeField] private float stickDuration = 1.0f;
+    [Tooltip("ระยะเวลาค่อยๆ จางหายไป (วินาที)")]
+    [SerializeField] private float fadeDuration = 0.5f;
+    [Tooltip("มุมเอียงสุ่มเล็กน้อยตอนปักพื้น (องศา) เพื่อความสมจริง")]
+    [SerializeField] private float stickAngleVariation = 8f;
+
     private float direction; // ทิศทางที่ยิง (-1 ซ้าย, 1 ขวา)
     private Action<Arrow> onDestroy; // callback ตอนลูกธนูโดนทำลาย จะได้ไปบอก ArrowShooter
     private Action<Arrow> onReturnToPool; // callback ตอนคืนลูกธนูกลับเข้า Pool
     private bool isDeflected; // โดนปัดทิ้งไปหรือยัง จะได้ไม่เช็คซ้ำซ้อน
+    private bool isStuckInGround; // ปักอยู่ที่พื้นแล้วหรือยัง
 
     private float initialSpeed;
     private Rigidbody2D cachedRb;
     private Collider2D cachedCollider;
     private SpriteRenderer[] cachedRenderers;
+    private Color[] initialRendererColors;
     private ArrowTrailEffect cachedTrailFX;
+    private static GameObject cachedGroundDustPrefab;
 
     private void Awake()
     {
@@ -25,6 +38,14 @@ public class Arrow : MonoBehaviour
         cachedRb = GetComponent<Rigidbody2D>();
         cachedCollider = GetComponent<Collider2D>();
         cachedRenderers = GetComponentsInChildren<SpriteRenderer>(true);
+        if (cachedRenderers != null)
+        {
+            initialRendererColors = new Color[cachedRenderers.Length];
+            for (int i = 0; i < cachedRenderers.Length; i++)
+            {
+                if (cachedRenderers[i] != null) initialRendererColors[i] = cachedRenderers[i].color;
+            }
+        }
         cachedTrailFX = GetComponentInChildren<ArrowTrailEffect>(true);
     }
 
@@ -32,8 +53,10 @@ public class Arrow : MonoBehaviour
     public void Initialize(float moveDirection, Action<Arrow> destroyCallback, Action<Arrow> returnToPoolCallback = null)
     {
         CancelInvoke(nameof(CompleteReturnToPool));
+        StopAllCoroutines();
         isDestroyed = false;
         isDeflected = false;
+        isStuckInGround = false;
         speed = initialSpeed > 0f ? initialSpeed : GameConstants.ArrowSpeed;
         transform.rotation = Quaternion.identity;
 
@@ -47,6 +70,7 @@ public class Arrow : MonoBehaviour
         if (cachedCollider != null) cachedCollider.enabled = true;
         if (cachedRenderers != null)
         {
+            SetRenderersAlpha(1f);
             for (int i = 0; i < cachedRenderers.Length; i++)
             {
                 if (cachedRenderers[i] != null) cachedRenderers[i].enabled = true;
@@ -61,6 +85,7 @@ public class Arrow : MonoBehaviour
         if (cachedRb == null) cachedRb = GetComponent<Rigidbody2D>();
         if (cachedRb != null)
         {
+            cachedRb.bodyType = RigidbodyType2D.Dynamic;
             // เซ็ตการชนเป็น Continuous เพราะลูกธนูอาจจะบินเร็ว ทะลุกำแพงได้ถ้าใช้แบบธรรมดา
             cachedRb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
             cachedRb.gravityScale = 0f;
@@ -72,22 +97,43 @@ public class Arrow : MonoBehaviour
     {
         if (isDestroyed) return;
 
+        // ถ้าปักพื้นอยู่และกำลังค่อยๆ จาง ไม่ต้องเช็คขอบจอ
+        if (isStuckInGround) return;
+
+        // ถ้าลูกธนูถูกปัด/กัดแล้วดิ่งลงมาถึงระดับผิวดิน ให้ปักลงพื้นทันที
+        if (isDeflected)
+        {
+            if (transform.position.y <= stickGroundY)
+            {
+                StickIntoGround(stickGroundY);
+                return;
+            }
+        }
+
         // เช็คว่าถ้าบินออกนอกจอ (เลย destroyX) ก็ทำลายทิ้งซะ
         if (direction < 0f && transform.position.x < destroyX)
             DestroySelf();
         else if (direction > 0f && transform.position.x > -destroyX)
             DestroySelf();
 
-        // ร่วงหล่นลงมาล่างจอเกินไปก็เคลียร์ทิ้งเหมือนกัน
+        // ร่วงหล่นลงมาล่างจอเกินไปก็เคลียร์ทิ้งเหมือนกัน (เผื่อหลุดเช็ค)
         if (transform.position.y < -6f)
             DestroySelf();
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (isDestroyed) return;
-        // Debug.Log ไว้เช็คว่าโดนอะไรบ้าง (ปิดไปก็ได้นะถ้าล้น Console)
-        // Debug.Log("Arrow hit: " + other.gameObject.name + " with tag: " + other.tag);
+        if (isDestroyed || isStuckInGround) return;
+
+        // ถ้าลูกธนูดิ่งลงมาแล้วชนกับวัตถุพื้นดิน (ที่มี Collider) ให้ปักลงพื้น
+        if (isDeflected)
+        {
+            if (other.CompareTag("Ground") || other.gameObject.name.IndexOf("Ground", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                StickIntoGround(transform.position.y);
+                return;
+            }
+        }
 
         // ถ้าชนผลไม้โบนัส
         var fruit = other.GetComponent<BonusFruit>();
@@ -119,16 +165,7 @@ public class Arrow : MonoBehaviour
                 if (!boss.TryTakeArrowHit(transform.position))
                 {
                     // โล่บอสยังกันไว้ได้ -> ลูกธนูถูกปัดร่วงลงพื้นเหมือนชนโล่!
-                    isDeflected = true;
-                    transform.rotation = Quaternion.Euler(0, 0, 90f);
-                    speed = 0;
-                    direction = 0;
-                    var rbBoss = GetComponent<Rigidbody2D>();
-                    if (rbBoss != null)
-                    {
-                        rbBoss.linearVelocity = new Vector2(0f, -3f);
-                        rbBoss.gravityScale = 1.5f;
-                    }
+                    DeflectDown(isShield: true);
                     return;
                 }
                 DestroySelf();
@@ -147,44 +184,16 @@ public class Arrow : MonoBehaviour
         if (other.CompareTag(GameConstants.TagShield))
         {
             if (isDeflected) return; // โดนปัดไปแล้ว ข้ามเลย
-            isDeflected = true;
-
-            transform.rotation = Quaternion.Euler(0, 0, 90f); // หมุนลูกธนูให้หัวปักลงพื้น
-
-            AudioManager.Instance?.PlayShieldBlock(); // เล่นเสียงตีเหล็กปึ้ง!
-
-            speed = 0;
-            direction = 0;
-            var rb = GetComponent<Rigidbody2D>();
-            if (rb != null)
-            {
-                rb.linearVelocity = new Vector2(0f, -3f); // ปรับให้ร่วงลงพื้นตรงๆ
-                rb.gravityScale = 1.5f; // เพิ่มแรงโน้มถ่วงให้ร่วงไวขึ้นนิดนึง
-            }
+            DeflectDown(isShield: true);
             return;
         }
 
-        // ถ้าชนตัวศัตรู (อาจจะโดนปัด)
+        // ถ้าชนตัวศัตรู (หมาป่างับหรือปัดลูกธนู)
         if (other.CompareTag(GameConstants.TagEnemy))
         {
-            if (isDeflected) return; 
-            isDeflected = true;
-
-            transform.rotation = Quaternion.Euler(0, 0, 90f);
-
-            // ส่งข้อความไปบอกศัตรูให้เล่นอนิเมชันปัดลูกธนู (ใช้ GetComponent แทน SendMessage เพื่อลดภาระ CPU)
+            if (isDeflected) return;
             var wolf = other.GetComponent<Wolf>() ?? other.GetComponentInParent<Wolf>();
-            if (wolf != null) wolf.PlayDeflectAnimation();
-
-            speed = 0;
-            direction = 0;
-            var rb = GetComponent<Rigidbody2D>();
-            if (rb != null)
-            {
-                // อาการเดียวกับชนโล่เลย คือร่วงลงพื้น
-                rb.linearVelocity = new Vector2(0f, -3f);
-                rb.gravityScale = 1.5f;
-            }
+            DeflectDown(isShield: false, wolf: wolf);
             return;
         }
 
@@ -198,6 +207,148 @@ public class Arrow : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// สั่งให้ลูกธนูเสียหลักดิ่งลงพื้น (เมื่อโดนหมาป่างับ, ชนโล่, หรือชนโล่บอส)
+    /// </summary>
+    private void DeflectDown(bool isShield, Wolf wolf = null)
+    {
+        if (isDeflected) return;
+        isDeflected = true;
+
+        // แจ้ง ArrowShooter ทันทีว่าลูกธนูนี้พ้นสภาพการยิงแล้ว ผู้เล่นจะได้ยิงนัดถัดไปได้ทันที ไม่ต้องรอลูกธนูปักพื้นเสร็จ
+        if (onDestroy != null)
+        {
+            onDestroy.Invoke(this);
+            onDestroy = null;
+        }
+
+        // ปิดเอฟเฟกต์ลมแหวก/หางลม
+        if (cachedTrailFX != null)
+        {
+            cachedTrailFX.StopTrailForPool();
+        }
+
+        // หมุนลูกธนูให้หัวดิ่งลงพื้น
+        transform.rotation = Quaternion.Euler(0f, 0f, 90f);
+
+        if (isShield)
+        {
+            AudioManager.Instance?.PlayShieldBlock(); // เล่นเสียงตีเหล็กปึ้ง!
+        }
+        else if (wolf != null)
+        {
+            wolf.PlayDeflectAnimation(); // หมาป่าเล่นอนิเมชันงับลูกธนู (BiteArrow)
+        }
+
+        speed = 0f;
+        direction = 0f;
+
+        if (cachedRb != null)
+        {
+            cachedRb.linearVelocity = new Vector2(0f, -4f); // พุ่งดิ่งลงพื้นอย่างรวดเร็ว
+            cachedRb.gravityScale = 2f;
+        }
+    }
+
+    /// <summary>
+    /// ปักลูกธนูลงพื้นดิน สั่นสะเทือนเล็กน้อย และเริ่ม Coroutine ค่อยๆ จางหายไป
+    /// </summary>
+    private void StickIntoGround(float surfaceY)
+    {
+        if (isStuckInGround || isDestroyed) return;
+        isStuckInGround = true;
+
+        // ปิดการคำนวณฟิสิกส์และการชน เพื่อให้ลูกธนูหยุดนิ่งสนิท
+        if (cachedRb != null)
+        {
+            cachedRb.linearVelocity = Vector2.zero;
+            cachedRb.gravityScale = 0f;
+            cachedRb.bodyType = RigidbodyType2D.Kinematic;
+        }
+        if (cachedCollider != null)
+        {
+            cachedCollider.enabled = false;
+        }
+
+        // ตรึงตำแหน่งแกน Y ให้อยู่ระดับผิวดิน
+        transform.position = new Vector3(transform.position.x, surfaceY, transform.position.z);
+
+        // ปักเอียงตามมุมสุ่มเล็กน้อยให้ดูสมจริง
+        float slant = UnityEngine.Random.Range(-stickAngleVariation, stickAngleVariation);
+        transform.rotation = Quaternion.Euler(0f, 0f, 90f + slant);
+
+        // เสียงปักพื้นทึบๆ แน่นๆ
+        AudioManager.Instance?.PlayRockHit();
+
+        // พ่นฝุ่นผงเล็กๆ ตรงจุดที่ลูกธนูปักลงดิน
+        SpawnGroundDust(new Vector3(transform.position.x, surfaceY, 0f));
+
+        StartCoroutine(StickAndFadeRoutine());
+    }
+
+    private void SpawnGroundDust(Vector3 pos)
+    {
+        if (cachedGroundDustPrefab == null)
+        {
+            cachedGroundDustPrefab = Resources.Load<GameObject>("FX/GroundDustImpactFX");
+        }
+        if (cachedGroundDustPrefab != null)
+        {
+            var dust = Instantiate(cachedGroundDustPrefab, pos, Quaternion.identity);
+            dust.transform.localScale = Vector3.one * 0.45f;
+        }
+    }
+
+    private System.Collections.IEnumerator StickAndFadeRoutine()
+    {
+        // 1. อาการสั่นกระดิก (Quiver / Twang) ตอนปักพื้น 0.15 วินาที
+        float quiverDuration = 0.15f;
+        float quiverTimer = 0f;
+        Quaternion baseRot = transform.rotation;
+        while (quiverTimer < quiverDuration)
+        {
+            quiverTimer += Time.deltaTime;
+            float progress = quiverTimer / quiverDuration;
+            float quiverAngle = Mathf.Sin(progress * Mathf.PI * 6f) * 4f * (1f - progress);
+            transform.rotation = baseRot * Quaternion.Euler(0f, 0f, quiverAngle);
+            yield return null;
+        }
+        transform.rotation = baseRot;
+
+        // 2. ปักคาพื้นไว้ให้เห็นชัดเจนตามระยะเวลา stickDuration
+        if (stickDuration > 0f)
+        {
+            yield return new WaitForSeconds(stickDuration);
+        }
+
+        // 3. ค่อยๆ จางหายไปอย่างนุ่มนวล (Fade Out)
+        float fadeTimer = 0f;
+        while (fadeTimer < fadeDuration)
+        {
+            fadeTimer += Time.deltaTime;
+            float alpha = Mathf.Clamp01(1f - (fadeTimer / fadeDuration));
+            SetRenderersAlpha(alpha);
+            yield return null;
+        }
+        SetRenderersAlpha(0f);
+
+        // 4. ทำลายตัวเองหรือคืนเข้า Pool
+        DestroySelf();
+    }
+
+    private void SetRenderersAlpha(float alpha)
+    {
+        if (cachedRenderers == null || initialRendererColors == null) return;
+        for (int i = 0; i < cachedRenderers.Length; i++)
+        {
+            if (cachedRenderers[i] != null && i < initialRendererColors.Length)
+            {
+                Color baseCol = initialRendererColors[i];
+                cachedRenderers[i].color = new Color(baseCol.r, baseCol.g, baseCol.b, baseCol.a * alpha);
+            }
+        }
+    }
+
     private bool isDestroyed = false;
     
     // ห่อฟังก์ชัน Destroy ไว้เรียกง่ายๆ จะได้เคลียร์ Event ด้วย (รองรับ Object Pooling)
@@ -205,7 +356,13 @@ public class Arrow : MonoBehaviour
     {
         if (isDestroyed) return;
         isDestroyed = true;
-        onDestroy?.Invoke(this); // บอก ArrowShooter ว่าชั้นไปแล้วนะ (ยิงนัดต่อไปได้ทันที)
+        StopAllCoroutines();
+
+        if (onDestroy != null)
+        {
+            onDestroy.Invoke(this); // บอก ArrowShooter ว่าชั้นไปแล้วนะ (ยิงนัดต่อไปได้ทันที)
+            onDestroy = null;
+        }
 
         if (onReturnToPool != null)
         {
@@ -221,6 +378,7 @@ public class Arrow : MonoBehaviour
             {
                 cachedRb.linearVelocity = Vector2.zero;
                 cachedRb.gravityScale = 0f;
+                cachedRb.bodyType = RigidbodyType2D.Dynamic;
             }
 
             if (cachedTrailFX != null)

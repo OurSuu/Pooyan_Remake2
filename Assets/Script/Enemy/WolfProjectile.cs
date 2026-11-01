@@ -33,6 +33,8 @@ public class WolfProjectile : MonoBehaviour
     [Tooltip("เปิดใช้ระบบวิถีปาหินโค้งแบบ NES 1985 (ถ้าปิด = ใช้โค้ดเดิมที่เล็งตามตัวผู้เล่นตรงๆ 100%)")]
     [SerializeField] private bool useArcadeTrajectory = true;
     [SerializeField] private float arcGravity = 2.6f; // แรงโน้มถ่วงวิถีโค้งแบบ NES (โค้งพุ่งแนวราบเข้าช่องหน้ากระเช้า ไม่ใช่ปาย้อยตั้งฉากลงหลังคา)
+    [Tooltip("ความเร็วหมุนของก้อนหินขณะลอยกลางอากาศ (องศา/วิ, 0 = ไม่หมุน)")]
+    [SerializeField] private float tumbleSpeed = 180f;
 
     // ติดตามจำนวนหินที่กำลังบินอยู่บนจอ (จำกัด 3 ก้อนตามตู้ Arcade)
     public static int ActiveRockCount { get; private set; } = 0;
@@ -149,6 +151,12 @@ public class WolfProjectile : MonoBehaviour
         
         // ขยับไปตามทิศทางที่เล็งไว้
         transform.position += (Vector3)(velocity * Time.deltaTime);
+
+        // หมุนก้อนหินให้ดูมีน้ำหนักและสมจริงขณะพุ่ง
+        if (tumbleSpeed != 0f)
+        {
+            transform.Rotate(0f, 0f, -tumbleSpeed * Time.deltaTime);
+        }
 
         // ถ้าร่วงเลยจอ หรือหลุดออกนอกจอไปไกลๆ ก็ทำลายทิ้งซะ
         if (transform.position.y < destroyY || transform.position.x < -12f || transform.position.x > 12f)

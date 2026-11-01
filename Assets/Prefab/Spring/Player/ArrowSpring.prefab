@@ -115,7 +115,7 @@ TrailRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 1.0, g: 0.75, b: 0.88, a: 0.75}
+      key0: {r: 1, g: 0.75, b: 0.88, a: 0.75}
       key1: {r: 1, g: 1, b: 1, a: 0}
       key2: {r: 0, g: 0, b: 0, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
@@ -344,7 +344,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 1.0, g: 0.65, b: 0.82, a: 0.85}
+      maxColor: {r: 1, g: 0.65, b: 0.82, a: 0.85}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -5146,6 +5146,10 @@ MonoBehaviour:
   speed: 18.5
   destroyX: -8
   damage: 1
+  stickGroundY: -4.5
+  stickDuration: 1
+  fadeDuration: 0.5
+  stickAngleVariation: 8
 --- !u!1 &8527102522943942253
 GameObject:
   m_ObjectHideFlags: 0
