@@ -118,6 +118,44 @@ public class AudioManager : MonoBehaviour
         Instance = this;
 
         EnsureAudioSources();
+        PreloadAllSFXClips();
+    }
+
+    // โหลดข้อมูลเสียง SFX ทั้งหมดเข้าหน่วยความจำล่วงหน้าตอนเริ่มด่าน ป้องกันอาการกระตุก (Disk Decode Spike) ตอนยิงธนูโดนเป้าครั้งแรก
+    private void PreloadAllSFXClips()
+    {
+        PreloadClip(seArrowFire);
+        PreloadClip(seMeatPickup);
+        PreloadClip(seMeatThrow);
+        PreloadClip(seMeatHit);
+        PreloadClip(seMeatBounce);
+        PreloadClip(seRopePull);
+        PreloadClip(sePlayerFall);
+        PreloadClip(seExtraLife);
+        PreloadClip(seBalloonInflate);
+        PreloadClip(seBalloonPop);
+        PreloadClip(seBalloonDamage);
+        PreloadClip(seWolfFall);
+        PreloadClip(seShieldBlock);
+        PreloadClip(seLadderClimb);
+        PreloadClip(seWolfBite);
+        PreloadClip(seRockThrow);
+        PreloadClip(seRockHit);
+        PreloadClip(seRockDestroy);
+        PreloadClip(seBoulderPush);
+        PreloadClip(seBoulderFall);
+        PreloadClip(seBoulderHit);
+        PreloadClip(seFruitDrop);
+        PreloadClip(seFruitHit);
+        PreloadClip(seButtonClick);
+    }
+
+    private static void PreloadClip(AudioClip clip)
+    {
+        if (clip != null && !clip.preloadAudioData && clip.loadState == AudioDataLoadState.Unloaded)
+        {
+            clip.LoadAudioData();
+        }
     }
 
     public void EnsureAudioSources()

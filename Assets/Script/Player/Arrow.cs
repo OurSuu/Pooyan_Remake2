@@ -10,28 +10,68 @@ public class Arrow : MonoBehaviour
 
     private float direction; // ทิศทางที่ยิง (-1 ซ้าย, 1 ขวา)
     private Action<Arrow> onDestroy; // callback ตอนลูกธนูโดนทำลาย จะได้ไปบอก ArrowShooter
+    private Action<Arrow> onReturnToPool; // callback ตอนคืนลูกธนูกลับเข้า Pool
     private bool isDeflected; // โดนปัดทิ้งไปหรือยัง จะได้ไม่เช็คซ้ำซ้อน
 
-    // ฟังก์ชันเริ่มทำงาน โดนเรียกตอน spawn ลูกธนู
-    public void Initialize(float moveDirection, Action<Arrow> destroyCallback)
+    private float initialSpeed;
+    private Rigidbody2D cachedRb;
+    private Collider2D cachedCollider;
+    private SpriteRenderer[] cachedRenderers;
+    private ArrowTrailEffect cachedTrailFX;
+
+    private void Awake()
     {
+        initialSpeed = speed > 0f ? speed : GameConstants.ArrowSpeed;
+        cachedRb = GetComponent<Rigidbody2D>();
+        cachedCollider = GetComponent<Collider2D>();
+        cachedRenderers = GetComponentsInChildren<SpriteRenderer>(true);
+        cachedTrailFX = GetComponentInChildren<ArrowTrailEffect>(true);
+    }
+
+    // ฟังก์ชันเริ่มทำงาน โดนเรียกตอน spawn ลูกธนู
+    public void Initialize(float moveDirection, Action<Arrow> destroyCallback, Action<Arrow> returnToPoolCallback = null)
+    {
+        CancelInvoke(nameof(CompleteReturnToPool));
+        isDestroyed = false;
+        isDeflected = false;
+        speed = initialSpeed > 0f ? initialSpeed : GameConstants.ArrowSpeed;
+        transform.rotation = Quaternion.identity;
+
         direction = Mathf.Sign(moveDirection);
         if (direction == 0f) direction = -1f; // กันเหนียวไว้นิดนึง ถ้ามา 0 ให้ยิงซ้าย
         onDestroy = destroyCallback;
+        onReturnToPool = returnToPoolCallback;
 
         gameObject.tag = GameConstants.TagArrow; // แปะ Tag ให้มัน
 
-        var rb = GetComponent<Rigidbody2D>();
-        if (rb != null)
+        if (cachedCollider != null) cachedCollider.enabled = true;
+        if (cachedRenderers != null)
+        {
+            for (int i = 0; i < cachedRenderers.Length; i++)
+            {
+                if (cachedRenderers[i] != null) cachedRenderers[i].enabled = true;
+            }
+        }
+
+        if (cachedTrailFX != null)
+        {
+            cachedTrailFX.ResetTrailForPool();
+        }
+
+        if (cachedRb == null) cachedRb = GetComponent<Rigidbody2D>();
+        if (cachedRb != null)
         {
             // เซ็ตการชนเป็น Continuous เพราะลูกธนูอาจจะบินเร็ว ทะลุกำแพงได้ถ้าใช้แบบธรรมดา
-            rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
-            rb.linearVelocity = new Vector2(direction * speed, 0f); // สั่งพุ่งไปข้างหน้า!
+            cachedRb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+            cachedRb.gravityScale = 0f;
+            cachedRb.linearVelocity = new Vector2(direction * speed, 0f); // สั่งพุ่งไปข้างหน้า!
         }
     }
 
     private void Update()
     {
+        if (isDestroyed) return;
+
         // เช็คว่าถ้าบินออกนอกจอ (เลย destroyX) ก็ทำลายทิ้งซะ
         if (direction < 0f && transform.position.x < destroyX)
             DestroySelf();
@@ -45,8 +85,9 @@ public class Arrow : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        if (isDestroyed) return;
         // Debug.Log ไว้เช็คว่าโดนอะไรบ้าง (ปิดไปก็ได้นะถ้าล้น Console)
-        Debug.Log("Arrow hit: " + other.gameObject.name + " with tag: " + other.tag);
+        // Debug.Log("Arrow hit: " + other.gameObject.name + " with tag: " + other.tag);
 
         // ถ้าชนผลไม้โบนัส
         var fruit = other.GetComponent<BonusFruit>();
@@ -131,8 +172,9 @@ public class Arrow : MonoBehaviour
 
             transform.rotation = Quaternion.Euler(0, 0, 90f);
 
-            // ส่งข้อความไปบอกศัตรูให้เล่นอนิเมชันปัดลูกธนู
-            other.SendMessage("PlayDeflectAnimation", SendMessageOptions.DontRequireReceiver);
+            // ส่งข้อความไปบอกศัตรูให้เล่นอนิเมชันปัดลูกธนู (ใช้ GetComponent แทน SendMessage เพื่อลดภาระ CPU)
+            var wolf = other.GetComponent<Wolf>() ?? other.GetComponentInParent<Wolf>();
+            if (wolf != null) wolf.PlayDeflectAnimation();
 
             speed = 0;
             direction = 0;
@@ -158,21 +200,55 @@ public class Arrow : MonoBehaviour
 
     private bool isDestroyed = false;
     
-    // ห่อฟังก์ชัน Destroy ไว้เรียกง่ายๆ จะได้เคลียร์ Event ด้วย
+    // ห่อฟังก์ชัน Destroy ไว้เรียกง่ายๆ จะได้เคลียร์ Event ด้วย (รองรับ Object Pooling)
     public void DestroySelf()
     {
         if (isDestroyed) return;
         isDestroyed = true;
-        onDestroy?.Invoke(this); // บอก ArrowShooter ว่าชั้นไปแล้วนะ
+        onDestroy?.Invoke(this); // บอก ArrowShooter ว่าชั้นไปแล้วนะ (ยิงนัดต่อไปได้ทันที)
 
-        // ปลดเอฟเฟกต์หางลมให้ค่อยๆ สลายตัวอย่างเป็นธรรมชาติ
-        var trailFX = GetComponentInChildren<ArrowTrailEffect>();
+        if (onReturnToPool != null)
+        {
+            if (cachedCollider != null) cachedCollider.enabled = false;
+            if (cachedRenderers != null)
+            {
+                for (int i = 0; i < cachedRenderers.Length; i++)
+                {
+                    if (cachedRenderers[i] != null) cachedRenderers[i].enabled = false;
+                }
+            }
+            if (cachedRb != null)
+            {
+                cachedRb.linearVelocity = Vector2.zero;
+                cachedRb.gravityScale = 0f;
+            }
+
+            if (cachedTrailFX != null)
+            {
+                cachedTrailFX.StopTrailForPool();
+                Invoke(nameof(CompleteReturnToPool), cachedTrailFX.FadeDuration);
+            }
+            else
+            {
+                CompleteReturnToPool();
+            }
+            return;
+        }
+
+        // ปลดเอฟเฟกต์หางลมให้ค่อยๆ สลายตัวอย่างเป็นธรรมชาติ (กรณีไม่ได้ใช้ Pool)
+        var trailFX = cachedTrailFX != null ? cachedTrailFX : GetComponentInChildren<ArrowTrailEffect>();
         if (trailFX != null)
         {
             trailFX.DetachAndFade();
         }
 
         Destroy(gameObject);
+    }
+
+    private void CompleteReturnToPool()
+    {
+        gameObject.SetActive(false);
+        onReturnToPool?.Invoke(this);
     }
 
     private void OnDestroy()

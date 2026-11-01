@@ -179,7 +179,7 @@ public class BonusFruit : MonoBehaviour
             var arrow = arrowObj.GetComponent<Arrow>();
             if (arrow != null)
             {
-                Destroy(arrowObj);
+                arrow.DestroySelf();
             }
         }
 

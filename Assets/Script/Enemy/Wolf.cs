@@ -81,6 +81,27 @@ public class Wolf : MonoBehaviour
     public WolfState State => state;
     public bool IsAlive => state != WolfState.Dead;
 
+    // เก็บลิสต์หมาป่าที่ Active อยู่ในฉากเพื่อไม่ต้องเรียก FindObjectsByType<Wolf>() ซ้ำทุกเฟรม
+    private static readonly System.Collections.Generic.List<Wolf> activeWolves = new();
+    public static System.Collections.Generic.IReadOnlyList<Wolf> ActiveWolves => activeWolves;
+
+    private static GameObject cachedGroundDustPrefab;
+    private static readonly System.Collections.Generic.List<ParticleSystem> groundDustPool = new();
+    private static int groundDustPoolSceneHandle = -1;
+    private static readonly int AnimHashRun = Animator.StringToHash("run");
+    private static readonly int AnimHashClimb = Animator.StringToHash("climb");
+
+    protected virtual void OnEnable()
+    {
+        if (!activeWolves.Contains(this))
+            activeWolves.Add(this);
+    }
+
+    protected virtual void OnDisable()
+    {
+        activeWolves.Remove(this);
+    }
+
     protected virtual void Awake()
     {
         state = WolfState.Dead;
@@ -135,6 +156,47 @@ public class Wolf : MonoBehaviour
                 mySr.sprite = prefabSr.sprite;
             }
         }
+
+        PrewarmGroundDustPool();
+    }
+
+    private void PrewarmGroundDustPool()
+    {
+        GameObject fxPrefab = groundDustPrefab;
+        if (fxPrefab == null)
+        {
+            if (cachedGroundDustPrefab == null)
+                cachedGroundDustPrefab = Resources.Load<GameObject>("FX/GroundDustImpactFX");
+            fxPrefab = cachedGroundDustPrefab;
+        }
+        if (fxPrefab == null) return;
+
+        int currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().handle;
+        if (groundDustPoolSceneHandle == currentScene && groundDustPool.Count > 0) return;
+        groundDustPoolSceneHandle = currentScene;
+        groundDustPool.Clear();
+
+        for (int i = 0; i < 3; i++)
+        {
+            var ps = CreatePooledGroundDust(fxPrefab);
+            if (ps != null)
+            {
+                ps.gameObject.SetActive(false);
+                groundDustPool.Add(ps);
+            }
+        }
+    }
+
+    private static ParticleSystem CreatePooledGroundDust(GameObject fxPrefab)
+    {
+        var go = Instantiate(fxPrefab, new Vector3(0f, -100f, 0f), Quaternion.identity);
+        var ps = go.GetComponent<ParticleSystem>();
+        if (ps != null)
+        {
+            var main = ps.main;
+            main.stopAction = ParticleSystemStopAction.Disable;
+        }
+        return ps;
     }
 
     public void CopySettingsTo(Wolf target)
@@ -414,10 +476,10 @@ public class Wolf : MonoBehaviour
         if (Mathf.Abs(transform.position.x - targetDropX) < 0.05f)
         {
             bool laneClear = true;
-            var wolves = FindObjectsByType<Wolf>(FindObjectsInactive.Exclude);
-            foreach (var w in wolves)
+            for (int i = 0; i < activeWolves.Count; i++)
             {
-                if (w == this) continue;
+                var w = activeWolves[i];
+                if (w == null || w == this) continue;
                 
                 // เช็คว่ามีหมาป่าตัวอื่นอยู่ในเลนเป้าหมายเดียวกับเราไหม หรือกำลังจะไปที่เลนเดียวกัน
                 if (Mathf.Abs(w.transform.position.x - targetDropX) < 0.2f || Mathf.Abs(w.targetDropX - targetDropX) < 0.2f)
@@ -558,7 +620,7 @@ public class Wolf : MonoBehaviour
             }
 
             // ถ้าหมาป่าอยู่ต่ำกว่าแม่หมูมากๆ (เกิน 2.2 หน่วย) จะยังไม่ปาเสยขึ้นฟ้า รอให้ลอยอยู่ในระยะวิถีโค้งก่อนตามต้นฉบับ NES
-            var player = FindAnyObjectByType<PlayerController>();
+            var player = PlayerController.Instance != null ? PlayerController.Instance : FindAnyObjectByType<PlayerController>();
             if (player != null && (player.transform.position.y - transform.position.y) > 2.2f)
             {
                 rockTimer = 0.4f;
@@ -641,13 +703,43 @@ public class Wolf : MonoBehaviour
         GameObject fxPrefab = groundDustPrefab;
         if (fxPrefab == null)
         {
-            fxPrefab = Resources.Load<GameObject>("FX/GroundDustImpactFX");
+            if (cachedGroundDustPrefab == null)
+                cachedGroundDustPrefab = Resources.Load<GameObject>("FX/GroundDustImpactFX");
+            fxPrefab = cachedGroundDustPrefab;
         }
 
         if (fxPrefab != null)
         {
             Vector3 spawnPos = new Vector3(transform.position.x, deadGroundY, 0f);
-            Instantiate(fxPrefab, spawnPos, Quaternion.identity);
+            ParticleSystem pooledPS = null;
+            for (int i = groundDustPool.Count - 1; i >= 0; i--)
+            {
+                var p = groundDustPool[i];
+                if (p == null)
+                {
+                    groundDustPool.RemoveAt(i);
+                    continue;
+                }
+                if (!p.gameObject.activeSelf)
+                {
+                    pooledPS = p;
+                    break;
+                }
+            }
+
+            if (pooledPS == null)
+            {
+                pooledPS = CreatePooledGroundDust(fxPrefab);
+                if (pooledPS != null) groundDustPool.Add(pooledPS);
+            }
+
+            if (pooledPS != null)
+            {
+                pooledPS.transform.position = spawnPos;
+                pooledPS.gameObject.SetActive(true);
+                pooledPS.Clear(true);
+                pooledPS.Play(true);
+            }
         }
     }
 
@@ -719,7 +811,7 @@ public class Wolf : MonoBehaviour
 
     protected void UpdateWalkToLadder()
     {
-        if (animator != null && animator.enabled) animator.Play("run");
+        if (animator != null && animator.enabled) animator.Play(AnimHashRun);
         var ladder = LadderSystem.Instance;
         if (ladder == null) { DestroyWolf(); return; }
 
@@ -760,7 +852,7 @@ public class Wolf : MonoBehaviour
 
     protected void UpdateClimbing()
     {
-        if (animator != null && animator.enabled) animator.Play("climb");
+        if (animator != null && animator.enabled) animator.Play(AnimHashClimb);
         var ladder = LadderSystem.Instance;
         if (ladder == null) { DestroyWolf(); return; }
 
@@ -996,7 +1088,8 @@ public class Wolf : MonoBehaviour
         
         // รอให้ท่ากัดเล่นจนจบก่อนค่อยหักเลือดและทำลายตัวเอง (สมมติท่ากัดยาว 0.5 วิ)
         yield return new WaitForSeconds(0.5f);
-        FindAnyObjectByType<PlayerController>()?.TakeDamage();
+        var player = PlayerController.Instance != null ? PlayerController.Instance : FindAnyObjectByType<PlayerController>();
+        player?.TakeDamage();
         DestroyWolf();
     }
     private void OnTriggerEnter2D(Collider2D other)

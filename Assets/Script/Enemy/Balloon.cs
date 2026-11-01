@@ -47,6 +47,7 @@ public class Balloon : MonoBehaviour
     private Wolf owner; // เจ้าของลูกโป่งนี้ (หมาป่าตัวไหน)
     private Vector3 initialScale = Vector3.one;
     private bool hasCachedScale = false;
+    private static GameObject cachedPopEffectPrefab;
 
     public int CurrentHP => currentHP;
     public int MaxHP => maxHP;
@@ -69,6 +70,22 @@ public class Balloon : MonoBehaviour
     private void Awake()
     {
         CacheComponents();
+        EnsurePopEffectPrewarmed();
+    }
+
+    private void EnsurePopEffectPrewarmed()
+    {
+        GameObject fxPrefab = popEffectPrefab;
+        if (fxPrefab == null)
+        {
+            if (cachedPopEffectPrefab == null)
+                cachedPopEffectPrefab = Resources.Load<GameObject>("FX/BalloonPopFX");
+            fxPrefab = cachedPopEffectPrefab;
+        }
+        if (fxPrefab != null)
+        {
+            BalloonPopEffect.PrewarmPool(fxPrefab, 4);
+        }
     }
 
     public void Initialize(Wolf wolf, int hp, bool bossFlash = false, BalloonColorType colorType = BalloonColorType.AutoByHP)
@@ -214,18 +231,15 @@ public class Balloon : MonoBehaviour
         GameObject fxPrefab = popEffectPrefab;
         if (fxPrefab == null)
         {
-            fxPrefab = Resources.Load<GameObject>("FX/BalloonPopFX");
+            if (cachedPopEffectPrefab == null)
+                cachedPopEffectPrefab = Resources.Load<GameObject>("FX/BalloonPopFX");
+            fxPrefab = cachedPopEffectPrefab;
         }
 
         if (fxPrefab != null)
         {
-            var fxObj = Instantiate(fxPrefab, transform.position, Quaternion.identity);
-            var popFX = fxObj.GetComponent<BalloonPopEffect>();
             Color balloonCol = spriteRenderer != null ? spriteRenderer.color : pinkColor;
-            if (popFX != null)
-            {
-                popFX.InitAndPlay(balloonCol);
-            }
+            BalloonPopEffect.SpawnPooled(fxPrefab, transform.position, balloonCol);
         }
     }
 

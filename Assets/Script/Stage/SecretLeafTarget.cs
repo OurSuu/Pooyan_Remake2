@@ -19,6 +19,7 @@ public class SecretLeafTarget : MonoBehaviour
     private SpriteRenderer spriteRenderer;
 
     private static Sprite cachedFallbackLeafSprite;
+    private static GameObject cachedPopFXPrefab;
 
     public void Initialize(Sprite customLeafSprite = null)
     {
@@ -96,7 +97,9 @@ public class SecretLeafTarget : MonoBehaviour
         AudioManager.Instance?.PlayFruitHit();
 
         // เสกเอฟเฟกต์แตกกระจายสีเขียวมรกตทอง
-        var fxPrefab = Resources.Load<GameObject>("FX/BalloonPopFX");
+        if (cachedPopFXPrefab == null)
+            cachedPopFXPrefab = Resources.Load<GameObject>("FX/BalloonPopFX");
+        var fxPrefab = cachedPopFXPrefab;
         if (fxPrefab != null)
         {
             var fxObj = Instantiate(fxPrefab, transform.position, Quaternion.identity);

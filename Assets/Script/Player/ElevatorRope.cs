@@ -23,6 +23,8 @@ public class ElevatorRope : MonoBehaviour
     private Material ropeMaterial;
     private float currentTextureOffset = 0f;
     private bool isRopeSuppressed = false;
+    private PlayerController cachedPlayer;
+    private bool wasPlayerDead = false;
 
     public LineRenderer LineRenderer => lineRenderer;
 
@@ -41,6 +43,7 @@ public class ElevatorRope : MonoBehaviour
 
     private void Start()
     {
+        cachedPlayer = GetComponent<PlayerController>();
         lastPosition = transform.position;
         if (lineRenderer != null)
         {
@@ -64,8 +67,8 @@ public class ElevatorRope : MonoBehaviour
         }
 
         // เช็คสถานะแม่หมู
-        var player = GetComponent<PlayerController>();
-        if (player != null && player.State == PlayerState.Dead)
+        if (cachedPlayer == null) cachedPlayer = GetComponent<PlayerController>();
+        if (cachedPlayer != null && cachedPlayer.State == PlayerState.Dead)
         {
             AudioManager.Instance?.SetRopePullSound(false);
             if (!keepRopeOnDeath)
@@ -79,12 +82,18 @@ public class ElevatorRope : MonoBehaviour
             {
                 lineRenderer.enabled = true;
             }
-            if (piglet1 != null) piglet1.Play(idleStateName);
-            if (piglet2 != null) piglet2.Play(idleStateName);
+            if (!wasPlayerDead)
+            {
+                wasPlayerDead = true;
+                isPulling = false;
+                if (piglet1 != null) piglet1.Play(idleStateName);
+                if (piglet2 != null) piglet2.Play(idleStateName);
+            }
             UpdateRopeVisual();
             return;
         }
-        else if (lineRenderer != null && !lineRenderer.enabled)
+        wasPlayerDead = false;
+        if (lineRenderer != null && !lineRenderer.enabled)
         {
             lineRenderer.enabled = true; // แม่หมูเกิดใหม่แล้ว เปิดเชือกกลับมา
         }
@@ -120,8 +129,11 @@ public class ElevatorRope : MonoBehaviour
         if (ropeMaterial != null)
         {
             float deltaY = transform.position.y - lastPosition.y;
-            currentTextureOffset -= deltaY * scrollSpeed;
-            ropeMaterial.mainTextureOffset = new Vector2(currentTextureOffset, 0);
+            if (Mathf.Abs(deltaY) > 0.0001f)
+            {
+                currentTextureOffset -= deltaY * scrollSpeed;
+                ropeMaterial.mainTextureOffset = new Vector2(currentTextureOffset, 0);
+            }
         }
     }
 

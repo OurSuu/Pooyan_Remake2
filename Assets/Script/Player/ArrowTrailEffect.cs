@@ -23,6 +23,43 @@ public class ArrowTrailEffect : MonoBehaviour
             particleSys = GetComponent<ParticleSystem>();
     }
 
+    public float FadeDuration => fadeDuration;
+
+    /// <summary>
+    /// หยุดปล่อยหางลมตอนลูกธนูชนเป้า (ใช้คู่กับระบบ Object Pool โดยไม่ต้องแยก GameObject ออกจากลูกธนู)
+    /// </summary>
+    public void StopTrailForPool()
+    {
+        if (trailRenderer != null)
+        {
+            trailRenderer.emitting = false;
+        }
+
+        if (particleSys != null)
+        {
+            particleSys.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+        }
+    }
+
+    /// <summary>
+    /// รีเซ็ตหางลมและอนุภาคเมื่อนำลูกธนูจาก Pool กลับมาใช้ยิงใหม่
+    /// </summary>
+    public void ResetTrailForPool()
+    {
+        isDetached = false;
+        if (trailRenderer != null)
+        {
+            trailRenderer.Clear();
+            trailRenderer.emitting = true;
+        }
+
+        if (particleSys != null)
+        {
+            particleSys.Clear(true);
+            particleSys.Play(true);
+        }
+    }
+
     /// <summary>
     /// ปลดเอฟเฟกต์ออกจากลูกธนู เพื่อให้หางลมและอนุภาคค่อยๆ สลายตัวไปตามธรรมชาติ ไม่หายไปดื้อๆ ตอนลูกธนูชนเป้าหมาย
     /// </summary>

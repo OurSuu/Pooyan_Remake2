@@ -14,6 +14,55 @@ public class BalloonPopEffect : MonoBehaviour
     [Header("Settings")]
     [SerializeField] private float autoDestroyDelay = 0.8f;
 
+    private static readonly System.Collections.Generic.Queue<BalloonPopEffect> pool = new();
+    private static int prewarmedSceneHandle = -1;
+
+    public static void PrewarmPool(GameObject prefab, int count = 4)
+    {
+        if (prefab == null) return;
+        int currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().handle;
+        if (prewarmedSceneHandle == currentScene && pool.Count > 0) return;
+        prewarmedSceneHandle = currentScene;
+
+        for (int i = 0; i < count; i++)
+        {
+            var go = Instantiate(prefab, new Vector3(0f, -100f, 0f), Quaternion.identity);
+            var fx = go.GetComponent<BalloonPopEffect>();
+            if (fx != null)
+            {
+                go.SetActive(false);
+                pool.Enqueue(fx);
+            }
+        }
+    }
+
+    public static void SpawnPooled(GameObject prefab, Vector3 position, Color balloonColor)
+    {
+        if (prefab == null) return;
+
+        BalloonPopEffect fx = null;
+        while (pool.Count > 0 && fx == null)
+        {
+            fx = pool.Dequeue();
+        }
+
+        if (fx == null)
+        {
+            var go = Instantiate(prefab, position, Quaternion.identity);
+            fx = go.GetComponent<BalloonPopEffect>();
+        }
+        else
+        {
+            fx.transform.position = position;
+            fx.gameObject.SetActive(true);
+        }
+
+        if (fx != null)
+        {
+            fx.InitAndPlay(balloonColor);
+        }
+    }
+
     private void Awake()
     {
         if (rubberShards == null)
@@ -62,6 +111,16 @@ public class BalloonPopEffect : MonoBehaviour
             sparkles.Play();
         }
 
-        Destroy(gameObject, autoDestroyDelay);
+        CancelInvoke(nameof(ReturnToPool));
+        Invoke(nameof(ReturnToPool), autoDestroyDelay);
+    }
+
+    private void ReturnToPool()
+    {
+        if (rubberShards != null) rubberShards.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        if (airRing != null) airRing.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        if (sparkles != null) sparkles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        gameObject.SetActive(false);
+        pool.Enqueue(this);
     }
 }

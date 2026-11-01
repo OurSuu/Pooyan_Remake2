@@ -44,12 +44,19 @@ public class DropShadow2D : MonoBehaviour
             shadowRenderer.sprite = parentRenderer.sprite;
         }
         
-        // อย่าลืมเช็คเผื่อตัวแม่หันซ้ายหันขวานะ
-        shadowRenderer.flipX = parentRenderer.flipX;
-        shadowRenderer.flipY = parentRenderer.flipY;
+        // อย่าลืมเช็คเผื่อตัวแม่หันซ้ายหันขวานะ (อัปเดตเฉพาะตอนค่าเปลี่ยนเพื่อลดภาระ Rendering)
+        if (shadowRenderer.flipX != parentRenderer.flipX)
+            shadowRenderer.flipX = parentRenderer.flipX;
+        if (shadowRenderer.flipY != parentRenderer.flipY)
+            shadowRenderer.flipY = parentRenderer.flipY;
 
         // อัปเดตเลเยอร์ให้ตามตัวแม่ตลอด (เช่น ตอนแม่หมูเปลี่ยน Sorting Order ตอนกระเด็นตาย)
-        shadowRenderer.sortingLayerID = parentRenderer.sortingLayerID;
-        shadowRenderer.sortingOrder = parentRenderer.sortingOrder + sortingOrderOffset;
+        int targetSortingLayerID = parentRenderer.sortingLayerID;
+        if (shadowRenderer.sortingLayerID != targetSortingLayerID)
+            shadowRenderer.sortingLayerID = targetSortingLayerID;
+
+        int targetSortingOrder = parentRenderer.sortingOrder + sortingOrderOffset;
+        if (shadowRenderer.sortingOrder != targetSortingOrder)
+            shadowRenderer.sortingOrder = targetSortingOrder;
     }
 }

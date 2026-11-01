@@ -19,6 +19,7 @@ public class ArrowShooter : MonoBehaviour
     private float burstResetTimer = 0f; // ตัวนับเวลารีเซ็ตชุด ถ้าทิ้งช่วงนานเกินไป
     private bool canShoot = true; // ล็อกการยิงได้ (เช่นตอนถือเนื้ออยู่)
     private readonly List<Arrow> activeArrows = new(); // เก็บลูกธนูที่กำลังลอยอยู่ในจอ
+    private readonly Queue<Arrow> arrowPool = new(); // Pool เก็บลูกธนูไว้ใช้ซ้ำ ลดการ Instantiate/Destroy ตอนยิงรัวๆ
 
     public float RapidCooldown
     {
@@ -36,6 +37,24 @@ public class ArrowShooter : MonoBehaviour
     {
         if (rapidCooldown < 0.05f) rapidCooldown = GameConstants.RapidShootCooldown;
         if (reloadCooldown < 0.1f) reloadCooldown = GameConstants.ReloadShootCooldown;
+    }
+
+    private void Start()
+    {
+        // สร้างลูกธนูเตรียมไว้ใน Pool ล่วงหน้า 4 ดอก เพื่อไม่ให้กระตุกตอนกดยิงและตอนธนูชนเป้า
+        if (arrowPrefab != null)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                var go = Instantiate(arrowPrefab, new Vector3(0f, -100f, 0f), Quaternion.identity);
+                var arrow = go.GetComponent<Arrow>();
+                if (arrow != null)
+                {
+                    go.SetActive(false);
+                    arrowPool.Enqueue(arrow);
+                }
+            }
+        }
     }
 
     private void Update()
@@ -67,13 +86,28 @@ public class ArrowShooter : MonoBehaviour
         if (activeArrows.Count >= GameConstants.MaxArrowsOnScreen) return false;
         if (arrowPrefab == null || shootPoint == null) return false;
 
-        // สร้างลูกธนูใหม่
-        var go = Instantiate(arrowPrefab, shootPoint.position, Quaternion.identity);
-        var arrow = go.GetComponent<Arrow>();
+        // ดึงลูกธนูจาก Pool (หรือสร้างใหม่ถ้าใน Pool หมด)
+        Arrow arrow = null;
+        while (arrowPool.Count > 0 && arrow == null)
+        {
+            arrow = arrowPool.Dequeue();
+        }
+
         if (arrow != null)
         {
-            // โยน callback UnregisterArrow ไปด้วย พอมันพังมันจะได้ลบตัวเองออกจากลิสต์
-            arrow.Initialize(shootDirection, UnregisterArrow);
+            arrow.transform.SetPositionAndRotation(shootPoint.position, Quaternion.identity);
+            arrow.gameObject.SetActive(true);
+        }
+        else
+        {
+            var go = Instantiate(arrowPrefab, shootPoint.position, Quaternion.identity);
+            arrow = go.GetComponent<Arrow>();
+        }
+
+        if (arrow != null)
+        {
+            // โยน callback UnregisterArrow และ ReturnArrowToPool ไปด้วย พอมันพังจะได้คืนกลับเข้า Pool ทันที
+            arrow.Initialize(shootDirection, UnregisterArrow, ReturnArrowToPool);
             activeArrows.Add(arrow);
         }
 
@@ -99,6 +133,14 @@ public class ArrowShooter : MonoBehaviour
     private void UnregisterArrow(Arrow arrow)
     {
         activeArrows.Remove(arrow);
+    }
+
+    private void ReturnArrowToPool(Arrow arrow)
+    {
+        if (arrow != null)
+        {
+            arrowPool.Enqueue(arrow);
+        }
     }
 
     // ฟังก์ชันล้างลิสต์เผื่อลูกธนูหายไปเฉยๆ (เช่น ข้าม Scene)

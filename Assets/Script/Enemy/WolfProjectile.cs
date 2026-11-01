@@ -51,7 +51,7 @@ public class WolfProjectile : MonoBehaviour
             ActiveRockCount++;
         }
 
-        var player = FindAnyObjectByType<PlayerController>(); // หาตัวแม่หมู
+        var player = PlayerController.Instance != null ? PlayerController.Instance : FindAnyObjectByType<PlayerController>(); // หาตัวแม่หมู
 
         if (useArcadeTrajectory)
         {
@@ -176,7 +176,7 @@ public class WolfProjectile : MonoBehaviour
         }
 
         // ถ้าชนสิ่งกีดขวาง/พื้น/แท่นกิ่งไม้
-        if (other.gameObject.tag == "Ground" || other.gameObject.tag == "Platform")
+        if (other.CompareTag("Ground") || other.CompareTag("Platform"))
         {
             DeflectDown(fromShield: false);
             return;

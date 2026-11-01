@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -65,7 +65,7 @@ public class LadderSystem : MonoBehaviour
     private void TriggerLadderOverrun()
     {
         // หมามาเยอะไป ปีนกัดเลย
-        var player = FindAnyObjectByType<PlayerController>();
+        var player = PlayerController.Instance != null ? PlayerController.Instance : FindAnyObjectByType<PlayerController>();
         if (player != null && player.State != PlayerState.Dead)
         {
             AudioManager.Instance?.PlayWolfBite(); // เสียงงับๆ
@@ -103,7 +103,7 @@ public class LadderSystem : MonoBehaviour
 
     public void CheckBite(Wolf wolf)
     {
-        var player = FindAnyObjectByType<PlayerController>();
+        var player = PlayerController.Instance != null ? PlayerController.Instance : FindAnyObjectByType<PlayerController>();
         if (player == null || wolf == null) return;
 
         float wolfY = wolf.transform.position.y;

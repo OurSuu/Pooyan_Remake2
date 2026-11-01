@@ -14,6 +14,17 @@ public class ComboDisplay : MonoBehaviour
     [SerializeField] private Canvas canvas; // ตัว Canvas หลัก
 
     private Camera mainCamera;
+    private RectTransform canvasRect;
+
+    private class PopupEntry
+    {
+        public GameObject root;
+        public RectTransform rect;
+        public TextMeshProUGUI text;
+        public CanvasGroup canvasGroup;
+    }
+
+    private readonly System.Collections.Generic.Queue<PopupEntry> popupPool = new();
 
     private void Awake()
     {
@@ -37,10 +48,53 @@ public class ComboDisplay : MonoBehaviour
     private void Start()
     {
         mainCamera = Camera.main;
+        if (canvas != null) canvasRect = canvas.GetComponent<RectTransform>();
+
+        // สร้าง Pool ล่วงหน้า 6 ตัว เพื่อไม่ให้กระตุกตอนยิงลูกโป่งแตกครั้งแรก
+        if (popupPrefab != null)
+        {
+            for (int i = 0; i < 6; i++)
+            {
+                var entry = CreatePopupEntry();
+                entry.root.SetActive(false);
+                popupPool.Enqueue(entry);
+            }
+        }
 
         // โยงกับ ScoreManager รอจับตัวเลขเด้ง
         if (ScoreManager.Instance != null)
             ScoreManager.Instance.OnScoreFloating += ShowCombo;
+    }
+
+    private PopupEntry CreatePopupEntry()
+    {
+        var popup = Instantiate(popupPrefab, canvas != null ? canvas.transform : transform);
+        var rect = popup.GetComponent<RectTransform>();
+        var text = popup.GetComponent<TextMeshProUGUI>() ?? popup.GetComponentInChildren<TextMeshProUGUI>();
+        var canvasGroup = popup.GetComponent<CanvasGroup>();
+        if (canvasGroup == null) canvasGroup = popup.AddComponent<CanvasGroup>();
+
+        return new PopupEntry
+        {
+            root = popup,
+            rect = rect,
+            text = text,
+            canvasGroup = canvasGroup
+        };
+    }
+
+    private PopupEntry GetPooledPopup()
+    {
+        while (popupPool.Count > 0)
+        {
+            var entry = popupPool.Dequeue();
+            if (entry != null && entry.root != null)
+            {
+                entry.root.SetActive(true);
+                return entry;
+            }
+        }
+        return CreatePopupEntry();
     }
 
     private void OnDestroy()
@@ -55,16 +109,15 @@ public class ComboDisplay : MonoBehaviour
         if (popupPrefab == null) return;
         if (mainCamera == null) mainCamera = Camera.main;
 
-        // เสกตัวหนังสือขึ้นมา
-        var popup = Instantiate(popupPrefab, canvas != null ? canvas.transform : transform);
-        var text = popup.GetComponent<TextMeshProUGUI>() ?? popup.GetComponentInChildren<TextMeshProUGUI>();
-        if (text != null)
+        // ดึงตัวหนังสือจาก Pool แทนการ Instantiate ใหม่ทุกครั้งที่ยิงโดนเป้า
+        var entry = GetPooledPopup();
+        if (entry.text != null)
         {
-            text.text = $"+{points}"; // ใส่แต้มเข้าไป
-            text.color = GetScoreColor(points);
+            entry.text.text = $"+{points}"; // ใส่แต้มเข้าไป
+            entry.text.color = GetScoreColor(points);
         }
 
-        StartCoroutine(AnimatePopup(popup, worldPosition, points));
+        StartCoroutine(AnimatePopup(entry, worldPosition, points));
     }
 
     private Color GetScoreColor(int points)
@@ -75,11 +128,10 @@ public class ComboDisplay : MonoBehaviour
         return new Color(1f, 0.96f, 0.35f, 1f);                     // สีเหลืองสว่างสไตล์ Arcade (100 / 200)
     }
 
-    private IEnumerator AnimatePopup(GameObject popup, Vector3 worldPosition, int points)
+    private IEnumerator AnimatePopup(PopupEntry entry, Vector3 worldPosition, int points)
     {
-        var rect = popup.GetComponent<RectTransform>();
-        var canvasGroup = popup.GetComponent<CanvasGroup>();
-        if (canvasGroup == null) canvasGroup = popup.AddComponent<CanvasGroup>();
+        var rect = entry.rect;
+        var canvasGroup = entry.canvasGroup;
 
         if (mainCamera == null) mainCamera = Camera.main;
 
@@ -96,8 +148,9 @@ public class ComboDisplay : MonoBehaviour
                 Camera cam = canvas.worldCamera != null ? canvas.worldCamera : mainCamera;
                 if (cam != null)
                 {
+                    if (canvasRect == null) canvasRect = canvas.GetComponent<RectTransform>();
                     RectTransformUtility.ScreenPointToWorldPointInRectangle(
-                        canvas.GetComponent<RectTransform>(),
+                        canvasRect,
                         cam.WorldToScreenPoint(worldPosition),
                         cam,
                         out screenPos);
@@ -114,6 +167,7 @@ public class ComboDisplay : MonoBehaviour
         float elapsed = 0f;
         while (elapsed < lifetime)
         {
+            if (entry.root == null) yield break;
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / lifetime);
 
@@ -130,11 +184,16 @@ public class ComboDisplay : MonoBehaviour
             }
 
             // เฟดให้ค่อยๆ หายไปในช่วงครึ่งหลัง
-            canvasGroup.alpha = t < 0.5f ? 1f : 1f - ((t - 0.5f) / 0.5f);
+            if (canvasGroup != null)
+                canvasGroup.alpha = t < 0.5f ? 1f : 1f - ((t - 0.5f) / 0.5f);
             yield return null;
         }
 
-        // จบงานก็เผาทิ้งซะ
-        Destroy(popup);
+        // จบงานก็เก็บเข้า Pool ไว้ใช้ซ้ำแทนการ Destroy (ลด GC และกันกระตุก)
+        if (entry.root != null)
+        {
+            entry.root.SetActive(false);
+            popupPool.Enqueue(entry);
+        }
     }
 }

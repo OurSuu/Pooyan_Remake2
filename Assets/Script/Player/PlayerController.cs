@@ -43,14 +43,18 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Sprite secretLeafSprite;
     [SerializeField] private float secretLeafRequiredMoveTime = 4.0f;
 
+    public static PlayerController Instance { get; private set; } // Singleton อ้างอิงแม่หมูได้ทันทีโดยไม่ต้องใช้ FindAnyObjectByType ทุกเฟรม
+
     public PlayerState State { get; private set; } = PlayerState.Normal;
     public float MinY => minY;
     public float MaxY => maxY;
     
     // เช็คว่าแม่หมูอยู่บนสุดหรือยัง (ใช้ระยะเผื่ออย่างน้อย 0.20 หน่วยเพื่อให้หยิบเนื้อได้ลื่นไหล)
     public bool IsAtTop => Mathf.Abs(transform.position.y - maxY) <= Mathf.Max(0.20f, topPickupThreshold);
+    public bool HasActiveMeatInScene => activeThrownMeat != null;
 
     private ArrowShooter arrowShooter;
+    private GameObject activeThrownMeat;
     private bool meatAvailable; // มีเนื้อโผล่ให้เก็บมั้ย
     private Vector3 startPosition;
     private bool bossApproaching; // ถ้าบอสมา เนื้อจะหายไป
@@ -64,6 +68,7 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
+        Instance = this;
         startPosition = transform.position; // จำจุดเกิดไว้
         arrowShooter = GetComponent<ArrowShooter>();
         if (arrowShooter == null) arrowShooter = GetComponentInChildren<ArrowShooter>();
@@ -96,6 +101,11 @@ public class PlayerController : MonoBehaviour
 
         CacheMamaPigReference();
         FindAnimator();
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 
     // ค้นหา Animator ของแม่หมูให้ครบทุกจุด ทั้งตัวเองและลูก
@@ -390,6 +400,7 @@ public class PlayerController : MonoBehaviour
             Vector3 spawnPos = meatSpawnPoint != null ? meatSpawnPoint.position : (transform.position + new Vector3(-0.9f, 0f, 0f));
             var meatObj = Instantiate(meatPrefab, spawnPos, Quaternion.identity); // ปล่อยก้อนเนื้อออกไป!
             if (!meatObj.activeSelf) meatObj.SetActive(true); // ป้องกันกรณี Prefab ถูกเซฟตอนปิดตาไว้
+            activeThrownMeat = meatObj;
             AudioManager.Instance?.PlayMeatThrow(); // เล่นเสียงฟึบ!
         }
 

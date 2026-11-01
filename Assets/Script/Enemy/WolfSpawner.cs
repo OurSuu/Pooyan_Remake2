@@ -185,7 +185,7 @@ public class WolfSpawner : MonoBehaviour
             }
 
             // ถ้ามีหมาป่าในฉากเกิน 10 ตัว ให้รอก่อน อย่าเพิ่งเสกเยอะไปเดี๋ยวแลคและยากไป
-            int activeWolves = FindObjectsByType<Wolf>(FindObjectsInactive.Exclude).Length;
+            int activeWolves = Wolf.ActiveWolves.Count;
             if (activeWolves > 10) 
             {
                 yield return new WaitForSeconds(config.spawnInterval);
@@ -362,7 +362,7 @@ public class WolfSpawner : MonoBehaviour
             // เช็คว่าเนื้อยังไม่มีบนรอก แม่หมูไม่ได้ถือเนื้ออยู่ และไม่มีก้อนเนื้อกำลังลอยอยู่ในฉาก
             if (player != null && !player.IsMeatAvailable && player.State != PlayerState.HoldingMeat)
             {
-                bool meatFlying = GameObject.FindWithTag(GameConstants.TagMeat) != null;
+                bool meatFlying = player.HasActiveMeatInScene;
                 if (!meatFlying)
                 {
                     cooldownAfterThrow += 0.5f;
