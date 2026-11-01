@@ -16,6 +16,8 @@ public class Balloon : MonoBehaviour
     [SerializeField] private Sprite[] damageStages; // สไปรท์ตอนลูกโป่งโดนยิงไปแต่ละขั้น (ถ้ามีหลายฮิต)
     [SerializeField] private float flashInterval = 0.15f; // ความเร็วตอนกระพริบ (เวลาเป็นบอส)
     [SerializeField] private GameObject popEffectPrefab; // พรีแฟบ Particle Effect ตอนลูกโป่งแตก
+    [Tooltip("พรีแฟบ Particle Effect ตอนโดนยิงตอดแต่ยังไม่แตก (BalloonHitFX)")]
+    [SerializeField] private GameObject hitEffectPrefab; // พรีแฟบ Particle Effect ตอนลูกโป่งโดนยิงแต่ยังไม่แตก
 
     [Header("Custom Balloon Sprites (Optional)")]
     [Tooltip("ใส่รูปสไปรท์ที่เพื่อนวาดแยกสีมาได้เลย (ถ้าใส่ช่องนี้ เกมจะไม่ย้อมสีทับ เพื่อให้เห็นสีจริงจากภาพวาด)")]
@@ -48,6 +50,7 @@ public class Balloon : MonoBehaviour
     private Vector3 initialScale = Vector3.one;
     private bool hasCachedScale = false;
     private static GameObject cachedPopEffectPrefab;
+    private static GameObject cachedHitEffectPrefab;
 
     public int CurrentHP => currentHP;
     public int MaxHP => maxHP;
@@ -70,7 +73,13 @@ public class Balloon : MonoBehaviour
     private void Awake()
     {
         CacheComponents();
+        EnsureEffectsPrewarmed();
+    }
+
+    private void EnsureEffectsPrewarmed()
+    {
         EnsurePopEffectPrewarmed();
+        EnsureHitEffectPrewarmed();
     }
 
     private void EnsurePopEffectPrewarmed()
@@ -85,6 +94,21 @@ public class Balloon : MonoBehaviour
         if (fxPrefab != null)
         {
             BalloonPopEffect.PrewarmPool(fxPrefab, 4);
+        }
+    }
+
+    private void EnsureHitEffectPrewarmed()
+    {
+        GameObject fxPrefab = hitEffectPrefab;
+        if (fxPrefab == null)
+        {
+            if (cachedHitEffectPrefab == null)
+                cachedHitEffectPrefab = Resources.Load<GameObject>("FX/BalloonHitFX");
+            fxPrefab = cachedHitEffectPrefab;
+        }
+        if (fxPrefab != null)
+        {
+            BalloonHitEffect.PrewarmPool(fxPrefab, 6);
         }
     }
 
@@ -153,10 +177,11 @@ public class Balloon : MonoBehaviour
     }
 
     // เรียกตอนลูกโป่งโดนโจมตี คืนค่าเป็น true ถ้าลูกโป่งแตก
-    public bool TakeDamage(int damage = 1)
+    public bool TakeDamage(int damage = 1, Vector3? hitPosition = null)
     {
         if (currentHP <= 0) return true; // ถ้าแตกไปแล้วก็ปล่อยผ่าน
 
+        Color hitColor = GetBalloonColor(); // เก็บสีลูกโป่ง ณ จังหวะโดนยิง
         currentHP -= damage;
         UpdateVisual(); // อัปเดตขนาดที่หดลงและสีตามเลือดที่เหลือ
 
@@ -171,7 +196,28 @@ public class Balloon : MonoBehaviour
 
         // ยังไม่แตก เล่นเสียงยิงตอดลูกโป่ง
         AudioManager.Instance?.PlayBalloonDamage();
+
+        // สปอว์นสะเก็ดเศษลูกโป่งตามสีลูกโป่ง!
+        Vector3 spawnPos = hitPosition ?? transform.position;
+        SpawnHitEffect(spawnPos, hitColor);
+
         return false;
+    }
+
+    private void SpawnHitEffect(Vector3 pos, Color balloonCol)
+    {
+        GameObject fxPrefab = hitEffectPrefab;
+        if (fxPrefab == null)
+        {
+            if (cachedHitEffectPrefab == null)
+                cachedHitEffectPrefab = Resources.Load<GameObject>("FX/BalloonHitFX");
+            fxPrefab = cachedHitEffectPrefab;
+        }
+
+        if (fxPrefab != null)
+        {
+            BalloonHitEffect.SpawnPooled(fxPrefab, pos, balloonCol);
+        }
     }
 
     public void PopInstant() => Pop(); // แตกแบบทันทีทันใด สั่งเรียกตรงๆ ได้เลย

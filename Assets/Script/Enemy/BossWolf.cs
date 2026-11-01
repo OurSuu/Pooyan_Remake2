@@ -36,7 +36,7 @@ public class BossWolf : Wolf
     /// <summary>
     /// โดนลูกธนูแล้วเป็นไง คืนค่า true ถ้าลูกโป่งแตก (จบด่าน), คืนค่า false ถ้าติดโล่บอส
     /// </summary>
-    public bool TryTakeArrowHit()
+    public bool TryTakeArrowHit(Vector3? arrowPos = null)
     {
         // โล่ยังไม่แตกก็ลดเลือดโล่ไปก่อน พร้อมเล่นท่าปัดลูกธนูและเสียงโล่
         if (remainingShieldHP > 0)
@@ -48,7 +48,7 @@ public class BossWolf : Wolf
         }
 
         // โล่แตกแล้ว โดนลูกโป่งเต็มๆ
-        if (balloon != null && balloon.TakeDamage())
+        if (balloon != null && balloon.TakeDamage(1, arrowPos))
             return true;
 
         return false;

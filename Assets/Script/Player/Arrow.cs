@@ -116,7 +116,7 @@ public class Arrow : MonoBehaviour
             var boss = other.GetComponentInParent<BossWolf>();
             if (boss != null)
             {
-                if (!boss.TryTakeArrowHit())
+                if (!boss.TryTakeArrowHit(transform.position))
                 {
                     // โล่บอสยังกันไว้ได้ -> ลูกธนูถูกปัดร่วงลงพื้นเหมือนชนโล่!
                     isDeflected = true;
@@ -138,7 +138,7 @@ public class Arrow : MonoBehaviour
             // ถ้าไม่ใช่บอส ก็หาคอมโพเนนต์ลูกโป่งมาลดเลือด
             var balloon = other.GetComponent<Balloon>() ?? other.GetComponentInParent<Balloon>();
             if (balloon != null)
-                balloon.TakeDamage(damage); 
+                balloon.TakeDamage(damage, transform.position); 
             DestroySelf();
             return;
         }

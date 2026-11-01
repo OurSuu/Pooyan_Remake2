@@ -33,6 +33,7 @@ public class MeatWeapon : MonoBehaviour
     private readonly HashSet<Balloon> ignoredBalloons = new();
 
     private Rigidbody2D rb;
+    private MeatAuraEffect auraEffect;
     private float elapsed;
     private float currentVy;
 
@@ -40,6 +41,7 @@ public class MeatWeapon : MonoBehaviour
     {
         gameObject.tag = GameConstants.TagMeat;
         rb = GetComponent<Rigidbody2D>();
+        auraEffect = GetComponentInChildren<MeatAuraEffect>();
 
         // ควบคุมวิถีโค้งด้วยตัวเองเพื่อให้ได้มุมทแยงคงที่ตามต้นฉบับ Pooyan (ไม่ถูก gravityScale ของ Rigidbody2D ดึงร่วงดิ่งเหว)
         if (rb != null)
@@ -97,6 +99,7 @@ public class MeatWeapon : MonoBehaviour
                 if (rb != null)
                     rb.linearVelocity = new Vector2(speedX, currentVy);
 
+                auraEffect?.OnBounce();
                 AudioManager.Instance?.PlayMeatBounce();
             }
             return;

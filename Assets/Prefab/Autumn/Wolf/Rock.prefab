@@ -143,3 +143,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WolfProjectile
   speed: 5
   destroyY: -6
+  rockBreakPrefab: {fileID: 6776117512305141698, guid: 76b567af76784e147a7d31f768479030, type: 3}
+  rockHitBasketPrefab: {fileID: 5182903847291048201, guid: 6a432c987d0e49eb8107f487542ab800, type: 3}

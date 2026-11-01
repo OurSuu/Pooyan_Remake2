@@ -15,6 +15,15 @@ public class WolfProjectile : MonoBehaviour
     [SerializeField] private float speed = 5f; // ความเร็วของที่ปามา
     [SerializeField] private float destroyY = -6f; // ร่วงเกินเส้นนี้ก็ลบทิ้งเลย
 
+    [Header("Hit & Break FX Particles")]
+    [Tooltip("พรีแฟบ Particle Effect ตอนยิงหินแตก (RockBreak)")]
+    [SerializeField] private GameObject rockBreakPrefab;
+    [Tooltip("พรีแฟบ Particle Effect ตอนหินปาโดนกระเช้า/เกราะแม่หมู (RockHitBasket)")]
+    [SerializeField] private GameObject rockHitBasketPrefab;
+
+    private static GameObject cachedBreakPrefab;
+    private static GameObject cachedHitBasketPrefab;
+
     private WolfProjectileType type; // ประเภทของอาวุธ
     private Vector2 velocity; // ความเร็วและทิศทาง
     private bool destroyed; // พังไปหรือยัง
@@ -159,6 +168,7 @@ public class WolfProjectile : MonoBehaviour
             {
                 player.OnProjectileHit(); // มีเสียงดังป๊าบ!
             }
+            SpawnHitBasketEffect(transform.position);
             DeflectDown(fromShield: true);
             return;
         }
@@ -216,6 +226,7 @@ public class WolfProjectile : MonoBehaviour
         // ได้แต้มและเสียงต่างกันไปตามชนิดของที่ปามา
         if (type == WolfProjectileType.Rock)
         {
+            SpawnBreakEffect(transform.position);
             ScoreManager.Instance?.AddRockDestroyScore(transform.position);
             AudioManager.Instance?.PlayRockDestroy();
         }
@@ -226,6 +237,62 @@ public class WolfProjectile : MonoBehaviour
         }
 
         Destroy(gameObject); // ลบทิ้ง
+    }
+
+    // สร้างเอฟเฟกต์หินแตก (RockBreak)
+    private void SpawnBreakEffect(Vector3 pos)
+    {
+        GameObject prefab = rockBreakPrefab;
+        if (prefab == null)
+        {
+            if (cachedBreakPrefab == null)
+                cachedBreakPrefab = Resources.Load<GameObject>("FX/RockBreak");
+            prefab = cachedBreakPrefab;
+        }
+
+        if (prefab != null)
+        {
+            var fx = Instantiate(prefab, pos, Quaternion.identity);
+            var ps = fx.GetComponent<ParticleSystem>();
+            if (ps != null)
+            {
+                var main = ps.main;
+                main.loop = false;
+                Destroy(fx, Mathf.Max(0.8f, main.duration));
+            }
+            else
+            {
+                Destroy(fx, 1.5f);
+            }
+        }
+    }
+
+    // สร้างเอฟเฟกต์ประกายไฟตอนปาหินโดนกระเช้า/เกราะ (RockHitBasket)
+    private void SpawnHitBasketEffect(Vector3 pos)
+    {
+        GameObject prefab = rockHitBasketPrefab;
+        if (prefab == null)
+        {
+            if (cachedHitBasketPrefab == null)
+                cachedHitBasketPrefab = Resources.Load<GameObject>("FX/RockHitBasket");
+            prefab = cachedHitBasketPrefab;
+        }
+
+        if (prefab != null)
+        {
+            var fx = Instantiate(prefab, pos, Quaternion.identity);
+            var ps = fx.GetComponent<ParticleSystem>();
+            if (ps != null)
+            {
+                var main = ps.main;
+                main.loop = false;
+                Destroy(fx, Mathf.Max(0.8f, main.duration));
+            }
+            else
+            {
+                Destroy(fx, 1.5f);
+            }
+        }
     }
 }
 

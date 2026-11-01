@@ -144,6 +144,7 @@ MonoBehaviour:
   damageStages: []
   flashInterval: 0.15
   popEffectPrefab: {fileID: 0}
+  hitEffectPrefab: {fileID: 2709706490718561726, guid: cd09ec89ae8141d391071642689f9a55, type: 3}
   pinkSprite: {fileID: 0}
   yellowSprite: {fileID: 0}
   blueSprite: {fileID: 0}
