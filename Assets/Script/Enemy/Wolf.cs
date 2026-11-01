@@ -392,49 +392,77 @@ public class Wolf : MonoBehaviour
     {
         var boulderSys = BoulderSystem.Instance;
         if (boulderSys == null) return;
-        
+
+        bool isPushingMember = boulderSys.IsWolfPushing(this);
         Vector3 targetPos = boulderSys.GetCliffTargetPosition(this);
         float distance = Mathf.Abs(transform.position.x - targetPos.x);
-        
+
+        // เฟส 1: หมาป่าที่เพิ่งขึ้นมาถึงหน้าผา ต้องวิ่ง (ท่า Run) ไปให้ถึงจุดต่อท้ายเพื่อน/หลังก้อนหินก่อน (หินยังไม่ขยับ)
+        if (!isPushingMember)
+        {
+            if (distance > 0.03f)
+            {
+                bool movingRight = targetPos.x >= transform.position.x;
+                transform.position = Vector3.MoveTowards(transform.position, new Vector3(targetPos.x, targetPos.y, 0f), walkSpeed * Time.deltaTime);
+
+                if (animator != null)
+                {
+                    if (!animator.enabled) animator.enabled = true;
+                    string runAnim = !string.IsNullOrEmpty(runAnimName) ? runAnimName : "Run";
+                    var stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+                    if (!stateInfo.IsName(runAnim))
+                    {
+                        animator.Play(runAnim);
+                    }
+                }
+
+                if (cachedSR != null)
+                    cachedSR.flipX = !movingRight;
+
+                isPushIdle = false;
+                return;
+            }
+
+            // วิ่งมาถึงจุดต่อท้ายเรียบร้อยแล้ว! แจ้ง BoulderSystem เพื่อเริ่มออกแรงดันหินพร้อมกับเพื่อนๆ ทันที
+            transform.position = new Vector3(targetPos.x, targetPos.y, 0f);
+            boulderSys.NotifyWolfArrivedAtBoulder(this);
+            targetPos = boulderSys.GetCliffTargetPosition(this);
+            distance = Mathf.Abs(transform.position.x - targetPos.x);
+        }
+
+        // เฟส 2: อยู่ในกลุ่มดันหินแล้ว — ขณะที่หินกำลังเลื่อน ทุกตัวในแถวจะเล่นท่า Push ดันหินไปพร้อมกัน!
         if (distance > 0.01f)
         {
-            // กำลังเดิน
             transform.position = Vector3.MoveTowards(transform.position, new Vector3(targetPos.x, targetPos.y, 0f), walkSpeed * Time.deltaTime);
-            
-            bool movingRight = targetPos.x > transform.position.x;
-            
+
             if (animator != null)
             {
                 if (!animator.enabled) animator.enabled = true;
-                
-                string animToPlay = movingRight ? pushAnimName : "run"; // เดินไปขวา = ดันหิน, เดินไปซ้าย = วิ่งไปต่อคิว
-                
                 var stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-                if (!stateInfo.IsName(animToPlay))
+                if (!stateInfo.IsName(pushAnimName))
                 {
-                    animator.Play(animToPlay);
+                    animator.Play(pushAnimName);
                 }
             }
-                
-            // หันหน้า: ถ้าขยับซ้าย flipX=true (หน้าหันซ้าย), ถ้าขยับขวา flipX=false (หน้าหันขวา)
+
             if (cachedSR != null)
-                cachedSR.flipX = !movingRight; 
+                cachedSR.flipX = false; // หันหน้าไปทางขวาเข้าหาก้อนหินเสมอตอนช่วยกันออกแรงผลัก
 
             isPushIdle = false;
         }
         else
         {
-            // ถึงเป้าหมาย ยืนนิ่ง
+            // ดันหินขยับเสร็จ 1 จังหวะแล้ว ยืนยันหินค้างไว้รอเพื่อนตัวถัดไปมาช่วย
             if (!isPushIdle)
             {
                 isPushIdle = true;
-                if (animator != null) animator.enabled = false; 
-                
+                if (animator != null) animator.enabled = false;
+
                 if (cachedSR != null)
                 {
                     cachedSR.flipX = false; // บังคับหันหน้าเข้าหาหินเสมอตอนยืนรอคิว
                     if (spritePushIdle != null)
-                        cachedSR.sprite = spritePushIdle; 
+                        cachedSR.sprite = spritePushIdle;
                 }
             }
         }
@@ -802,6 +830,10 @@ public class Wolf : MonoBehaviour
         }
 
         state = WolfState.ReachedCliff;
+        isPushIdle = false;
+        canThrowRock = false;
+        hasShield = false;
+        if (shieldTransform != null) shieldTransform.gameObject.SetActive(false);
         if (balloon != null) balloon.gameObject.SetActive(false);
         SetRunningVisual();
         MarkAsEscaped();
