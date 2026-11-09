@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8192736451029384756
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8192736451029384757}
+  - component: {fileID: 8192736451029384758}
+  m_Layer: 0
+  m_Name: FallingRainFX
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8192736451029384757
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8192736451029384756}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8192736451029384758
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8192736451029384756}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a91472c83d6e41598b2c4d5e6f708192, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RainWeatherFX
+  rainEmissionRate: 125
+  fallSpeed: 20.5
+  windSpeedX: -4.6
+  rainAlpha: 0.26
+  rainWidth: 0.042
+  rainStretchScale: 2.65
+  collisionLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  groundY: -3.85
+  autoCreateRainColliders: 1
+  splashDropsMin: 2
+  splashDropsMax: 4
+  splashSize: 0.055
+  splashAlpha: 0.48
+  sortingOrder: 2
+  rainTint: {r: 0.78, g: 0.89, b: 1, a: 1}

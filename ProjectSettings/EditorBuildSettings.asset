@@ -20,6 +20,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Winter.unity
     guid: 3a464dad63eece642846590f496b5946
+  - enabled: 1
+    path: Assets/Scenes/Rainy.unity
+    guid: 8a744f6c6e48d1e40b2858f99fd4048b
   - enabled: 0
     path: Assets/Scenes/SampleScene.unity
     guid: 2cda990e2423bbf4892e6590ba056729

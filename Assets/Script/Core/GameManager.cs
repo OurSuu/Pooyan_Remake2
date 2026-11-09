@@ -52,29 +52,45 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
+        string activeScene = SceneManager.GetActiveScene().name;
+        bool isRainyScene = activeScene.IndexOf("Rainy", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                            activeScene.IndexOf("Summer", StringComparison.OrdinalIgnoreCase) >= 0;
+
         if (GameSession.IsActive)
         {
             currentStage = GameSession.CurrentStage;
             lives = GameSession.Lives;
+            if (isRainyScene && currentStage < 4)
+            {
+                currentStage = 4;
+                GameSession.CurrentStage = 4;
+            }
         }
         else
         {
             // กรณีเริ่มเกมครั้งแรก หรือกด Play เทสจาก Scene นั้นๆ โดยตรงใน Editor
-            string activeScene = SceneManager.GetActiveScene().name;
-            if (currentStage <= 1)
+            if (isRainyScene)
             {
-                if (activeScene.IndexOf("Spring", StringComparison.OrdinalIgnoreCase) >= 0)
-                    currentStage = 2;
-                else if (activeScene.IndexOf("Winter", StringComparison.OrdinalIgnoreCase) >= 0)
-                    currentStage = 3;
-                else if (activeScene.IndexOf("Summer", StringComparison.OrdinalIgnoreCase) >= 0)
-                    currentStage = 4;
+                if (currentStage < 4) currentStage = 4;
+            }
+            else if (activeScene.IndexOf("Winter", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                if (currentStage < 3) currentStage = 3;
+            }
+            else if (activeScene.IndexOf("Spring", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                if (currentStage < 2) currentStage = 2;
             }
 
             GameSession.IsActive = true;
             GameSession.CurrentStage = currentStage;
             GameSession.Lives = lives;
             GameSession.Score = 0;
+        }
+
+        if (isRainyScene)
+        {
+            RainWeatherFX.EnsureInActiveSceneIfNeeded();
         }
 
         DeathFreeze = false;
@@ -245,8 +261,10 @@ public class GameManager : MonoBehaviour
         {
             if (stage % 2 == 0)
             {
-                // ถ้าเป็นด่านคู่ (เช่น ด่าน 4 Summer ยังไม่มี) ให้ใช้ฉากด่านคู่ที่มีอยู่ (Spring)
-                if (Application.CanStreamedLevelBeLoaded("Spring")) targetScene = "Spring";
+                // ถ้าเป็นด่านคู่ (เช่น ด่าน 4 Rainy/Summer) ให้หาฉากด่านคู่ที่มีอยู่ตามลำดับ
+                if (Application.CanStreamedLevelBeLoaded("Rainy")) targetScene = "Rainy";
+                else if (Application.CanStreamedLevelBeLoaded("Summer")) targetScene = "Summer";
+                else if (Application.CanStreamedLevelBeLoaded("Spring")) targetScene = "Spring";
                 else if (Application.CanStreamedLevelBeLoaded("Winter")) targetScene = "Winter";
             }
             else
@@ -271,14 +289,14 @@ public class GameManager : MonoBehaviour
 
     private string GetSceneNameForStage(int stage)
     {
-        // 1=Autumn (ด่านคี่), 2=Spring (ด่านคู่), 3=Winter (ด่านคี่), 4=Summer (ด่านคู่) (แล้ววนลูป)
+        // 1=Autumn (ด่านคี่), 2=Spring (ด่านคู่), 3=Winter (ด่านคี่), 4=Rainy (ด่านคู่) (แล้ววนลูป)
         int index = (stage - 1) % 4;
         switch (index)
         {
             case 0: return "Autumn";
             case 1: return "Spring";
             case 2: return "Winter";
-            case 3: return "Summer";
+            case 3: return "Rainy";
             default: return "Autumn";
         }
     }

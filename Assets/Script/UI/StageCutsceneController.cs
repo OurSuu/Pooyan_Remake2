@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// ระบบคัทซีนในฉากจริง (In-Scene Ground Cutscenes) ตามต้นฉบับ Pooyan (Arcade 1982 / NES 1985):
@@ -88,6 +89,17 @@ public class StageCutsceneController : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        if (IsRainySceneActive())
+        {
+            enableCutscenes = false;
+        }
+    }
+
+    private static bool IsRainySceneActive()
+    {
+        string sceneName = SceneManager.GetActiveScene().name;
+        return !string.IsNullOrEmpty(sceneName) &&
+               sceneName.IndexOf("Rainy", StringComparison.OrdinalIgnoreCase) >= 0;
     }
 
     private void OnDestroy()
@@ -101,20 +113,20 @@ public class StageCutsceneController : MonoBehaviour
     }
 
     /// <summary>
-    /// เช็คว่าด่านนี้มีคัทซีนก่อนเริ่มด่านหรือไม่ (เฉพาะด่าน 1 และด่าน 2)
+    /// เช็คว่าด่านนี้มีคัทซีนก่อนเริ่มด่านหรือไม่ (เฉพาะด่าน 1 และด่าน 2 — ด่าน Rainy ปิดไว้ก่อน)
     /// </summary>
     public bool HasIntroCutsceneForStage(int stage)
     {
-        if (!enableCutscenes) return false;
+        if (!enableCutscenes || IsRainySceneActive()) return false;
         return stage == 1 || stage == 2;
     }
 
     /// <summary>
-    /// เช็คว่าด่านนี้มีคัทซีนตอนจบด่านหรือไม่ (เฉพาะด่าน 2 ที่ผ่านแล้วจะเข้าสู่ Bonus Stage)
+    /// เช็คว่าด่านนี้มีคัทซีนตอนจบด่านหรือไม่ (เฉพาะด่าน 2 ที่ผ่านแล้วจะเข้าสู่ Bonus Stage — ด่าน Rainy ปิดไว้ก่อน)
     /// </summary>
     public bool HasClearCutsceneForStage(int stage)
     {
-        if (!enableCutscenes) return false;
+        if (!enableCutscenes || IsRainySceneActive()) return false;
         return stage == 2;
     }
 
@@ -463,7 +475,8 @@ public class StageCutsceneController : MonoBehaviour
                 player.Respawn();
             }
 
-            inBasketMama = player.transform.Find("SpringMamaPig");
+            inBasketMama = player.transform.Find("RainyMamaPig");
+            if (inBasketMama == null) inBasketMama = player.transform.Find("SpringMamaPig");
             if (inBasketMama == null) inBasketMama = player.transform.Find("WinterMamaPig");
             if (inBasketMama == null) inBasketMama = player.transform.Find("MamaPig");
 

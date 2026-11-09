@@ -438,10 +438,17 @@ public class Wolf : MonoBehaviour
             if (animator != null)
             {
                 if (!animator.enabled) animator.enabled = true;
-                var stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-                if (!stateInfo.IsName(pushAnimName))
+                string animToPlay = pushAnimName;
+                if (!animator.HasState(0, Animator.StringToHash(animToPlay)))
                 {
-                    animator.Play(pushAnimName);
+                    if (animator.HasState(0, Animator.StringToHash("PushBoulder"))) animToPlay = "PushBoulder";
+                    else if (animator.HasState(0, Animator.StringToHash("PushBoluder"))) animToPlay = "PushBoluder";
+                    else if (animator.HasState(0, Animator.StringToHash("Push"))) animToPlay = "Push";
+                }
+                var stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+                if (!stateInfo.IsName(animToPlay))
+                {
+                    animator.Play(animToPlay);
                 }
             }
 
@@ -716,7 +723,13 @@ public class Wolf : MonoBehaviour
             if (animator != null)
             {
                 animator.enabled = true;
-                animator.Play(deadAnimName);
+                string animToPlay = deadAnimName;
+                if (!animator.HasState(0, Animator.StringToHash(animToPlay)))
+                {
+                    if (animator.HasState(0, Animator.StringToHash("Death"))) animToPlay = "Death";
+                    else if (animator.HasState(0, Animator.StringToHash("Dead"))) animToPlay = "Dead";
+                }
+                animator.Play(animToPlay);
             }
             
             StartCoroutine(FadeAndDestroyRoutine());
@@ -900,10 +913,39 @@ public class Wolf : MonoBehaviour
         }
     }
 
+    [Header("Ladder Bite Settings (การงับบนบันได)")]
+    [Tooltip("ระยะยื่นตัวงับไปทางซ้าย (ค่าเริ่มต้น 0.85 หน่วย เพื่อให้ปากหมาป่ายื่นถึงขอบกระเช้าแม่หมูพอดี)")]
+    [SerializeField] protected float ladderBiteLunge = 0.85f;
+    [Tooltip("ระยะเวลาการพุ่งงับ (วินาที, ค่าเริ่มต้น 0.45s ให้ตรงกับความยาวอนิเมชัน BiteRobe 0.47s)")]
+    [SerializeField] protected float biteDuration = 0.45f;
+    [Tooltip("ระยะห่างแนวตั้ง (Y) ที่ถือว่าอยู่ในระยะปากงับ (ค่าเริ่มต้น 0.95 หน่วย ครอบคลุมทั้งตัวแม่หมูและกระเช้า ไร้มุมอับระหว่างขั้นบันได)")]
+    [SerializeField] protected float biteVerticalReach = 0.95f;
+    [Tooltip("ออฟเซ็ตตำแหน่งปากหมาป่าเทียบกับจุดกึ่งกลางตัว (ค่าเริ่มต้น +0.25 หน่วย)")]
+    [SerializeField] protected float biteVerticalOffset = 0.25f;
+
     protected float biteTimer = 0f;
     protected float biteInterval = 2f; // Arcade accurate
-    protected float biteDuration = 0.15f; // Very quick snap (0.15s instead of 0.4s)
     protected bool isBiting = false;
+    protected float ladderOriginX = 0f;
+
+    /// <summary>
+    /// ตรวจสอบว่าผู้เล่น (แม่หมู/กระเช้า) อยู่ในระยะที่หมาป่าบนบันไดจะงับได้หรือไม่
+    /// </summary>
+    public bool IsPlayerInBiteRange()
+    {
+        var player = PlayerController.Instance != null ? PlayerController.Instance : FindAnyObjectByType<PlayerController>();
+        if (player == null || player.State == PlayerState.Dead) return false;
+
+        float wolfX = transform.position.x;
+        float playerX = player.transform.position.x;
+        // เช็คระยะแนวนอน (X) ว่าอยู่เลนเดียวกัน (ห่างไม่เกิน 1.8 หน่วย)
+        if (Mathf.Abs(playerX - wolfX) > 1.8f) return false;
+
+        float playerY = player.transform.position.y;
+        float mouthY = transform.position.y + biteVerticalOffset;
+        // เช็คระยะแนวตั้ง (Y) ให้ครอบคลุมความสูงของกระเช้าและตัวแม่หมู
+        return Mathf.Abs(playerY - mouthY) <= biteVerticalReach;
+    }
 
     protected void UpdateWaitingOnLadder()
     {
@@ -925,65 +967,70 @@ public class Wolf : MonoBehaviour
         
         if (!isBiting)
         {
-            float warningTime = 0.3f; // Shortened warning to just 0.3s
+            float warningTime = 0.35f;
+
+            // ถ้าแม่หมูเลื่อนกระเช้าเข้ามาในระยะงับพอดี ให้เร่งเวลาเตือนภัยแล้วเตรียมงับทันที (ตอบสนองไว ไม่ยืนนิ่งเฉย)
+            if (IsPlayerInBiteRange() && (biteInterval - biteTimer) > warningTime)
+            {
+                biteTimer = biteInterval - warningTime;
+            }
             
             if (biteTimer >= biteInterval)
             {
-                // Start bite lunge
+                // เริ่มท่าพุ่งงับ
                 isBiting = true;
                 biteTimer = 0f;
+                ladderOriginX = transform.position.x;
                 
-                // Visual feedback: Solid red during bite
+                // Visual feedback: ตัวแดงเตือนภัยขณะงับ
                 if (sr != null) sr.color = new Color(1f, 0.3f, 0.3f);
                 
                 if (animator != null) 
                 {
-                    animator.enabled = true; // เปิดกลับมาทำงาน
-                    animator.Update(0f); // 🛑 เคล็ดลับโปร: บังคับให้ Animator รีเฟรชตัวเองทันทีในเฟรมนี้ (แก้บัคไม่เล่นท่า)
+                    animator.enabled = true;
+                    animator.Update(0f);
                     animator.speed = 1f; 
-                    animator.Play("BiteRobe", -1, 0f); // บังคับเล่นตั้งแต่เฟรมแรกเสมอ
+                    animator.Play("BiteRobe", -1, 0f);
                 }
             }
             else if (biteInterval - biteTimer <= warningTime)
             {
-                // Warning phase: Blink orange/yellow rapidly
+                // Warning phase: กะพริบสีส้มเตือนผู้เล่นอย่างรวดเร็ว
                 if (sr != null) 
                 {
-                    float blink = Mathf.PingPong(Time.time * 20f, 1f); // Blink faster
+                    float blink = Mathf.PingPong(Time.time * 20f, 1f);
                     sr.color = Color.Lerp(Color.white, new Color(1f, 0.7f, 0f), blink);
                 }
             }
             else
             {
-                // Idle phase: Normal color
+                // Idle phase: สีปกติ
                 if (sr != null) sr.color = Color.white;
             }
         }
         else
         {
-            // During the bite window, check if player is aligned
-            LadderSystem.Instance?.CheckBite(this);
-            
-            // Lunge forward visually (PingPong movement)
-            float t = biteTimer / biteDuration;
-            float lungeOffset = Mathf.Sin(t * Mathf.PI) * 0.5f; // Lunge left by 0.5 units towards player
-            if (LadderSystem.Instance != null)
+            // เช็คว่าแม่หมูอยู่ในระยะงับหรือไม่
+            if (IsPlayerInBiteRange())
             {
-                transform.position = new Vector3(LadderSystem.Instance.LadderX - lungeOffset, transform.position.y, 0f);
+                TriggerBite();
+                return;
             }
+            
+            // พุ่งตัวไปข้างหน้าทางซ้ายอย่างชัดเจน (PingPong movement)
+            float t = biteTimer / biteDuration;
+            float lungeOffset = Mathf.Sin(t * Mathf.PI) * ladderBiteLunge;
+            float baseX = ladderOriginX != 0f ? ladderOriginX : (LadderSystem.Instance != null ? LadderSystem.Instance.LadderX : transform.position.x);
+            transform.position = new Vector3(baseX - lungeOffset, transform.position.y, 0f);
             
             if (biteTimer >= biteDuration)
             {
-                // Bite window closed, reset position
-                if (LadderSystem.Instance != null)
-                {
-                    transform.position = new Vector3(LadderSystem.Instance.LadderX, transform.position.y, 0f);
-                }
+                // จบจังหวะงับ ดึงตัวกลับจุดเดิมบนบันได
+                transform.position = new Vector3(baseX, transform.position.y, 0f);
                 isBiting = false;
                 biteTimer = 0f;
-                biteInterval = UnityEngine.Random.Range(1.5f, 3f); // Arcade accurate lunge interval
+                biteInterval = UnityEngine.Random.Range(1.5f, 3f);
                 
-                // Remove visual feedback
                 if (sr != null) sr.color = Color.white;
             }
         }
@@ -1131,6 +1178,14 @@ public class Wolf : MonoBehaviour
             if (other.CompareTag(GameConstants.TagPlayer))
             {
                 other.GetComponentInParent<PlayerController>()?.TakeDamage();
+            }
+        }
+        else if (state == WolfState.WaitingOnLadder && isBiting)
+        {
+            // ถ้าหมาป่ากำลังพุ่งงับแล้วตัวแม่หมูหรือเกราะกระเช้าชนกับ Collider ของหมาป่า
+            if (other.CompareTag(GameConstants.TagPlayer) || other.CompareTag(GameConstants.TagShield))
+            {
+                TriggerBite();
             }
         }
     }

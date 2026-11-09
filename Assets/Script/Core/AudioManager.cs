@@ -19,7 +19,7 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private AudioClip bgmSpring;
     [Tooltip("เพลงประจำด่าน 3 - ฤดูหนาว (Winter Scene)")]
     [SerializeField] private AudioClip bgmWinter;
-    [Tooltip("เพลงประจำด่าน 4 - ฤดูร้อน (Summer Scene)")]
+    [Tooltip("เพลงประจำด่าน 4 - ฤดูฝน / ฤดูร้อน (Rainy / Summer Scene)")]
     [SerializeField] private AudioClip bgmSummer;
     [Tooltip("เพลงประจำฉากนี้ (ใส่ช่องนี้ได้ถ้าตั้งแยกแต่ละ Scene หรือใช้เป็นเพลงสำรอง)")]
     [SerializeField] private AudioClip bgmMain;
@@ -258,10 +258,11 @@ public class AudioManager : MonoBehaviour
             return bgmSpring;
         if (sceneName.IndexOf("Winter", StringComparison.OrdinalIgnoreCase) >= 0 && bgmWinter != null)
             return bgmWinter;
-        if (sceneName.IndexOf("Summer", StringComparison.OrdinalIgnoreCase) >= 0 && bgmSummer != null)
+        if ((sceneName.IndexOf("Rainy", StringComparison.OrdinalIgnoreCase) >= 0 ||
+             sceneName.IndexOf("Summer", StringComparison.OrdinalIgnoreCase) >= 0) && bgmSummer != null)
             return bgmSummer;
 
-        // เช็คจากเลขด่านปัจจุบันเป็นลำดับถัดมา (1=Autumn, 2=Spring, 3=Winter, 4=Summer)
+        // เช็คจากเลขด่านปัจจุบันเป็นลำดับถัดมา (1=Autumn, 2=Spring, 3=Winter, 4=Rainy/Summer)
         if (GameManager.Instance != null)
         {
             int seasonIndex = (GameManager.Instance.CurrentStage - 1) % 4;
@@ -270,7 +271,11 @@ public class AudioManager : MonoBehaviour
                 case 0: if (bgmAutumn != null) return bgmAutumn; break;
                 case 1: if (bgmSpring != null) return bgmSpring; break;
                 case 2: if (bgmWinter != null) return bgmWinter; break;
-                case 3: if (bgmSummer != null) return bgmSummer; break;
+                case 3:
+                    if (bgmSummer != null) return bgmSummer;
+                    if (bgmMain != null) return bgmMain;
+                    if (bgmSpring != null) return bgmSpring;
+                    break;
             }
         }
 

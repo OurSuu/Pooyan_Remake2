@@ -124,6 +124,7 @@ public class PlayerController : MonoBehaviour
         if (animator == null)
         {
             Transform mamaPigObj = transform.Find("MamaPig");
+            if (mamaPigObj == null) mamaPigObj = transform.Find("RainyMamaPig");
             if (mamaPigObj == null) mamaPigObj = transform.Find("WinterMamaPig");
             if (mamaPigObj == null) mamaPigObj = transform.Find("SpringMamaPig");
             if (mamaPigObj != null)
@@ -144,7 +145,8 @@ public class PlayerController : MonoBehaviour
         if (mamaPigRenderer == null)
         {
             // พยายามหาในลูกที่มีชื่อเฉพาะ
-            Transform childPig = transform.Find("WinterMamaPig");
+            Transform childPig = transform.Find("RainyMamaPig");
+            if (childPig == null) childPig = transform.Find("WinterMamaPig");
             if (childPig == null) childPig = transform.Find("SpringMamaPig");
             if (childPig == null) childPig = transform.Find("MamaPig");
             if (childPig != null) mamaPigRenderer = childPig.GetComponent<SpriteRenderer>();

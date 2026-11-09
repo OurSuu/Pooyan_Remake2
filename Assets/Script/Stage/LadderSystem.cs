@@ -103,14 +103,8 @@ public class LadderSystem : MonoBehaviour
 
     public void CheckBite(Wolf wolf)
     {
-        var player = PlayerController.Instance != null ? PlayerController.Instance : FindAnyObjectByType<PlayerController>();
-        if (player == null || wolf == null) return;
-
-        float wolfY = wolf.transform.position.y;
-        float playerY = player.transform.position.y;
-
-        // ถ้าระยะห่างหมากับหมูใกล้กันเกินไป มันจะงับเรา!
-        if (Mathf.Abs(playerY - wolfY) <= 0.5f)
+        if (wolf == null) return;
+        if (wolf.IsPlayerInBiteRange())
         {
             wolf.TriggerBite();
         }
