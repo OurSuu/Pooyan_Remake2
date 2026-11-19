@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Rainy
   m_EditorClassIdentifier: Assembly-CSharp::LevelConfig
   wolfCount: 44
-  wolfSpeedRange: {x: 0.85, y: 1.15}
+  wolfSpeedRange: {x: 0.74, y: 1}
   shieldRatio: 0.3
   rockThrowRatio: 0.3
   spawnInterval: 2.3

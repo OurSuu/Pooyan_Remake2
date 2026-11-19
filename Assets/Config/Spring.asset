@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Spring
   m_EditorClassIdentifier: Assembly-CSharp::LevelConfig
   wolfCount: 36
-  wolfSpeedRange: {x: 0.75, y: 1.05}
+  wolfSpeedRange: {x: 0.72, y: 0.98}
   shieldRatio: 0.2
   rockThrowRatio: 0.2
   spawnInterval: 2.5

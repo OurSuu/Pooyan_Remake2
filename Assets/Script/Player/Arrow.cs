@@ -18,6 +18,12 @@ public class Arrow : MonoBehaviour
     [Tooltip("มุมเอียงสุ่มเล็กน้อยตอนปักพื้น (องศา) เพื่อความสมจริง")]
     [SerializeField] private float stickAngleVariation = 8f;
 
+    [Header("ShaderGraph VFX")]
+    [SerializeField] private Material parryRingMaterial;
+    [SerializeField] private Color muzzleEffectColor = new Color(0.88f, 0.78f, 0.52f, 0.72f);
+
+    public Color MuzzleEffectColor => muzzleEffectColor;
+
     private float direction; // ทิศทางที่ยิง (-1 ซ้าย, 1 ขวา)
     private Action<Arrow> onDestroy; // callback ตอนลูกธนูโดนทำลาย จะได้ไปบอก ArrowShooter
     private Action<Arrow> onReturnToPool; // callback ตอนคืนลูกธนูกลับเข้า Pool
@@ -47,6 +53,55 @@ public class Arrow : MonoBehaviour
             }
         }
         cachedTrailFX = GetComponentInChildren<ArrowTrailEffect>(true);
+    }
+
+    public void ApplyStyleOverride(Material trailMat, Color trailColor, Color sparkColor, Color muzzleColor)
+    {
+        muzzleEffectColor = muzzleColor;
+
+        if (cachedTrailFX == null)
+            cachedTrailFX = GetComponentInChildren<ArrowTrailEffect>(true);
+
+        var trail = cachedTrailFX != null ? cachedTrailFX.GetComponent<TrailRenderer>() : GetComponentInChildren<TrailRenderer>(true);
+        if (trail != null)
+        {
+            if (trailMat != null)
+                trail.sharedMaterial = trailMat;
+
+            var grad = trail.colorGradient;
+            var colorKeys = grad.colorKeys;
+            if (colorKeys != null && colorKeys.Length > 0)
+            {
+                colorKeys[0].color = trailColor;
+                grad.SetKeys(colorKeys, grad.alphaKeys);
+                trail.colorGradient = grad;
+            }
+        }
+
+        var ps = cachedTrailFX != null ? cachedTrailFX.GetComponent<ParticleSystem>() : GetComponentInChildren<ParticleSystem>(true);
+        if (ps != null)
+        {
+            var main = ps.main;
+            main.startColor = sparkColor;
+        }
+    }
+
+    public void CollectWarmupMaterials(System.Collections.Generic.List<Material> results)
+    {
+        if (results == null) return;
+        if (parryRingMaterial != null) results.Add(parryRingMaterial);
+
+        var renderers = GetComponentsInChildren<Renderer>(true);
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            var r = renderers[i];
+            if (r == null) continue;
+            var mats = r.sharedMaterials;
+            for (int j = 0; j < mats.Length; j++)
+            {
+                if (mats[j] != null) results.Add(mats[j]);
+            }
+        }
     }
 
     // ฟังก์ชันเริ่มทำงาน โดนเรียกตอน spawn ลูกธนู
@@ -175,7 +230,17 @@ public class Arrow : MonoBehaviour
             // ถ้าไม่ใช่บอส ก็หาคอมโพเนนต์ลูกโป่งมาลดเลือด
             var balloon = other.GetComponent<Balloon>() ?? other.GetComponentInParent<Balloon>();
             if (balloon != null)
-                balloon.TakeDamage(damage, transform.position); 
+            {
+                // ถ้ามีหมาป่าตัวบนซ้อนอยู่ในเลนเดียวกันและลำตัวของตัวบนบังลูกโป่งของตัวล่างอยู่ -> ตัวบนจะงับ/บล็อกลูกธนู! (ต้องยิงลูกโป่งตัวบนให้ร่วงก่อน)
+                Wolf blockingUpperWolf = FindUpperWolfBlockingBalloon(balloon);
+                if (blockingUpperWolf != null)
+                {
+                    DeflectDown(isShield: false, wolf: blockingUpperWolf);
+                    return;
+                }
+
+                balloon.TakeDamage(damage, transform.position);
+            }
             DestroySelf();
             return;
         }
@@ -208,6 +273,39 @@ public class Arrow : MonoBehaviour
     }
 
     /// <summary>
+    /// ตรวจสอบว่ามีหมาป่าตัวบนที่ลอยซ้อนอยู่ในเลนเดียวกันและลำตัวบังลูกโป่งของหมาป่าตัวล่างอยู่หรือไม่
+    /// </summary>
+    private Wolf FindUpperWolfBlockingBalloon(Balloon targetBalloon)
+    {
+        if (targetBalloon == null || targetBalloon.Owner == null) return null;
+
+        Wolf lowerWolf = targetBalloon.Owner;
+        float arrowY = transform.position.y;
+        var wolves = Wolf.ActiveWolves;
+
+        for (int i = 0; i < wolves.Count; i++)
+        {
+            var w = wolves[i];
+            if (w == null || w == lowerWolf) continue;
+            if (w.State != WolfState.Floating && w.State != WolfState.BlowingBalloon) continue;
+
+            // อยู่เลนเดียวกัน (แกน X ตรงกัน) และเป็นตัวที่อยู่เหนือหมาป่าเจ้าของลูกโป่งนี้
+            if (Mathf.Abs(w.transform.position.x - lowerWolf.transform.position.x) > 0.45f) continue;
+            if (w.transform.position.y <= lowerWolf.transform.position.y + 0.25f) continue;
+
+            // เช็กว่าความสูงของลูกธนูตรงกับช่วงลำตัวของหมาป่าตัวบนที่ห้อยลงมาบังลูกโป่งตัวล่างพอดีหรือไม่
+            float upperBodyMinY = w.transform.position.y - 0.38f;
+            float upperBodyMaxY = w.transform.position.y + 0.85f;
+            if (arrowY >= upperBodyMinY && arrowY <= upperBodyMaxY)
+            {
+                return w;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
     /// สั่งให้ลูกธนูเสียหลักดิ่งลงพื้น (เมื่อโดนหมาป่างับ, ชนโล่, หรือชนโล่บอส)
     /// </summary>
     private void DeflectDown(bool isShield, Wolf wolf = null)
@@ -234,10 +332,11 @@ public class Arrow : MonoBehaviour
         if (isShield)
         {
             AudioManager.Instance?.PlayShieldBlock(); // เล่นเสียงตีเหล็กปึ้ง!
+            CartoonFXHelper.SpawnShieldParry(transform.position, parryRingMaterial);
         }
         else if (wolf != null)
         {
-            wolf.PlayDeflectAnimation(); // หมาป่าเล่นอนิเมชันงับลูกธนู (BiteArrow)
+            wolf.PlayDeflectAnimation(transform.position, spawnBiteFX: true); // หมาป่าเล่นอนิเมชันงับลูกธนู (BiteArrow) + Particle งับ
         }
 
         speed = 0f;

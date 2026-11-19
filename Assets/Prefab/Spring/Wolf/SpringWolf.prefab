@@ -175,8 +175,8 @@ MonoBehaviour:
   spritePushIdle: {fileID: 1048063998500700177, guid: 653025199539f5641bceca521027f7e1, type: 3}
   pushAnimName: Push
   fallSpeed: 4.5
-  walkSpeed: 2.2
-  climbSpeed: 1.2
+  walkSpeed: 1.85
+  climbSpeed: 1.05
   shieldToggleInterval: 1.4
   rockThrowInterval: 3.2
   walkGroundY: -4.2

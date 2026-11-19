@@ -41,6 +41,11 @@ public class Balloon : MonoBehaviour
     [Tooltip("ถ้าเปิดไว้ ลูกโป่งสีฟ้า 3 HP ในด่านคู่จะคงสีฟ้าไว้ตลอดตอนโดนยิง (หดขนาดลงอย่างเดียวตาม NES ต้นฉบับ)")]
     [SerializeField] private bool keepBlueColorWhenShrinking = true;
 
+    [Header("Cartoon Breathing / Squash-Stretch")]
+    [SerializeField] private float breathSpeed = 4.6f;
+    [SerializeField] private float breathSquashAmount = 0.095f;
+    [SerializeField] private float breathExpandAmount = 0.045f;
+
     private int maxHP;
     private int currentHP;
     private bool isBossFlash;
@@ -48,13 +53,24 @@ public class Balloon : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private Wolf owner; // เจ้าของลูกโป่งนี้ (หมาป่าตัวไหน)
     private Vector3 initialScale = Vector3.one;
+    private Vector3 currentBaseScale = Vector3.one;
     private bool hasCachedScale = false;
+    private float breathPhase = 0f;
+    private float breathTime = 0f;
+    private bool hasBreathPhase = false;
     private static GameObject cachedPopEffectPrefab;
     private static GameObject cachedHitEffectPrefab;
+
+    private static readonly int PropHitFlash = Shader.PropertyToID("_HitFlash");
+    private static readonly int PropHitWobble = Shader.PropertyToID("_HitWobble");
+    private MaterialPropertyBlock hitPropertyBlock;
+    private float hitReactionTimer;
+    private const float HitReactionDuration = 0.18f;
 
     public int CurrentHP => currentHP;
     public int MaxHP => maxHP;
     public BalloonColorType AssignedColorType => assignedColorType;
+    public Wolf Owner => owner;
     public bool HasOwner => owner != null;
     public bool CanBounceMeat { get; private set; } = false;
 
@@ -66,6 +82,11 @@ public class Balloon : MonoBehaviour
         {
             initialScale = transform.localScale;
             hasCachedScale = true;
+        }
+        if (!hasBreathPhase)
+        {
+            breathPhase = Random.Range(0f, Mathf.PI * 2f);
+            hasBreathPhase = true;
         }
         gameObject.tag = GameConstants.TagBalloon; // แปะแท็กให้รู้ว่านี่คือลูกโป่งนะ
     }
@@ -126,10 +147,57 @@ public class Balloon : MonoBehaviour
         if (col != null) col.enabled = true;
 
         StopAllCoroutines();
+        hitReactionTimer = 0f;
+        ApplyHitShaderState(0f, 0f);
         if (isBossFlash && gameObject.activeInHierarchy)
             StartCoroutine(BossFlashRoutine());
 
         UpdateVisual(); // อัปเดตภาพและสีลูกโป่งตอนเริ่ม
+    }
+
+    private void ApplyHitShaderState(float flash, float wobble)
+    {
+        if (spriteRenderer == null) return;
+        if (hitPropertyBlock == null) hitPropertyBlock = new MaterialPropertyBlock();
+        spriteRenderer.GetPropertyBlock(hitPropertyBlock);
+        hitPropertyBlock.SetFloat(PropHitFlash, flash);
+        hitPropertyBlock.SetFloat(PropHitWobble, wobble);
+        spriteRenderer.SetPropertyBlock(hitPropertyBlock);
+    }
+
+    private void Update()
+    {
+        if (!hasCachedScale) return;
+
+        bool frozen = GameManager.Instance != null && GameManager.Instance.DeathFreeze;
+        if (!frozen)
+            breathTime += Time.deltaTime;
+
+        float pulse = breathTime * breathSpeed + breathPhase;
+        float squash = Mathf.Sin(pulse) * breathSquashAmount;
+        float swell = (Mathf.Sin(pulse * 0.5f + 0.85f) * 0.5f + 0.5f) * breathExpandAmount;
+        float scaleX = (1f + swell) * (1f + squash);
+        float scaleY = (1f + swell) * (1f - squash * 0.82f);
+
+        if (hitReactionTimer > 0f)
+        {
+            hitReactionTimer = Mathf.Max(0f, hitReactionTimer - Time.deltaTime);
+            float progress = 1f - (hitReactionTimer / HitReactionDuration);
+            float decay = 1f - progress;
+            ApplyHitShaderState(decay * decay, decay);
+
+            float hitSquash = Mathf.Sin(progress * Mathf.PI * 3f) * 0.26f * decay;
+            scaleX += hitSquash;
+            scaleY -= hitSquash * 0.85f;
+
+            if (hitReactionTimer <= 0f)
+                ApplyHitShaderState(0f, 0f);
+        }
+
+        transform.localScale = new Vector3(
+            currentBaseScale.x * Mathf.Max(0.25f, scaleX),
+            currentBaseScale.y * Mathf.Max(0.25f, scaleY),
+            currentBaseScale.z);
     }
 
     /// <summary>
@@ -165,6 +233,8 @@ public class Balloon : MonoBehaviour
     private void OnEnable()
     {
         CacheComponents();
+        hitReactionTimer = 0f;
+        ApplyHitShaderState(0f, 0f);
         if (maxHP > 0)
         {
             UpdateVisual();
@@ -174,6 +244,14 @@ public class Balloon : MonoBehaviour
             StopAllCoroutines();
             StartCoroutine(BossFlashRoutine());
         }
+    }
+
+    private void OnDisable()
+    {
+        hitReactionTimer = 0f;
+        ApplyHitShaderState(0f, 0f);
+        if (hasCachedScale)
+            transform.localScale = currentBaseScale;
     }
 
     // เรียกตอนลูกโป่งโดนโจมตี คืนค่าเป็น true ถ้าลูกโป่งแตก
@@ -196,6 +274,10 @@ public class Balloon : MonoBehaviour
 
         // ยังไม่แตก เล่นเสียงยิงตอดลูกโป่ง
         AudioManager.Instance?.PlayBalloonDamage();
+
+        // สั่นเด้ง + กระพริบสว่าง HDR บน CartoonBalloon ShaderGraph
+        hitReactionTimer = HitReactionDuration;
+        ApplyHitShaderState(1f, 1f);
 
         // สปอว์นสะเก็ดเศษลูกโป่งตามสีลูกโป่ง!
         Vector3 spawnPos = hitPosition ?? transform.position;
@@ -263,6 +345,8 @@ public class Balloon : MonoBehaviour
     private void Pop()
     {
         StopAllCoroutines(); // หยุดลูประยิบระยับของบอสด้วย
+        hitReactionTimer = 0f;
+        ApplyHitShaderState(0f, 0f);
         ScoreManager.Instance?.AddBalloonPopScore(transform.position); // ได้คะแนน!
         AudioManager.Instance?.PlayBalloonPop(); // เสียงแตก
         owner?.OnBalloonPopped(); // บอกหมาป่าว่า "เห้ย ลูกโป่งแกแตกแล้ว ร่วงไปซะ!"
@@ -284,7 +368,7 @@ public class Balloon : MonoBehaviour
 
         if (fxPrefab != null)
         {
-            Color balloonCol = spriteRenderer != null ? spriteRenderer.color : pinkColor;
+            Color balloonCol = GetBalloonColor();
             BalloonPopEffect.SpawnPooled(fxPrefab, transform.position, balloonCol);
         }
     }
@@ -349,13 +433,18 @@ public class Balloon : MonoBehaviour
         // ลูกโป่งบอสจะไม่หดขนาดตอนโดนยิง ส่วนลูกโป่งด่านคู่ (3 HP) จะหดเล็กลงทีละขั้นชัดเจนตามต้นฉบับ NES
         if (isBossFlash || maxHP <= 1)
         {
-            transform.localScale = initialScale;
+            currentBaseScale = initialScale;
         }
         else
         {
             int hitsTaken = Mathf.Max(0, maxHP - currentHP);
             float scaleMultiplier = Mathf.Clamp(1f - (hitsTaken * 0.22f), 0.45f, 1f);
-            transform.localScale = initialScale * scaleMultiplier;
+            currentBaseScale = initialScale * scaleMultiplier;
+        }
+
+        if (hitReactionTimer <= 0f)
+        {
+            transform.localScale = currentBaseScale;
         }
 
         // เช็คว่ามีรูปสไปรท์แยกตามสีที่ผู้ใช้นำมาใส่เองหรือไม่

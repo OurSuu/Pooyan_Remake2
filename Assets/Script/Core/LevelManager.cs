@@ -66,7 +66,14 @@ public class LevelManager : MonoBehaviour
     // ยิ่งเล่นลึกยิ่งยาก ระบบอัพสเกลความโหดโดยไม่ทับค่าที่ตั้งไว้ในแต่ละซีนตอนรอบแรก
     private static void ApplyScaling(LevelConfig config, int stage, bool isCustomStageAsset)
     {
-        // ถ้าซีนมี Asset ของตัวเองอยู่แล้ว จะเพิ่มสเกลเฉพาะตอนวนรอบใหม่ (ด่าน 5 เป็นต้นไป)
+        // ความเร็วหมาป่าค่อยๆ เพิ่มขึ้นทีละนิดทุกด่าน (Stage 1 -> 2 -> 3 -> 4 -> 5+...)
+        int speedSteps = Mathf.Min(12, Mathf.Max(0, stage - 1));
+        if (speedSteps > 0)
+        {
+            config.wolfSpeedRange += new Vector2(0.04f, 0.05f) * speedSteps;
+        }
+
+        // ถ้าซีนมี Asset ของตัวเองอยู่แล้ว จะเพิ่มจำนวนหมาป่า/โล่/หินเฉพาะตอนวนรอบใหม่ (ด่าน 5 เป็นต้นไป)
         int tier = isCustomStageAsset
             ? Mathf.Max(0, (stage - 1) / 4)
             : Mathf.Max(0, stage - 1);
@@ -74,7 +81,6 @@ public class LevelManager : MonoBehaviour
         if (tier > 0)
         {
             config.wolfCount = Mathf.Min(99, config.wolfCount + tier * 4);
-            config.wolfSpeedRange += new Vector2(0.06f, 0.10f) * tier;
             config.shieldRatio = Mathf.Min(0.6f, config.shieldRatio + tier * 0.05f);
             config.rockThrowRatio = Mathf.Min(0.45f, config.rockThrowRatio + tier * 0.04f);
             config.yellowBalloonRatio = Mathf.Min(0.6f, config.yellowBalloonRatio + tier * 0.08f);

@@ -14,6 +14,13 @@ public class ArrowShooter : MonoBehaviour
     [SerializeField] private float reloadCooldown = GameConstants.ReloadShootCooldown; // คูลดาวน์หลังยิงครบ 2 นัด (0.40s)
     [SerializeField] private float shootDirection = -1f; // หันหน้าไปซ้ายเป็นหลัก
 
+    [Header("Seasonal Arrow Style Override")]
+    [SerializeField] private bool overrideSeasonArrowStyle = false;
+    [SerializeField] private Material trailMaterialOverride;
+    [SerializeField] private Color trailColorOverride = new Color(0.52f, 0.76f, 0.88f, 0.65f);
+    [SerializeField] private Color sparkColorOverride = new Color(0.5f, 0.72f, 0.86f, 0.62f);
+    [SerializeField] private Color muzzleColorOverride = new Color(0.56f, 0.78f, 0.9f, 0.72f);
+
     private float shootTimer; // ตัวนับเวลาคูลดาวน์
     private int burstCount = 0; // จำนวนนัดที่ยิงในชุดปัจจุบัน (0, 1, 2)
     private float burstResetTimer = 0f; // ตัวนับเวลารีเซ็ตชุด ถ้าทิ้งช่วงนานเกินไป
@@ -37,10 +44,13 @@ public class ArrowShooter : MonoBehaviour
     {
         if (rapidCooldown < 0.05f) rapidCooldown = GameConstants.RapidShootCooldown;
         if (reloadCooldown < 0.1f) reloadCooldown = GameConstants.ReloadShootCooldown;
+        CartoonFXHelper.Prewarm(12);
     }
 
     private void Start()
     {
+        var warmupMats = new List<Material>();
+
         // สร้างลูกธนูเตรียมไว้ใน Pool ล่วงหน้า 4 ดอก เพื่อไม่ให้กระตุกตอนกดยิงและตอนธนูชนเป้า
         if (arrowPrefab != null)
         {
@@ -50,11 +60,20 @@ public class ArrowShooter : MonoBehaviour
                 var arrow = go.GetComponent<Arrow>();
                 if (arrow != null)
                 {
+                    if (overrideSeasonArrowStyle)
+                        arrow.ApplyStyleOverride(trailMaterialOverride, trailColorOverride, sparkColorOverride, muzzleColorOverride);
+                    if (i == 0)
+                        arrow.CollectWarmupMaterials(warmupMats);
                     go.SetActive(false);
                     arrowPool.Enqueue(arrow);
                 }
             }
         }
+
+        if (overrideSeasonArrowStyle && trailMaterialOverride != null)
+            warmupMats.Add(trailMaterialOverride);
+
+        CartoonFXHelper.WarmupShaders(warmupMats.ToArray());
     }
 
     private void Update()
@@ -106,9 +125,13 @@ public class ArrowShooter : MonoBehaviour
 
         if (arrow != null)
         {
+            if (overrideSeasonArrowStyle)
+                arrow.ApplyStyleOverride(trailMaterialOverride, trailColorOverride, sparkColorOverride, muzzleColorOverride);
+
             // โยน callback UnregisterArrow และ ReturnArrowToPool ไปด้วย พอมันพังจะได้คืนกลับเข้า Pool ทันที
             arrow.Initialize(shootDirection, UnregisterArrow, ReturnArrowToPool);
             activeArrows.Add(arrow);
+            CartoonFXHelper.SpawnMuzzleGust(shootPoint.position, shootDirection, arrow.MuzzleEffectColor);
         }
 
         burstCount++;

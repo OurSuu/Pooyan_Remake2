@@ -212,7 +212,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 941028763c830814c8d94a6672f050b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  moveSpeed: 3
+  moveSpeed: 2.8
   minY: -2.3
   maxY: 2.7
   topPickupThreshold: 0.05

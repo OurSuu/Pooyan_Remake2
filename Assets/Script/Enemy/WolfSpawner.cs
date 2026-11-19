@@ -193,10 +193,10 @@ public class WolfSpawner : MonoBehaviour
             }
 
             // สุ่มรูปแบบการดรอปของหมาป่าธรรมดา
-            // 0: ตัวเดียว (50%)
-            // 1: สองตัวซ้อนเลนเดียวกัน (20%)
-            // 2: ทแยงมุม (20%)
-            // 3: แนวขวางหน้ากระดาน (10%)
+            // 0: ตัวเดียว (35%)
+            // 1: สองตัวซ้อนเลนเดียวกัน (28%)
+            // 2: ทแยงมุม (22%)
+            // 3: แนวขวางหน้ากระดาน (15%)
             int pattern = 0;
             
             // โค้ดส่วนสุ่มรูปแบบ (รวมระบบดีบัคด้วย)
@@ -215,9 +215,9 @@ public class WolfSpawner : MonoBehaviour
                 while (!found && attempts < 50)
                 {
                     float r = Random.value;
-                    if (r < 0.50f) pattern = 0;
-                    else if (r < 0.70f) pattern = 1;
-                    else if (r < 0.90f) pattern = 2;
+                    if (r < 0.35f) pattern = 0;
+                    else if (r < 0.63f) pattern = 1;
+                    else if (r < 0.85f) pattern = 2;
                     else pattern = 3;
                     
                     if (valid.Contains(pattern)) found = true;
@@ -228,9 +228,9 @@ public class WolfSpawner : MonoBehaviour
             else
             {
                 float r = Random.value;
-                if (r < 0.50f) pattern = 0;
-                else if (r < 0.70f) pattern = 1;
-                else if (r < 0.90f) pattern = 2;
+                if (r < 0.35f) pattern = 0;
+                else if (r < 0.63f) pattern = 1;
+                else if (r < 0.85f) pattern = 2;
                 else pattern = 3;
             }
 
@@ -238,28 +238,42 @@ public class WolfSpawner : MonoBehaviour
             if (spawnableNormalCount == 1) pattern = 0; // ต้องการอีกตัวเดียว ก็ปล่อยตัวเดียวพอดีเป๊ะ
             if (spawnableNormalCount == 2 && pattern == 3) pattern = 1; // เหลือสองตัว ไม่เอาหน้ากระดาน
 
+            bool isDescendingStage = GameManager.Instance == null || GameManager.Instance.IsOddStage;
+            // ในด่านลอยลง (Odd Stage) ให้ความเร็วตอนลอยลงของหมาป่าทุกตัวในด่านเท่ากันเป๊ะ เพื่อไม่ให้แถวหน้ากระดานหรือแถวซ้อนเพี้ยน
+            float uniformDescendingSpeed = (config.wolfSpeedRange.x + config.wolfSpeedRange.y) * 0.5f;
+
             if (pattern == 0) // ลงมาตัวเดียวเหงาๆ
             {
                 int lane = Random.Range(0, laneCount);
-                SpawnWolf(config, isBoss: false, lane);
+                float? singleSpeed = isDescendingStage ? uniformDescendingSpeed : (float?)null;
+                SpawnWolf(config, isBoss: false, lane, singleSpeed);
                 wolvesSpawned++;
                 waitAfterWave = baseWait;
             }
-            else if (pattern == 1) // สองตัวลงเลนเดียวกัน! งานหนักเลย
+            else if (pattern == 1) // สองตัวลงเลนเดียวกัน! (ซ้อนระยะประชิด ~1.22 หน่วย บังคับยิงตัวบนก่อนตัวล่าง)
             {
                 int lane = Random.Range(0, laneCount);
                 int count = Mathf.Min(2, spawnableNormalCount);
-                float sharedSpeed = Random.Range(config.wolfSpeedRange.x, config.wolfSpeedRange.y);
+                float sharedSpeed = isDescendingStage
+                    ? uniformDescendingSpeed
+                    : Random.Range(config.wolfSpeedRange.x, config.wolfSpeedRange.y);
+                float stackVerticalGap = 1.22f;
+                float stackDelay = stackVerticalGap / Mathf.Max(0.55f, sharedSpeed);
+
                 for (int i = 0; i < count; i++)
                 {
                     Wolf w = SpawnWolf(config, isBoss: false, lane, sharedSpeed);
-                    if (w != null) w.DisableTeaseBounces(); // บังคับให้ไม่เดินหนีหลอกล่อ
+                    if (w != null)
+                    {
+                        w.DisableTeaseBounces();
+                        w.SetFormationLock(true); // ล็อกเลนไม่ให้ตัวที่ 2 หนีไปเลนอื่น
+                    }
                     wolvesSpawned++;
                     
-                    // ทิ้งระยะห่างให้พอดีกันหน่อย
-                    if (i < count - 1) yield return new WaitForSeconds(2.0f / sharedSpeed); 
+                    // เว้นระยะให้หมาป่าตัวบนห้อยตัวลงมาบังลูกโป่งของหมาป่าตัวล่างพอดี
+                    if (i < count - 1) yield return new WaitForSeconds(stackDelay); 
                 }
-                waitAfterWave = baseWait * 1.2f;
+                waitAfterWave = baseWait * 1.15f;
             }
             else if (pattern == 2) // ทแยงมุม ลงมาเป็นสเต็ป
             {
@@ -270,21 +284,27 @@ public class WolfSpawner : MonoBehaviour
                 int startLane = leftToRight ? 0 : laneCount - 1;
                 int step = leftToRight ? 1 : -1;
                 
-                float sharedSpeed = Random.Range(config.wolfSpeedRange.x, config.wolfSpeedRange.y);
+                float sharedSpeed = isDescendingStage
+                    ? uniformDescendingSpeed
+                    : Random.Range(config.wolfSpeedRange.x, config.wolfSpeedRange.y);
                 for (int i = 0; i < count; i++)
                 {
                     int lane = startLane + (i * step);
                     if (lane < 0 || lane >= laneCount) break; // เลยขอบเลนก็พอ
                     
                     Wolf w = SpawnWolf(config, isBoss: false, lane, sharedSpeed);
-                    if (w != null) w.DisableTeaseBounces();
+                    if (w != null)
+                    {
+                        w.DisableTeaseBounces();
+                        w.SetFormationLock(true);
+                    }
                     wolvesSpawned++;
                     
                     if (i < count - 1) yield return new WaitForSeconds(0.5f); // ทิ้งช่วงนิดนึง
                 }
-                waitAfterWave = baseWait * 1.5f; // พักให้ผู้เล่นหายใจหน่อย
+                waitAfterWave = baseWait * 1.4f;
             }
-            else if (pattern == 3) // หน้ากระดานเรียงหนึ่ง น่ากลัวสุดๆ
+            else if (pattern == 3) // หน้ากระดานเรียงหนึ่ง (โดดพร้อมกัน และลงด้วยความเร็วเท่ากันเป๊ะทุกตัว)
             {
                 int count = Random.Range(2, 4); // 2-3 ตัว
                 count = Mathf.Min(count, spawnableNormalCount);
@@ -293,9 +313,11 @@ public class WolfSpawner : MonoBehaviour
                 List<int> selectedLanes = new List<int>();
                 for (int i = 0; i < count; i++) selectedLanes.Add(startL + i);
                 
-                float sharedSpeed = Random.Range(config.wolfSpeedRange.x, config.wolfSpeedRange.y);
+                float sharedSpeed = isDescendingStage
+                    ? uniformDescendingSpeed
+                    : Random.Range(config.wolfSpeedRange.x, config.wolfSpeedRange.y);
                 
-                bool descending = GameManager.Instance == null || GameManager.Instance.IsOddStage;
+                bool descending = isDescendingStage;
                 Transform area = descending ? topSpawnArea : bottomSpawnArea;
                 float baseStartX = area != null ? area.position.x : -10f;
                 
@@ -311,20 +333,29 @@ public class WolfSpawner : MonoBehaviour
                     for (int i = 0; i < laneCount; i++) laneXCoords[i] = spawnXMin + rDist * (i / (float)(laneCount - 1));
                 }
 
-                int furthestLane = selectedLanes[selectedLanes.Count - 1];
-                float furthestX = laneXCoords[furthestLane];
+                float maxTargetX = float.MinValue;
+                for (int i = 0; i < selectedLanes.Count; i++)
+                {
+                    float lx = laneXCoords[selectedLanes[i]];
+                    if (lx > maxTargetX) maxTargetX = lx;
+                }
+                float uniformWalkDistance = Mathf.Max(1.8f, maxTargetX - baseStartX);
 
                 for (int i = 0; i < count; i++)
                 {
                     int lane = selectedLanes[i];
                     float targetX = laneXCoords[lane];
-                    float spawnX = targetX - furthestX + baseStartX; // คำนวณจุดเกิดให้พอดีกัน
+                    float spawnX = targetX - uniformWalkDistance; // บังคับระยะเดินเท่ากันเป๊ะทุกตัวเพื่อโดดพร้อมกัน
                     
                     Wolf w = SpawnWolf(config, isBoss: false, lane, sharedSpeed, spawnX);
-                    if (w != null) w.DisableTeaseBounces();
+                    if (w != null)
+                    {
+                        w.DisableTeaseBounces();
+                        w.SetFormationLock(true);
+                    }
                     wolvesSpawned++;
                 }
-                waitAfterWave = baseWait * 1.8f; // แจกชุดใหญ่ไปแล้ว ต้องให้พักนานหน่อย
+                waitAfterWave = baseWait * 1.6f;
             }
 
             // รอชุดถัดไป แต่ถ้าผู้เล่นจัดการหมาป่าบนจอหมดเกลี้ยงแล้ว ให้ปล่อยชุดถัดไป (หรือบอส) ออกมาได้ไวขึ้น!

@@ -15,7 +15,7 @@ public enum PlayerState
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement")]
-    [SerializeField] private float moveSpeed = 4.2f; // ความเร็วขยับกระเช้า (ปรับให้คล่องตัวตามต้นฉบับ NES)
+    [SerializeField] private float moveSpeed = 2.8f; // ความเร็วขยับกระเช้า (ลดความเร็วให้ควบคุมแม่นยำขึ้น)
     [SerializeField] private float minY = -3.5f; // ขอบล่างสุดที่ลงได้
     [SerializeField] private float maxY = 3.5f; // ขอบบนสุดที่ขึ้นได้
     [SerializeField] private float topPickupThreshold = 0.22f; // ระยะที่ยอมให้หยิบเนื้อได้ตอนขึ้นไปถึงรอกด้านบน

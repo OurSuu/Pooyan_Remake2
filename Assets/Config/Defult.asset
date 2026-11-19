@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Defult
   m_EditorClassIdentifier: Assembly-CSharp::LevelConfig
   wolfCount: 20
-  wolfSpeedRange: {x: 0.85, y: 1.2}
+  wolfSpeedRange: {x: 0.72, y: 1}
   shieldRatio: 0.15
   rockThrowRatio: 0.2
   spawnInterval: 2.5

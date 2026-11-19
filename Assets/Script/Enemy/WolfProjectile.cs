@@ -33,6 +33,8 @@ public class WolfProjectile : MonoBehaviour
     [Tooltip("เปิดใช้ระบบวิถีปาหินโค้งแบบ NES 1985 (ถ้าปิด = ใช้โค้ดเดิมที่เล็งตามตัวผู้เล่นตรงๆ 100%)")]
     [SerializeField] private bool useArcadeTrajectory = true;
     [SerializeField] private float arcGravity = 2.6f; // แรงโน้มถ่วงวิถีโค้งแบบ NES (โค้งพุ่งแนวราบเข้าช่องหน้ากระเช้า ไม่ใช่ปาย้อยตั้งฉากลงหลังคา)
+    [Tooltip("ระยะดักด้านล่างตัว Player: หมาป่าจะปาดักทางกดลง (ถ้าอยู่กับที่จะลอดใต้กระเช้า แต่ถ้ากดลงมาจะโดน)")]
+    [SerializeField] private float downwardLeadOffset = 1.35f;
     [Tooltip("ความเร็วหมุนของก้อนหินขณะลอยกลางอากาศ (องศา/วิ, 0 = ไม่หมุน)")]
     [SerializeField] private float tumbleSpeed = 180f;
 
@@ -101,30 +103,23 @@ public class WolfProjectile : MonoBehaviour
         // ใช้แรงโน้มถ่วงวิถีโค้งตื้น (ป้องกันกรณี Prefab เก่าใน Inspector เซ็ตค่า 9.8 ค้างไว้จนหินย้อยตกใส่หลังคากระเช้า)
         if (arcGravity > 3.5f) arcGravity = 2.6f;
 
-        float targetY = player != null ? player.transform.position.y : transform.position.y;
-        float targetX = player != null ? player.transform.position.x : transform.position.x + 6f;
-
-        // ในด่านคี่ (Stage 1, 3) มีการดักหน้าเล็กน้อยตามจังหวะเลื่อนของกระเช้าแม่หมู
-        bool isOdd = GameManager.Instance == null || GameManager.Instance.IsOddStage;
-        if (isOdd && player != null)
-        {
-            float pV = Input.GetAxisRaw("Vertical");
-            targetY += pV * 0.35f;
-        }
+        // ปาดักทางผู้เล่นกดลง: เล็งใต้ระดับปัจจุบันของกระเช้าเล็กน้อย
+        // (ถ้าผู้เล่นยืนอยู่กับที่จะรอดใต้กระเช้า แต่ถ้ากดลงมาก็จะเข้าแนวหินพอดี)
+        float targetY = (player != null ? player.transform.position.y : transform.position.y) - downwardLeadOffset;
+        float targetX = player != null ? (player.transform.position.x - 0.25f) : (transform.position.x + 6f);
 
         // คำนวณระยะห่างแนวนอน และจำกัดมุมเงย/ก้ม (dy) ไม่ให้หมาป่าปาหินเสยขึ้นฟ้าเหมือนจรวด
         float dx = Mathf.Max(2.5f, targetX - transform.position.x);
         float rawDy = targetY - transform.position.y;
-        float clampedDy = Mathf.Clamp(rawDy, -2.2f, 1.5f);
+        float clampedDy = Mathf.Clamp(rawDy, -6.0f, 1.8f);
 
-        // ความเร็วพุ่งไปข้างหน้าแนวราบ (6.5 หน่วย/วิ เพื่อให้วิถีหินพุ่งเข้าช่องกลางกระเช้าได้พอดี)
+        // ความเร็วพุ่งไปข้างหน้าแนวราบ (6.5 หน่วย/วิ)
         float vx = Mathf.Max(6.5f, speed);
         float timeToTarget = dx / vx;
 
-        // คำนวณแรงส่งแนวตั้งต้น (Vy0) ให้โค้งตื้นแบบ NES Pooyan
+        // คำนวณแรงส่งแนวตั้งต้น (Vy0) ให้ถึงจุดดักล่างตรงหน้าแม่หมูพอดี
         float vy0 = (clampedDy / timeToTarget) + 0.5f * arcGravity * timeToTarget;
-        vy0 += Random.Range(-0.15f, 0.15f);
-        vy0 = Mathf.Clamp(vy0, -2.5f, 3.2f);
+        vy0 = Mathf.Clamp(vy0, -7.5f, 3.2f);
 
         velocity = new Vector2(vx, vy0);
     }

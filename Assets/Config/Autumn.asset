@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Autumn
   m_EditorClassIdentifier: Assembly-CSharp::LevelConfig
   wolfCount: 32
-  wolfSpeedRange: {x: 0.85, y: 1.2}
+  wolfSpeedRange: {x: 0.72, y: 1}
   shieldRatio: 0.05
   rockThrowRatio: 0.15
   spawnInterval: 2.5

@@ -7545,7 +7545,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2834479417064150740, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
       propertyPath: moveSpeed
-      value: 4.2
+      value: 2.8
       objectReference: {fileID: 0}
     - target: {fileID: 2834479417064150740, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
       propertyPath: meatPrefab

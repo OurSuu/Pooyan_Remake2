@@ -115,7 +115,7 @@ TrailRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 0.75, g: 0.88, b: 1.0, a: 0.85}
+      key0: {r: 0.75, g: 0.88, b: 1, a: 0.85}
       key1: {r: 1, g: 1, b: 1, a: 0}
       key2: {r: 0, g: 0, b: 0, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
@@ -344,7 +344,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 0.85, g: 0.9, b: 1.0, a: 0.95}
+      maxColor: {r: 0.85, g: 0.9, b: 1, a: 0.95}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -460,7 +460,7 @@ ParticleSystem:
         m_RotationOrder: 4
     startSizeY:
       serializedVersion: 2
-      minMaxState: 0
+      minMaxState: 3
       scalar: 1
       minScalar: 1
       maxCurve:
@@ -513,7 +513,7 @@ ParticleSystem:
         m_RotationOrder: 4
     startSizeZ:
       serializedVersion: 2
-      minMaxState: 0
+      minMaxState: 3
       scalar: 1
       minScalar: 1
       maxCurve:
@@ -4971,4 +4971,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MeatAuraEffect
   sparkles: {fileID: 4733055998062530934}
   cometTrail: {fileID: 5128159610489578117}
-  themeColor: {r: 0.85, g: 0.9, b: 1.0, a: 1}
+  themeColor: {r: 0.85, g: 0.9, b: 1, a: 1}

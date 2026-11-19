@@ -61,8 +61,8 @@ MonoBehaviour:
   spritePushIdle: {fileID: 1048063998500700177, guid: 653025199539f5641bceca521027f7e1, type: 3}
   pushAnimName: Push
   fallSpeed: 4.5
-  walkSpeed: 2.2
-  climbSpeed: 1.2
+  walkSpeed: 1.85
+  climbSpeed: 1.05
   shieldToggleInterval: 1.4
   rockThrowInterval: 3.2
   walkGroundY: -4.2
@@ -254,7 +254,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: e1a2b3c4d5e647f890123456789ab101, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

@@ -261,6 +261,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d7753c10207a12748b51024942277a01, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Arrow
-  speed: 18.5
+  speed: 12.5
   destroyX: -8
   damage: 1
+  parryRingMaterial: {fileID: 2100000, guid: e1a2b3c4d5e647f890123456789ab104, type: 2}
+  muzzleEffectColor: {r: 0.88, g: 0.62, b: 0.76, a: 0.72}

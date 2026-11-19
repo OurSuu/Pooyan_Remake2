@@ -8,7 +8,7 @@ using UnityEngine;
 public class TreeTopBossWolf : MonoBehaviour
 {
     [Header("Patrol Settings (การวิ่งบนยอดไม้)")]
-    [SerializeField] private float walkSpeed = 2.2f;          // ความเร็วเดินไป-กลับด้านบน
+    [SerializeField] private float walkSpeed = 2.5f;          // ความเร็วเดินไป-กลับด้านบน
     [SerializeField] private float walkMinX = -4.8f;         // ขอบเขตเดินซ้ายสุด
     [SerializeField] private float walkMaxX = 0.8f;          // ขอบเขตเดินขวาสุด
     [SerializeField] private float topY = 3.75f;             // ความสูงบนยอดไม้

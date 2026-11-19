@@ -175,8 +175,8 @@ MonoBehaviour:
   spritePushIdle: {fileID: 8138537270244060196, guid: a7cb1eed6a0d1a347bc5bb67a2bccb59, type: 3}
   pushAnimName: PushBoluder
   fallSpeed: 4.5
-  walkSpeed: 2.2
-  climbSpeed: 1.2
+  walkSpeed: 1.85
+  climbSpeed: 1.05
   shieldToggleInterval: 1.4
   rockThrowInterval: 3.2
   walkGroundY: -4.2
@@ -188,7 +188,7 @@ MonoBehaviour:
   fallAnimName: Fall
   deadAnimName: Death
   runAnimName: Run
-  ladderBiteLunge: 0.85
+  ladderBiteLunge: 0
   biteDuration: 0.45
   biteVerticalReach: 0.95
   biteVerticalOffset: 0.25

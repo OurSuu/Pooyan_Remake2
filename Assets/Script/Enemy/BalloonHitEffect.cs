@@ -15,6 +15,7 @@ public class BalloonHitEffect : MonoBehaviour
 
     [Header("Settings")]
     [SerializeField] private float autoDestroyDelay = 0.45f;
+    [SerializeField] private Material hitRingMaterial;
 
     private static readonly System.Collections.Generic.Queue<BalloonHitEffect> pool = new();
     private static int prewarmedSceneHandle = -1;
@@ -22,6 +23,7 @@ public class BalloonHitEffect : MonoBehaviour
     public static void PrewarmPool(GameObject prefab, int count = 6)
     {
         if (prefab == null) return;
+        CartoonFXHelper.Prewarm(12);
         int currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().handle;
         if (prewarmedSceneHandle == currentScene && pool.Count > 0) return;
         prewarmedSceneHandle = currentScene;
@@ -90,9 +92,9 @@ public class BalloonHitEffect : MonoBehaviour
         if (rubberFlecks != null)
         {
             var main = rubberFlecks.main;
-            Color darker = balloonColor * 0.75f;
+            Color darker = balloonColor * 0.8f;
             darker.a = 1f;
-            Color lighter = Color.Lerp(balloonColor, Color.white, 0.25f);
+            Color lighter = Color.Lerp(balloonColor, Color.white, 0.35f);
             lighter.a = 1f;
             main.startColor = new ParticleSystem.MinMaxGradient(darker, lighter);
             rubberFlecks.Play();
@@ -102,11 +104,23 @@ public class BalloonHitEffect : MonoBehaviour
         if (sparks != null)
         {
             var main = sparks.main;
-            Color sparkColor = Color.Lerp(balloonColor, Color.white, 0.7f);
+            Color sparkColor = Color.Lerp(balloonColor, Color.white, 0.65f);
             sparkColor.a = 1f;
             main.startColor = sparkColor;
             sparks.Play();
         }
+
+        // 3. วงแหวนแรงกระแทกแบบการ์ตูน (BalloonHitRing ShaderGraph)
+        Color hitRingCol = Color.Lerp(Color.white, balloonColor, 0.4f);
+        hitRingCol.a = 1f;
+        CartoonFXHelper.SpawnRing(
+            transform.position,
+            hitRingCol,
+            new Vector3(0.32f, 0.32f, 1f),
+            new Vector3(1.55f, 1.55f, 1f),
+            duration: 0.18f,
+            sortingOrder: 13,
+            overrideMat: hitRingMaterial);
 
         CancelInvoke(nameof(ReturnToPool));
         Invoke(nameof(ReturnToPool), autoDestroyDelay);

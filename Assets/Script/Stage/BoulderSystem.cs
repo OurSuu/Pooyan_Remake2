@@ -101,7 +101,13 @@ public class BoulderSystem : MonoBehaviour
 
         int frontSlotIndex = maxSlots - Mathf.Max(1, totalPushingWolves);
         frontSlotIndex = Mathf.Clamp(frontSlotIndex, 0, maxSlots - 1);
-        return GetCliffSlotPosition(frontSlotIndex) + boulderOffset;
+        Vector3 target = GetCliffSlotPosition(frontSlotIndex) + boulderOffset;
+        if (totalPushingWolves >= WolfThreshold)
+        {
+            // หมาป่าตัวที่ 6 ดันหินก้าวสุดท้ายพ้นขอบผาแล้วร่วงลงมา
+            target += new Vector3(0.30f, 0f, 0f);
+        }
+        return target;
     }
 
     private void Update()
@@ -178,7 +184,15 @@ public class BoulderSystem : MonoBehaviour
         if (wolfIndexInPushing >= 0)
         {
             int overallIndex = virtualWolvesOnCliff + wolfIndexInPushing;
-            int targetSlotIndex = (maxSlots - Mathf.Max(1, totalPushing)) + overallIndex;
+            if (overallIndex >= maxSlots)
+            {
+                // ตัวที่ 6 (เกิน 5 ช่องหลัก) ให้ยืนต่อท้ายดันอยู่หลังตัวที่ 5 เพื่อไม่ให้ซ้อนทับกัน
+                int extraBehind = overallIndex - (maxSlots - 1);
+                return GetCliffSlotPosition(maxSlots - 1) - new Vector3(slotSpacing * extraBehind, 0f, 0f);
+            }
+
+            int clampedPushing = Mathf.Min(maxSlots, Mathf.Max(1, totalPushing));
+            int targetSlotIndex = (maxSlots - clampedPushing) + overallIndex;
             targetSlotIndex = Mathf.Clamp(targetSlotIndex, 0, maxSlots - 1);
             return GetCliffSlotPosition(targetSlotIndex);
         }

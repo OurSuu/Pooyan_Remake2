@@ -29,6 +29,9 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject nameEntryScreen; // หน้าจอกรอกชื่อคนเก่ง
     [SerializeField] private GameObject leaderboardScreen; // หน้าจออวดคะแนน Top 5
 
+    private GameObject bonusTransitionOverlay;
+    private TextMeshProUGUI bonusTransitionLineText;
+
     private void Start()
     {
         // หากมี livesContainer และยังไม่ได้ใส่ไอคอนใน list ให้ดึง child มาใส่เป็นค่าเริ่มต้น
@@ -252,5 +255,69 @@ public class UIManager : MonoBehaviour
         if (bonusResultPanel != null) bonusResultPanel.SetActive(false);
         if (nameEntryScreen != null) nameEntryScreen.SetActive(false);
         if (leaderboardScreen != null) leaderboardScreen.SetActive(false);
+        HideBonusTransitionText();
+    }
+
+    /// <summary>
+    /// แสดงข้อความจบด่าน Bonus และแจ้งเปลี่ยนด่านกลางจอแบบไม่มีพื้นหลัง (เช่น PERFECT BONUS 10000 PT / STAGE 5)
+    /// </summary>
+    public void ShowBonusTransitionText(string message)
+    {
+        EnsureBonusTransitionOverlay();
+        if (bonusTransitionOverlay == null) return;
+
+        if (bonusTransitionLineText != null)
+            bonusTransitionLineText.text = string.IsNullOrEmpty(message) ? string.Empty : message;
+
+        bonusTransitionOverlay.transform.SetAsLastSibling();
+        bonusTransitionOverlay.SetActive(true);
+    }
+
+    public void HideBonusTransitionText()
+    {
+        if (bonusTransitionOverlay != null)
+            bonusTransitionOverlay.SetActive(false);
+    }
+
+    private void EnsureBonusTransitionOverlay()
+    {
+        if (bonusTransitionOverlay != null) return;
+
+        Canvas targetCanvas = GetComponentInParent<Canvas>();
+        if (targetCanvas == null) targetCanvas = FindAnyObjectByType<Canvas>();
+        if (targetCanvas == null) return;
+
+        TextMeshProUGUI refTmp = stageText ?? scoreText ?? remainingWolvesText;
+        TMP_FontAsset fontAsset = refTmp != null ? refTmp.font : TMP_Settings.defaultFontAsset;
+        Material fontMat = refTmp != null ? refTmp.fontSharedMaterial : null;
+
+        bonusTransitionOverlay = new GameObject("BonusTransitionOverlay");
+        bonusTransitionOverlay.transform.SetParent(targetCanvas.transform, false);
+        var overlayRt = bonusTransitionOverlay.AddComponent<RectTransform>();
+        overlayRt.anchorMin = Vector2.zero;
+        overlayRt.anchorMax = Vector2.one;
+        overlayRt.offsetMin = Vector2.zero;
+        overlayRt.offsetMax = Vector2.zero;
+
+        var textObj = new GameObject("BonusMessageText");
+        textObj.transform.SetParent(bonusTransitionOverlay.transform, false);
+        var textRt = textObj.AddComponent<RectTransform>();
+        textRt.anchorMin = new Vector2(0.05f, 0.4f);
+        textRt.anchorMax = new Vector2(0.95f, 0.6f);
+        textRt.offsetMin = Vector2.zero;
+        textRt.offsetMax = Vector2.zero;
+
+        bonusTransitionLineText = textObj.AddComponent<TextMeshProUGUI>();
+        if (fontAsset != null) bonusTransitionLineText.font = fontAsset;
+        if (fontMat != null) bonusTransitionLineText.fontSharedMaterial = fontMat;
+        bonusTransitionLineText.fontSize = 44f;
+        bonusTransitionLineText.fontStyle = FontStyles.Bold;
+        bonusTransitionLineText.characterSpacing = 12f;
+        bonusTransitionLineText.alignment = TextAlignmentOptions.Center;
+        bonusTransitionLineText.color = new Color(0.95f, 0.68f, 0.10f, 1f); // สีเหลืองทองสไตล์ NES
+        bonusTransitionLineText.textWrappingMode = TextWrappingModes.NoWrap;
+        bonusTransitionLineText.raycastTarget = false;
+
+        bonusTransitionOverlay.SetActive(false);
     }
 }

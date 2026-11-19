@@ -1,25 +1,25 @@
 fileFormatVersion: 2
-guid: 69e81eb59e2a1424c8029fa6efce076b
+guid: 64f2d7df8a8636f4b89f65459dcfb942
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -7574623612580749417
-    second: Wolf_BlowBalloon_0
+      213: 1581678487384357275
+    second: ClimbWolf_0
   - first:
-      213: -4590941301314338131
-    second: Wolf_BlowBalloon_1
+      213: 187311737144844756
+    second: ClimbWolf_1
   - first:
-      213: -1810322078367241197
-    second: Wolf_BlowBalloon_2
+      213: 1561730865569255787
+    second: ClimbWolf_2
   - first:
-      213: -5571081746967900286
-    second: Wolf_BlowBalloon_3
+      213: 5596660840688177962
+    second: ClimbWolf_3
   - first:
-      213: 3141621342377821241
-    second: Wolf_BlowBalloon_4
+      213: -537759960506984554
+    second: ClimbWolf_4
   - first:
-      213: 7199621123652307030
-    second: Wolf_BlowBalloon_5
+      213: 1830065648656538717
+    second: ClimbWolf_5
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -128,13 +128,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Wolf_BlowBalloon_0
+      name: ClimbWolf_0
       rect:
         serializedVersion: 2
-        x: 192
-        y: 684
-        width: 288
-        height: 475
+        x: 0
+        y: 512
+        width: 512
+        height: 512
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -143,20 +143,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 79f96d8d4f781e690800000000000000
-      internalID: -7574623612580749417
+      spriteID: b99fb65443043f510800000000000000
+      internalID: 1581678487384357275
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Wolf_BlowBalloon_1
+      name: ClimbWolf_1
       rect:
         serializedVersion: 2
-        x: 812
-        y: 685
-        width: 297
-        height: 468
+        x: 512
+        y: 512
+        width: 512
+        height: 512
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -165,20 +165,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: da24d76d533b940c0800000000000000
-      internalID: -4590941301314338131
+      spriteID: 4d1a7c25807799200800000000000000
+      internalID: 187311737144844756
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Wolf_BlowBalloon_2
+      name: ClimbWolf_2
       rect:
         serializedVersion: 2
-        x: 1408
-        y: 682
-        width: 298
-        height: 468
+        x: 1024
+        y: 512
+        width: 512
+        height: 512
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -187,20 +187,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 31cafd549a170e6e0800000000000000
-      internalID: -1810322078367241197
+      spriteID: b61d405a2f16ca510800000000000000
+      internalID: 1561730865569255787
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Wolf_BlowBalloon_3
+      name: ClimbWolf_3
       rect:
         serializedVersion: 2
-        x: 183
-        y: 75
-        width: 270
-        height: 468
+        x: 0
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -209,20 +209,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 28fc0510baa8fa2b0800000000000000
-      internalID: -5571081746967900286
+      spriteID: a23de89d1655bad40800000000000000
+      internalID: 5596660840688177962
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Wolf_BlowBalloon_4
+      name: ClimbWolf_4
       rect:
         serializedVersion: 2
-        x: 890
-        y: 74
-        width: 260
-        height: 479
+        x: 512
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -231,20 +231,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 934473347f7499b20800000000000000
-      internalID: 3141621342377821241
+      spriteID: 6979d834a2e7988f0800000000000000
+      internalID: -537759960506984554
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Wolf_BlowBalloon_5
+      name: ClimbWolf_5
       rect:
         serializedVersion: 2
-        x: 1429
-        y: 73
-        width: 239
-        height: 477
+        x: 1024
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -253,8 +253,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 658c1b844413ae360800000000000000
-      internalID: 7199621123652307030
+      spriteID: d5c51d7e203b56910800000000000000
+      internalID: 1830065648656538717
       vertices: []
       indices: 
       edges: []
@@ -263,7 +263,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: c50a000d594b7214f9e8c6b142882a09
+    spriteID: d2d9d053ceb8a9a4ab890d28d98bd860
     internalID: 0
     vertices: []
     indices: 
@@ -271,14 +271,16 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":512.0,"y":512.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      Wolf_BlowBalloon_0: -7574623612580749417
-      Wolf_BlowBalloon_1: -4590941301314338131
-      Wolf_BlowBalloon_2: -1810322078367241197
-      Wolf_BlowBalloon_3: -5571081746967900286
-      Wolf_BlowBalloon_4: 3141621342377821241
-      Wolf_BlowBalloon_5: 7199621123652307030
+      ClimbWolf_0: 1581678487384357275
+      ClimbWolf_1: 187311737144844756
+      ClimbWolf_2: 1561730865569255787
+      ClimbWolf_3: 5596660840688177962
+      ClimbWolf_4: -537759960506984554
+      ClimbWolf_5: 1830065648656538717
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

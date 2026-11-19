@@ -32,6 +32,7 @@ public class BonusStageManager : MonoBehaviour
 
     [Header("Timing")]
     [SerializeField] private float bonusDuration = 30f; // เวลาของโบนัสสเตจ
+    [SerializeField] private float endTransitionDuration = 3.0f; // เวลาโชว์ Text เปลี่ยนด่านหลังจบโบนัส
 
     // ลำดับคะแนนคอมโบ Chain ของ Famicom (100 -> 200 -> 400 -> 800 -> 1,000 -> 2,000 -> 4,000 -> 8,000 Nakamoto!)
     private readonly int[] famicomChainScores = new int[] { 100, 200, 400, 800, 1000, 2000, 4000, 8000 };
@@ -136,9 +137,17 @@ public class BonusStageManager : MonoBehaviour
     }
 
     private const int FruitBonusCount = 20; // 20 ลูกเป๊ะๆ ตามต้นฉบับ
+    private const int MeatBonusWolfCount = 16; // 16 ตัวเป๊ะๆ ตามต้นฉบับ NES (3:55 - 4:25)
     private const int PerfectBonusScore = 10000;
     private int fruitsSpawned; 
     private int fruitsHit; 
+    private int meatWolvesSpawned;
+    private int meatWolvesEscaped;
+
+    public void OnMeatBonusWolfEscaped()
+    {
+        meatWolvesEscaped++;
+    }
 
     public void OnBonusFruitHit(BonusFruitType type, Vector3 hitPosition)
     {
@@ -269,15 +278,23 @@ public class BonusStageManager : MonoBehaviour
             // 2. ล็อกให้แม่หมูยิงลูกธนูไม่ได้ ได้แค่หยิบและปาเนื้ออย่างเดียว!
             if (player != null) player.SetMeatBonusMode(true);
 
+            meatWolvesSpawned = 0;
+            meatWolvesEscaped = 0;
+
+            var ui = FindAnyObjectByType<UIManager>();
+            ui?.UpdateRemainingWolves(MeatBonusWolfCount);
+
             var spawner = FindAnyObjectByType<WolfSpawner>();
             int spawnCounter = 0;
-            float elapsed = 0f;
-            float spawnStep = 1.6f;
+            float spawnStep = 1.55f;
 
-            while (elapsed < bonusDuration)
+            while (spawnCounter < MeatBonusWolfCount)
             {
                 SpawnMeatBonusWolf(spawner, spawnCounter);
+                meatWolvesSpawned++;
                 spawnCounter++;
+
+                ui?.UpdateRemainingWolves(Mathf.Max(0, MeatBonusWolfCount - spawnCounter));
 
                 // ทุกๆ 2 ตัว ให้ปล่อยลูกโป่งเปล่าลอยขึ้นมาด้วย เพื่อให้ปาเนื้อชนเด้งทำคอมโบตามต้นฉบับ NES!
                 if (spawnCounter % 2 == 0 && spawner != null)
@@ -291,15 +308,57 @@ public class BonusStageManager : MonoBehaviour
                 }
 
                 yield return new WaitForSeconds(spawnStep);
-                elapsed += spawnStep;
             }
 
-            // รอให้หมาป่าชุดสุดท้ายลอยขึ้นหรือโดนเนื้อก่อนจบโบนัส
-            yield return new WaitForSeconds(2.5f);
+            // รอให้หมาป่าชุดสุดท้ายลอยขึ้นหรือโดนเนื้อสอยจนหมดฉากก่อนจบโบนัส (สูงสุดไม่เกิน 6 วินาที)
+            float waitClearElapsed = 0f;
+            while (Wolf.ActiveWolves.Count > 0 && waitClearElapsed < 6.0f)
+            {
+                if (player != null && player.State == PlayerState.Normal && !player.IsMeatAvailable)
+                {
+                    player.SetMeatAvailable(true);
+                }
+                waitClearElapsed += 0.2f;
+                yield return new WaitForSeconds(0.2f);
+            }
+
+            yield return new WaitForSeconds(0.8f);
             if (player != null) player.SetMeatBonusMode(false);
+
+            if (meatWolvesSpawned > 0 && meatWolvesEscaped == 0)
+            {
+                ScoreManager.Instance?.AddScore(PerfectBonusScore);
+                Debug.Log("PERFECT BONUS (Meat)! +10,000 pts!");
+            }
         }
 
-        // จบโบนัสแล้วจ้า
+        // จบโบนัสแล้ว: ขึ้นหน้าจอน้ำเงินล้วนแบบ NES พร้อมข้อความสีเหลืองทองก่อนเข้าด่านถัดไป
+        FindAnyObjectByType<StageFlowController>()?.ClearAllEntities();
+
+        int currentStage = GameManager.Instance != null ? GameManager.Instance.CurrentStage : 2;
+        int nextStage = currentStage + 1;
+        bool isPerfect = currentBonusType == BonusType.Fruit
+            ? fruitsHit >= FruitBonusCount
+            : (meatWolvesSpawned > 0 && meatWolvesEscaped == 0);
+
+        var uiManager = FindAnyObjectByType<UIManager>();
+        if (uiManager != null)
+        {
+            if (isPerfect)
+            {
+                uiManager.ShowBonusTransitionText("PERFECT BONUS 10000 PT");
+                yield return new WaitForSeconds(Mathf.Max(1.8f, endTransitionDuration * 0.65f));
+                uiManager.ShowBonusTransitionText($"STAGE {nextStage}");
+                yield return new WaitForSeconds(Mathf.Max(1.0f, endTransitionDuration * 0.35f));
+            }
+            else
+            {
+                uiManager.ShowBonusTransitionText($"STAGE {nextStage}");
+                yield return new WaitForSeconds(Mathf.Max(2.0f, endTransitionDuration));
+            }
+            uiManager.HideBonusTransitionText();
+        }
+
         GameManager.Instance?.CompleteBonusStage();
     }
 
@@ -363,7 +422,11 @@ public class BonusStageManager : MonoBehaviour
             : (spawner != null ? spawner.FlyPoints : null);
 
         int laneCount = (lanes != null && lanes.Length > 0) ? lanes.Length : 5;
-        int laneIndex = Random.Range(0, laneCount);
+
+        // รูปแบบการปล่อยหมาป่าเรียงจากขวาไปซ้าย (ขั้นบันได + ซ้อนแถวฝั่งซ้าย) ตามจังหวะคลิป NES ต้นฉบับ
+        int[] nesStaircasePattern = { 4, 2, 0, 0, 3, 2, 1, 0, 4, 2, 1, 1, 3, 2, 0, 0 };
+        int patternLane = nesStaircasePattern[index % nesStaircasePattern.Length];
+        int laneIndex = Mathf.Clamp(patternLane, 0, laneCount - 1);
 
         float[] laneXCoords = new float[laneCount];
         for (int i = 0; i < laneCount; i++)
@@ -382,7 +445,7 @@ public class BonusStageManager : MonoBehaviour
         var wolf = Instantiate(targetPrefab, new Vector3(startX, startY, 0f), Quaternion.identity);
 
         // ในด่านโบนัสเนื้อ (ตามต้นฉบับ NES หลังด่าน 2): หมาป่าลอยขึ้นจากด้านล่างด้วยลูกโป่งสีฟ้าอ่อนล้วน (1 HP) ไม่ถือโล่ ไม่ปาหิน
-        float bonusFloatSpeed = Random.Range(0.85f, 1.15f);
+        float bonusFloatSpeed = Random.Range(0.70f, 0.95f);
         wolf.Initialize(config, descending: false, speed: bonusFloatSpeed, shield: false, rockThrow: false, dropX: dropX, lanes: laneXCoords, laneIndex: laneIndex, overrideBalloonHP: 1, overrideColorType: BalloonColorType.LightBlue);
         wolf.DisableTeaseBounces();
     }

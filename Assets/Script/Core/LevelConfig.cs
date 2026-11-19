@@ -8,7 +8,7 @@ public class LevelConfig : ScriptableObject
 {
     [Header("Wolves")]
     public int wolfCount = 20;                     // จำนวนหมาป่าในด่านนี้
-    public Vector2 wolfSpeedRange = new(0.85f, 1.25f); // สปีดการลอย (ปรับให้ใกล้เคียง NES ต้นฉบับ ลอยข้ามจอ ~6-8 วินาที)
+    public Vector2 wolfSpeedRange = new(0.72f, 1.00f); // สปีดการลอย (ปรับให้ช้าลงเล็กน้อย เล่นสบายขึ้น)
     [Range(0f, 1f)] public float shieldRatio = 0.1f;      // โอกาสถือโล่
     [Range(0f, 1f)] public float rockThrowRatio = 0.15f;  // โอกาสปาหิน
     public float spawnInterval = 2.5f;             // ระยะเวลาห่างในการเกิดตัวถัดไป

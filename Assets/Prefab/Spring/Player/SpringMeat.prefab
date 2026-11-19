@@ -169,10 +169,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a8e68c6f1c118e4f972c8d69f98d0b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MeatWeapon
-  speedX: -8.2
-  horizontalGlideTime: 0.28
-  dropAcceleration: 7.5
-  maxFallSpeed: 3.2
+  speedX: -7.5
+  minHorizontalSpeed: 2.2
+  horizontalDeceleration: 4.2
+  horizontalGlideTime: 0.25
+  dropAcceleration: 11
+  maxFallSpeed: 7.8
   balloonBounceSpeedY: 4.2
+  enableSoftHoming: 1
+  homingVerticalAccel: 14.5
+  homingColumnBrakeAccel: 12
   destroyY: -6
   destroyX: -11

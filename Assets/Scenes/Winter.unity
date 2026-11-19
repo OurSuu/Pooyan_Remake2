@@ -1963,7 +1963,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d716f634993d4164ca6f149aa6f3a534, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TreeTopBossWolf
-  walkSpeed: 2.2
+  walkSpeed: 2.5
   walkMinX: -4
   walkMaxX: 0.4
   topY: 4.027246
@@ -8294,7 +8294,7 @@ PrefabInstance:
       objectReference: {fileID: 1569725731}
     - target: {fileID: 2834479417064150740, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
       propertyPath: moveSpeed
-      value: 4.2
+      value: 2.8
       objectReference: {fileID: 0}
     - target: {fileID: 2834479417064150740, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
       propertyPath: meatPrefab

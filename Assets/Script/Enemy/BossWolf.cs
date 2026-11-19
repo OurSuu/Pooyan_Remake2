@@ -12,12 +12,13 @@ public class BossWolf : Wolf
 
     [Header("Boss Visuals (NES Pink Boss Wolf)")]
     [SerializeField] private Color bossBodyTint = new Color(1f, 0.68f, 0.85f, 1f); // สีชมพูตามต้นฉบับ NES (ボスオオカミ・ピンク)
+    [SerializeField] private float bossSpeedMultiplier = 1.48f; // ไวกว่าหมาป่าปกติชัดเจน (และไวกว่าเดิมอีกเล็กน้อย)
 
     // ตอนเกิดเรียกฟังก์ชันนี้ ตั้งค่าสเตตัสต่างๆ
     public override void Initialize(LevelConfig config, bool descending, float speed, bool shield, bool rockThrow, float dropX = 0f, float[] lanes = null, int laneIndex = 0, int? overrideBalloonHP = null, BalloonColorType? overrideColorType = null)
     {
-        // บอสมีโล่เสมอ และเคลื่อนที่ไวขึ้นเล็กน้อย
-        base.Initialize(config, descending, speed * 1.15f, true, rockThrow, dropX, lanes, laneIndex, 1, BalloonColorType.PinkRed);
+        // บอสมีโล่เสมอ และเคลื่อนที่ไวขึ้น
+        base.Initialize(config, descending, speed * bossSpeedMultiplier, true, rockThrow, dropX, lanes, laneIndex, 1, BalloonColorType.PinkRed);
         remainingShieldHP = (config != null && config.bossShieldHP > 0) ? config.bossShieldHP : GameConstants.BossShieldHits;
         stageClearTriggered = false;
 

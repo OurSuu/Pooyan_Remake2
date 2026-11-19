@@ -41,8 +41,8 @@ public class Wolf : MonoBehaviour
 
     [Header("Movement")]
     [SerializeField] protected float fallSpeed = 4f;
-    [SerializeField] protected float walkSpeed = 2f;
-    [SerializeField] protected float climbSpeed = 1.5f;
+    [SerializeField] protected float walkSpeed = 1.85f;
+    [SerializeField] protected float climbSpeed = 1.05f;
     protected float targetDropX;
 
     [Header("Shield")]
@@ -66,7 +66,9 @@ public class Wolf : MonoBehaviour
     [SerializeField] protected float walkGroundY = -3.5f;
     [SerializeField] protected float deadGroundY = -4.5f;
     [SerializeField] protected float cliffHitY = 3.5f;
-    [SerializeField] protected GameObject groundDustPrefab; // พรีแฟบ Particle System ฝุ่นตลบตอนตกถึงพื้นตาย
+    [SerializeField] protected GameObject groundDustPrefab; // พรีแฟบ Particle System ควัน/ฝุ่นตลบตอนตกถึงพื้นตาย
+    [SerializeField] protected GameObject biteArrowFXPrefab; // พรีแฟบ Particle ตอนงับลูกธนู
+    [SerializeField] protected GameObject biteLadderFXPrefab; // พรีแฟบ Particle ตอนงับบนบันได
 
     protected bool isDescendingStage;
     protected float groundY;
@@ -80,14 +82,19 @@ public class Wolf : MonoBehaviour
 
     public WolfState State => state;
     public bool IsAlive => state != WolfState.Dead;
+    public float CurrentVerticalVelocity => state == WolfState.Floating ? (isDescendingStage ? -floatSpeed : floatSpeed) : 0f;
 
     // เก็บลิสต์หมาป่าที่ Active อยู่ในฉากเพื่อไม่ต้องเรียก FindObjectsByType<Wolf>() ซ้ำทุกเฟรม
     private static readonly System.Collections.Generic.List<Wolf> activeWolves = new();
     public static System.Collections.Generic.IReadOnlyList<Wolf> ActiveWolves => activeWolves;
 
     private static GameObject cachedGroundDustPrefab;
+    private static GameObject cachedBiteArrowFXPrefab;
+    private static GameObject cachedBiteLadderFXPrefab;
     private static readonly System.Collections.Generic.List<ParticleSystem> groundDustPool = new();
-    private static int groundDustPoolSceneHandle = -1;
+    private static readonly System.Collections.Generic.List<ParticleSystem> biteArrowPool = new();
+    private static readonly System.Collections.Generic.List<ParticleSystem> biteLadderPool = new();
+    private static int wolfFXPoolSceneHandle = -1;
     private static readonly int AnimHashRun = Animator.StringToHash("run");
     private static readonly int AnimHashClimb = Animator.StringToHash("climb");
 
@@ -162,32 +169,52 @@ public class Wolf : MonoBehaviour
 
     private void PrewarmGroundDustPool()
     {
-        GameObject fxPrefab = groundDustPrefab;
-        if (fxPrefab == null)
-        {
-            if (cachedGroundDustPrefab == null)
-                cachedGroundDustPrefab = Resources.Load<GameObject>("FX/GroundDustImpactFX");
-            fxPrefab = cachedGroundDustPrefab;
-        }
-        if (fxPrefab == null) return;
-
+        CartoonFXHelper.Prewarm(12);
         int currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().handle;
-        if (groundDustPoolSceneHandle == currentScene && groundDustPool.Count > 0) return;
-        groundDustPoolSceneHandle = currentScene;
-        groundDustPool.Clear();
-
-        for (int i = 0; i < 3; i++)
+        if (wolfFXPoolSceneHandle != currentScene)
         {
-            var ps = CreatePooledGroundDust(fxPrefab);
+            wolfFXPoolSceneHandle = currentScene;
+            groundDustPool.Clear();
+            biteArrowPool.Clear();
+            biteLadderPool.Clear();
+        }
+
+        PrewarmWolfFXPool(ref cachedGroundDustPrefab, groundDustPrefab, "FX/GroundDustImpactFX", groundDustPool, 3);
+        PrewarmWolfFXPool(ref cachedBiteArrowFXPrefab, biteArrowFXPrefab, "FX/WolfBiteArrowFX", biteArrowPool, 2);
+        PrewarmWolfFXPool(ref cachedBiteLadderFXPrefab, biteLadderFXPrefab, "FX/WolfBiteLadderFX", biteLadderPool, 2);
+    }
+
+    private static void PrewarmWolfFXPool(
+        ref GameObject cachedPrefab,
+        GameObject inspectorPrefab,
+        string resourcePath,
+        System.Collections.Generic.List<ParticleSystem> pool,
+        int targetCount)
+    {
+        GameObject fxPrefab = ResolveWolfFXPrefab(ref cachedPrefab, inspectorPrefab, resourcePath);
+        if (fxPrefab == null || pool.Count >= targetCount) return;
+
+        int needed = targetCount - pool.Count;
+        for (int i = 0; i < needed; i++)
+        {
+            var ps = CreatePooledWolfFX(fxPrefab);
             if (ps != null)
             {
                 ps.gameObject.SetActive(false);
-                groundDustPool.Add(ps);
+                pool.Add(ps);
             }
         }
     }
 
-    private static ParticleSystem CreatePooledGroundDust(GameObject fxPrefab)
+    private static GameObject ResolveWolfFXPrefab(ref GameObject cachedPrefab, GameObject inspectorPrefab, string resourcePath)
+    {
+        if (inspectorPrefab != null) return inspectorPrefab;
+        if (cachedPrefab == null)
+            cachedPrefab = Resources.Load<GameObject>(resourcePath);
+        return cachedPrefab;
+    }
+
+    private static ParticleSystem CreatePooledWolfFX(GameObject fxPrefab)
     {
         var go = Instantiate(fxPrefab, new Vector3(0f, -100f, 0f), Quaternion.identity);
         var ps = go.GetComponent<ParticleSystem>();
@@ -197,6 +224,54 @@ public class Wolf : MonoBehaviour
             main.stopAction = ParticleSystemStopAction.Disable;
         }
         return ps;
+    }
+
+    private static void PlayPooledWolfFX(
+        ref GameObject cachedPrefab,
+        GameObject inspectorPrefab,
+        string resourcePath,
+        System.Collections.Generic.List<ParticleSystem> pool,
+        Vector3 spawnPos,
+        float uniformScale = 1f,
+        Color? tintColor = null)
+    {
+        GameObject fxPrefab = ResolveWolfFXPrefab(ref cachedPrefab, inspectorPrefab, resourcePath);
+        if (fxPrefab == null) return;
+
+        ParticleSystem pooledPS = null;
+        for (int i = pool.Count - 1; i >= 0; i--)
+        {
+            var p = pool[i];
+            if (p == null)
+            {
+                pool.RemoveAt(i);
+                continue;
+            }
+            if (!p.gameObject.activeSelf)
+            {
+                pooledPS = p;
+                break;
+            }
+        }
+
+        if (pooledPS == null)
+        {
+            pooledPS = CreatePooledWolfFX(fxPrefab);
+            if (pooledPS != null) pool.Add(pooledPS);
+        }
+
+        if (pooledPS == null) return;
+
+        if (tintColor.HasValue)
+        {
+            var main = pooledPS.main;
+            main.startColor = tintColor.Value;
+        }
+        pooledPS.transform.localScale = Vector3.one * uniformScale;
+        pooledPS.transform.position = spawnPos;
+        pooledPS.gameObject.SetActive(true);
+        pooledPS.Clear(true);
+        pooledPS.Play(true);
     }
 
     public void CopySettingsTo(Wolf target)
@@ -222,11 +297,19 @@ public class Wolf : MonoBehaviour
         target.deadGroundY = this.deadGroundY;
         target.cliffHitY = this.cliffHitY;
         target.groundDustPrefab = this.groundDustPrefab;
+        target.biteArrowFXPrefab = this.biteArrowFXPrefab;
+        target.biteLadderFXPrefab = this.biteLadderFXPrefab;
     }
 
     public void DisableTeaseBounces()
     {
         teaseBounces = 0;
+    }
+
+    public void SetFormationLock(bool locked)
+    {
+        formationLocked = locked;
+        if (locked) teaseBounces = 0;
     }
 
     public void SetRapidFire(bool enabled)
@@ -263,15 +346,16 @@ public class Wolf : MonoBehaviour
         currentLane = laneIndex;
 
         targetDropX = dropX;
+        formationLocked = false;
         teaseBounces = Random.value < 0.25f ? Random.Range(1, 4) : 0; // 25% chance to fake out 1-3 times
         state = WolfState.WalkingBeforeDrop;
         
         gameObject.tag = GameConstants.TagEnemy;
 
-        // คำนวณเลือดและสีของลูกโป่งตามระดับความอึดของลูกโป่ง:
-        // แดง = 1 ทีแตก (1 HP - ด่าน 1)
-        // เหลือง = 2 ทีแตก (2 HP)
-        // ฟ้า = 3 ทีแตก (3 HP - ด่าน 2 และ ด่าน 3)
+        // คำนวณเลือดและสีของลูกโป่ง:
+        // - ด่านคี่ (ลอยลง: ด่าน 1 Autumn, ด่าน 3 Winter): ลูกโป่งทุกสีโดนนัดเดียวแตก (1 HP) เสมอ!
+        //   โดยด่าน 3 (Winter) จะสุ่มสีลูกโป่งระหว่าง สีแดง กับ สีฟ้า (นัดเดียวแตกทั้งคู่ตาม NES)
+        // - ด่านคู่ (ลอยขึ้น: ด่าน 2 Spring, ด่าน 4 Rainy): ลูกโป่ง 3 HP (ยิงตอด 3 นัดแตก)
         int targetBalloonHP = 1;
         BalloonColorType targetColor = BalloonColorType.AutoByHP;
 
@@ -279,38 +363,50 @@ public class Wolf : MonoBehaviour
         {
             targetBalloonHP = overrideBalloonHP.Value;
         }
+        else if (descending)
+        {
+            targetBalloonHP = 1;
+        }
         else if (config != null && config.balloonHP > 1)
         {
             targetBalloonHP = config.balloonHP;
         }
-        else if (!descending)
-        {
-            // ด่านคู่ (ลอยขึ้น): ใช้ลูกโป่งสีฟ้า 3 ทีแตกเป็นค่าพื้นฐาน
-            targetBalloonHP = 3;
-        }
         else
         {
-            // ด่านคี่ (ลอยลง): ถ้าตั้ง yellowBalloonRatio ไว้จะสุ่มลูกโป่ง 2 HP ผสม มิฉะนั้นเป็น 1 HP (สีแดง)
-            float yellowChance = (config != null && config.yellowBalloonRatio > 0f) ? config.yellowBalloonRatio : 0f;
-            targetBalloonHP = (Random.value < yellowChance) ? 2 : 1;
+            targetBalloonHP = 3;
         }
 
-        // ผูกสีตามเลือดลูกโป่ง (เว้นแต่จะถูกบังคับสีพิเศษ เช่น ด่านโบนัส หรือ บอส)
         if (overrideColorType.HasValue)
         {
             targetColor = overrideColorType.Value;
         }
+        else if (descending)
+        {
+            int currentStage = GameManager.Instance != null ? GameManager.Instance.CurrentStage : 1;
+            bool isStage3OrHigherOdd = currentStage >= 3 ||
+                UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.IndexOf("Winter", System.StringComparison.OrdinalIgnoreCase) >= 0;
+
+            if (isStage3OrHigherOdd)
+            {
+                // ด่าน 3 (Winter) สุ่มลูกโป่งสีแดงกับสีฟ้า (ทั้งคู่ 1 HP นัดเดียวแตก)
+                targetColor = Random.value < 0.5f ? BalloonColorType.LightBlue : BalloonColorType.PinkRed;
+            }
+            else
+            {
+                targetColor = BalloonColorType.PinkRed;
+            }
+        }
         else if (targetBalloonHP >= 3)
         {
-            targetColor = BalloonColorType.LightBlue;    // 3 ทีแตก = สีฟ้า
+            targetColor = BalloonColorType.LightBlue;    // ด่านคู่ 3 ทีแตก = สีฟ้า
         }
         else if (targetBalloonHP == 2)
         {
-            targetColor = BalloonColorType.YellowOrange; // 2 ทีแตก = สีเหลือง
+            targetColor = BalloonColorType.YellowOrange;
         }
         else
         {
-            targetColor = BalloonColorType.PinkRed;      // 1 ทีแตก = สีแดง
+            targetColor = BalloonColorType.PinkRed;
         }
 
         if (balloon != null)
@@ -476,6 +572,7 @@ public class Wolf : MonoBehaviour
     }
 
     protected int teaseBounces = 0;
+    protected bool formationLocked = false;
     protected int currentLane = 0;
     protected float[] availableLanes;
 
@@ -511,38 +608,39 @@ public class Wolf : MonoBehaviour
         if (Mathf.Abs(transform.position.x - targetDropX) < 0.05f)
         {
             bool laneClear = true;
-            for (int i = 0; i < activeWolves.Count; i++)
+            if (!formationLocked)
             {
-                var w = activeWolves[i];
-                if (w == null || w == this) continue;
-                
-                // เช็คว่ามีหมาป่าตัวอื่นอยู่ในเลนเป้าหมายเดียวกับเราไหม หรือกำลังจะไปที่เลนเดียวกัน
-                if (Mathf.Abs(w.transform.position.x - targetDropX) < 0.2f || Mathf.Abs(w.targetDropX - targetDropX) < 0.2f)
+                for (int i = 0; i < activeWolves.Count; i++)
                 {
-                    // 1. ถ้าตัวอื่นกำลังเป่าลูกโป่ง หรือกำลังลอยลงมา (Floating) ในเลนนี้
-                    if (w.state == WolfState.BlowingBalloon || w.state == WolfState.Floating)
+                    var w = activeWolves[i];
+                    if (w == null || w == this) continue;
+                    
+                    // เช็คว่ามีหมาป่าตัวอื่นอยู่ในเลนเป้าหมายเดียวกับเราไหม หรือกำลังจะไปที่เลนเดียวกัน
+                    if (Mathf.Abs(w.transform.position.x - targetDropX) < 0.2f || Mathf.Abs(w.targetDropX - targetDropX) < 0.2f)
                     {
-                        // และถ้าระยะห่างแนวดิ่ง (แกน Y) อยู่ใกล้กันเกิน 3.0 หน่วย -> ซ้อนกันแน่นอน!
-                        if (Mathf.Abs(w.transform.position.y - transform.position.y) < 3.0f)
+                        // 1. ถ้าตัวอื่นกำลังเป่าลูกโป่ง หรือกำลังลอยลงมา (Floating) ในเลนนี้ในระยะประชิดเกิน 1.15 หน่วย
+                        if (w.state == WolfState.BlowingBalloon || w.state == WolfState.Floating)
                         {
-                            laneClear = false;
-                            break;
+                            if (Mathf.Abs(w.transform.position.y - transform.position.y) < 1.15f)
+                            {
+                                laneClear = false;
+                                break;
+                            }
                         }
-                    }
-                    // 2. ถ้าตัวอื่นก็กำลังเดินไปที่จุดดรอปเดียวกันเป๊ะๆ
-                    else if (w.state == WolfState.WalkingBeforeDrop && Mathf.Abs(w.targetDropX - targetDropX) < 0.2f)
-                    {
-                        // ถ้ายืนซ้อนทับกันอยู่ (ห่างกันไม่ถึง 1.0 หน่วย) -> ตัวใดตัวหนึ่งต้องหลบ
-                        if (Mathf.Abs(w.transform.position.x - transform.position.x) < 1.0f)
+                        // 2. ถ้าตัวอื่นก็กำลังเดินไปที่จุดดรอปเดียวกันเป๊ะๆ และยืนทับกันอยู่
+                        else if (w.state == WolfState.WalkingBeforeDrop && Mathf.Abs(w.targetDropX - targetDropX) < 0.2f)
                         {
-                            laneClear = false;
-                            break;
+                            if (Mathf.Abs(w.transform.position.x - transform.position.x) < 0.65f)
+                            {
+                                laneClear = false;
+                                break;
+                            }
                         }
                     }
                 }
             }
 
-            if (teaseBounces > 0 || !laneClear)
+            if (!formationLocked && (teaseBounces > 0 || !laneClear))
             {
                 if (teaseBounces > 0) teaseBounces--;
                 
@@ -736,52 +834,32 @@ public class Wolf : MonoBehaviour
         }
     }
 
+    private static Color GetStageDustColor()
+    {
+        string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        if (sceneName.IndexOf("Winter", System.StringComparison.OrdinalIgnoreCase) >= 0)
+            return new Color(0.86f, 0.94f, 1f, 0.70f);
+        if (sceneName.IndexOf("Rainy", System.StringComparison.OrdinalIgnoreCase) >= 0)
+            return new Color(0.68f, 0.84f, 0.98f, 0.70f);
+        if (sceneName.IndexOf("Spring", System.StringComparison.OrdinalIgnoreCase) >= 0)
+            return new Color(0.92f, 0.86f, 0.76f, 0.70f);
+        return new Color(0.88f, 0.80f, 0.68f, 0.70f);
+    }
+
     /// <summary>
-    /// เสก Particle Effect ฝุ่นฟุ้งกระจายตรงพื้นตอนหมาป่าตกกระแทกพื้นตาย
+    /// เสก Particle Effect ควันฟุ้งกระจายตรงพื้นตอนหมาป่าตกกระแทกพื้นตาย
     /// </summary>
     protected void SpawnGroundDust()
     {
-        GameObject fxPrefab = groundDustPrefab;
-        if (fxPrefab == null)
-        {
-            if (cachedGroundDustPrefab == null)
-                cachedGroundDustPrefab = Resources.Load<GameObject>("FX/GroundDustImpactFX");
-            fxPrefab = cachedGroundDustPrefab;
-        }
-
-        if (fxPrefab != null)
-        {
-            Vector3 spawnPos = new Vector3(transform.position.x, deadGroundY, 0f);
-            ParticleSystem pooledPS = null;
-            for (int i = groundDustPool.Count - 1; i >= 0; i--)
-            {
-                var p = groundDustPool[i];
-                if (p == null)
-                {
-                    groundDustPool.RemoveAt(i);
-                    continue;
-                }
-                if (!p.gameObject.activeSelf)
-                {
-                    pooledPS = p;
-                    break;
-                }
-            }
-
-            if (pooledPS == null)
-            {
-                pooledPS = CreatePooledGroundDust(fxPrefab);
-                if (pooledPS != null) groundDustPool.Add(pooledPS);
-            }
-
-            if (pooledPS != null)
-            {
-                pooledPS.transform.position = spawnPos;
-                pooledPS.gameObject.SetActive(true);
-                pooledPS.Clear(true);
-                pooledPS.Play(true);
-            }
-        }
+        Vector3 spawnPos = new Vector3(transform.position.x, deadGroundY, 0f);
+        PlayPooledWolfFX(
+            ref cachedGroundDustPrefab,
+            groundDustPrefab,
+            "FX/GroundDustImpactFX",
+            groundDustPool,
+            spawnPos,
+            1f,
+            GetStageDustColor());
     }
 
     protected System.Collections.IEnumerator FadeAndDestroyRoutine()
@@ -838,6 +916,7 @@ public class Wolf : MonoBehaviour
         // ถ้าเป็นด่านโบนัสปาเนื้อ หมาป่าที่ลอยพ้นขอบบนให้หายไปเลย (ไม่ไปสะสมผลักหินยักษ์ เพราะด่านโบนัสห้ามตาย!)
         if (GameManager.Instance != null && GameManager.Instance.IsBonus)
         {
+            FindAnyObjectByType<BonusStageManager>()?.OnMeatBonusWolfEscaped();
             DestroyWolf();
             return;
         }
@@ -914,8 +993,8 @@ public class Wolf : MonoBehaviour
     }
 
     [Header("Ladder Bite Settings (การงับบนบันได)")]
-    [Tooltip("ระยะยื่นตัวงับไปทางซ้าย (ค่าเริ่มต้น 0.85 หน่วย เพื่อให้ปากหมาป่ายื่นถึงขอบกระเช้าแม่หมูพอดี)")]
-    [SerializeField] protected float ladderBiteLunge = 0.85f;
+    [Tooltip("ระยะขยับตัวยื่นขณะงับ (ค่าเริ่มต้น 0 = งับอยู่กับที่บนบันได ไม่พุ่งเลยออกนอกบันได)")]
+    [SerializeField] protected float ladderBiteLunge = 0f;
     [Tooltip("ระยะเวลาการพุ่งงับ (วินาที, ค่าเริ่มต้น 0.45s ให้ตรงกับความยาวอนิเมชัน BiteRobe 0.47s)")]
     [SerializeField] protected float biteDuration = 0.45f;
     [Tooltip("ระยะห่างแนวตั้ง (Y) ที่ถือว่าอยู่ในระยะปากงับ (ค่าเริ่มต้น 0.95 หน่วย ครอบคลุมทั้งตัวแม่หมูและกระเช้า ไร้มุมอับระหว่างขั้นบันได)")]
@@ -927,6 +1006,25 @@ public class Wolf : MonoBehaviour
     protected float biteInterval = 2f; // Arcade accurate
     protected bool isBiting = false;
     protected float ladderOriginX = 0f;
+
+    protected Vector3 GetMouthWorldPosition()
+    {
+        float faceDir = (cachedSR != null && cachedSR.flipX) ? 1f : -1f;
+        float yOffset = (state == WolfState.WaitingOnLadder || state == WolfState.Biting) ? biteVerticalOffset : 0.1f;
+        return transform.position + new Vector3(faceDir * 0.42f, yOffset, 0f);
+    }
+
+    protected void SpawnLadderBiteFX(bool isHit)
+    {
+        Vector3 fxPos = GetMouthWorldPosition();
+        PlayPooledWolfFX(
+            ref cachedBiteLadderFXPrefab,
+            biteLadderFXPrefab,
+            "FX/WolfBiteLadderFX",
+            biteLadderPool,
+            fxPos,
+            isHit ? 1.15f : 0.95f);
+    }
 
     /// <summary>
     /// ตรวจสอบว่าผู้เล่น (แม่หมู/กระเช้า) อยู่ในระยะที่หมาป่าบนบันไดจะงับได้หรือไม่
@@ -977,26 +1075,27 @@ public class Wolf : MonoBehaviour
             
             if (biteTimer >= biteInterval)
             {
-                // เริ่มท่าพุ่งงับ
+                // เริ่มท่างับอยู่บนบันได (ไม่ออกนอกขั้นบันได) + ปล่อย Particle งับ
                 isBiting = true;
                 biteTimer = 0f;
                 ladderOriginX = transform.position.x;
-                
+
                 // Visual feedback: ตัวแดงเตือนภัยขณะงับ
                 if (sr != null) sr.color = new Color(1f, 0.3f, 0.3f);
-                
-                if (animator != null) 
+
+                if (animator != null)
                 {
                     animator.enabled = true;
                     animator.Update(0f);
-                    animator.speed = 1f; 
+                    animator.speed = 1f;
                     animator.Play("BiteRobe", -1, 0f);
                 }
+                SpawnLadderBiteFX(isHit: false);
             }
             else if (biteInterval - biteTimer <= warningTime)
             {
                 // Warning phase: กะพริบสีส้มเตือนผู้เล่นอย่างรวดเร็ว
-                if (sr != null) 
+                if (sr != null)
                 {
                     float blink = Mathf.PingPong(Time.time * 20f, 1f);
                     sr.color = Color.Lerp(Color.white, new Color(1f, 0.7f, 0f), blink);
@@ -1016,21 +1115,27 @@ public class Wolf : MonoBehaviour
                 TriggerBite();
                 return;
             }
-            
-            // พุ่งตัวไปข้างหน้าทางซ้ายอย่างชัดเจน (PingPong movement)
-            float t = biteTimer / biteDuration;
-            float lungeOffset = Mathf.Sin(t * Mathf.PI) * ladderBiteLunge;
+
             float baseX = ladderOriginX != 0f ? ladderOriginX : (LadderSystem.Instance != null ? LadderSystem.Instance.LadderX : transform.position.x);
-            transform.position = new Vector3(baseX - lungeOffset, transform.position.y, 0f);
-            
+            if (ladderBiteLunge > 0.001f)
+            {
+                float t = biteTimer / biteDuration;
+                float lungeOffset = Mathf.Sin(t * Mathf.PI) * ladderBiteLunge;
+                transform.position = new Vector3(baseX - lungeOffset, transform.position.y, 0f);
+            }
+            else
+            {
+                transform.position = new Vector3(baseX, transform.position.y, 0f);
+            }
+
             if (biteTimer >= biteDuration)
             {
-                // จบจังหวะงับ ดึงตัวกลับจุดเดิมบนบันได
+                // จบจังหวะงับ ยืนจุดเดิมบนบันได
                 transform.position = new Vector3(baseX, transform.position.y, 0f);
                 isBiting = false;
                 biteTimer = 0f;
                 biteInterval = UnityEngine.Random.Range(1.5f, 3f);
-                
+
                 if (sr != null) sr.color = Color.white;
             }
         }
@@ -1128,13 +1233,30 @@ public class Wolf : MonoBehaviour
     /// <summary>
     /// Called by LadderSystem when the wolf triggers a bite event.
     /// </summary>
-        public void PlayDeflectAnimation()
+    public void PlayDeflectAnimation()
+    {
+        PlayDeflectAnimation(null, spawnBiteFX: false);
+    }
+
+    public void PlayDeflectAnimation(Vector3? hitWorldPos, bool spawnBiteFX = true)
     {
         if (animator != null && animator.enabled)
         {
             animator.Play("BiteArrow", -1, 0f);
             // Restore animation after a brief moment in case the Animator isn't set up to return automatically
             StartCoroutine(RestoreAnimAfterBite());
+        }
+
+        if (spawnBiteFX)
+        {
+            Vector3 fxPos = hitWorldPos ?? GetMouthWorldPosition();
+            PlayPooledWolfFX(
+                ref cachedBiteArrowFXPrefab,
+                biteArrowFXPrefab,
+                "FX/WolfBiteArrowFX",
+                biteArrowPool,
+                fxPos,
+                1f);
         }
     }
 
@@ -1154,6 +1276,7 @@ public class Wolf : MonoBehaviour
         if (state != WolfState.WaitingOnLadder) return;
         state = WolfState.Biting;
         AudioManager.Instance?.PlayWolfBite();
+        SpawnLadderBiteFX(isHit: true);
         StartCoroutine(BiteAndDestroyRoutine());
     }
 
