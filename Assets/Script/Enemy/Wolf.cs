@@ -312,6 +312,21 @@ public class Wolf : MonoBehaviour
         if (locked) teaseBounces = 0;
     }
 
+    /// <summary>
+    /// คืนค่าพิกัดแกน X กึ่งกลางของลูกโป่งในเลนของหมาป่าตัวนี้ เพื่อให้ลูกธนูที่ถูกงับ/ปัดร่วงลงมาตรงกับแนวลูกโป่งของหมาป่าตัวล่างพอดี
+    /// </summary>
+    public float GetBalloonColumnWorldX()
+    {
+        if (balloon != null)
+        {
+            var col = balloon.GetComponent<Collider2D>();
+            if (col != null && col.enabled)
+                return col.bounds.center.x;
+            return balloon.transform.position.x;
+        }
+        return transform.position.x - 0.11f;
+    }
+
     public void SetRapidFire(bool enabled)
     {
         rapidFire = enabled;
@@ -437,10 +452,10 @@ public class Wolf : MonoBehaviour
     {
         if (maxHP > 1)
         {
-            if (currentHP == 2)
-                floatSpeed = baseFloatSpeed * 0.65f; // โดนดอกที่ 1: ความเร็วเหลือ 65%
-            else if (currentHP <= 1)
-                floatSpeed = baseFloatSpeed * 0.40f; // โดนดอกที่ 2: ความเร็วเหลือ 40%
+            int currentStage = GameManager.Instance != null ? GameManager.Instance.EffectiveDifficultyStage : 2;
+            float minFactor = currentStage >= 4 ? 0.68f : 0.58f;
+            float hpRatio = Mathf.Clamp01((float)currentHP / Mathf.Max(1, maxHP));
+            floatSpeed = baseFloatSpeed * Mathf.Lerp(minFactor, 1f, hpRatio);
         }
     }
 
@@ -745,29 +760,21 @@ public class Wolf : MonoBehaviour
         rockTimer -= Time.deltaTime;
         if (rockTimer <= 0f && rockPrefab != null)
         {
-            // ปาหินเฉพาะตอนลอยอยู่ในช่วงความสูงกลางจอ (ไม่ปาตอนเพิ่งพ้นพื้นล่างสุด หรือติดเพดานบนสุด)
-            if (transform.position.y < -2.5f || transform.position.y > 2.8f)
+            // ขยายช่วงความสูงที่อนุญาตให้ปาหินเล็กน้อย
+            if (transform.position.y < -2.85f || transform.position.y > 3.10f)
             {
-                rockTimer = 0.4f;
+                rockTimer = 0.30f;
                 return;
             }
 
-            // ถ้าหมาป่าอยู่ต่ำกว่าแม่หมูมากๆ (เกิน 2.2 หน่วย) จะยังไม่ปาเสยขึ้นฟ้า รอให้ลอยอยู่ในระยะวิถีโค้งก่อนตามต้นฉบับ NES
-            var player = PlayerController.Instance != null ? PlayerController.Instance : FindAnyObjectByType<PlayerController>();
-            if (player != null && (player.transform.position.y - transform.position.y) > 2.2f)
+            // เพิ่มโควต้าหินบนจอเล็กน้อย (4 ก้อน) และปาถี่ขึ้นอีกนิด
+            if (!rapidFire && WolfProjectile.ActiveRockCount >= 4)
             {
-                rockTimer = 0.4f;
+                rockTimer = 0.35f; // รอแล้วค่อยเช็คใหม่
                 return;
             }
 
-            // โควต้าตู้ Arcade: มีหินบนจอได้สูงสุด 3 ก้อนพร้อมกัน (ยกเว้นเปิด Debug Rapid Fire ไว้)
-            if (!rapidFire && WolfProjectile.ActiveRockCount >= 3)
-            {
-                rockTimer = 0.5f; // รออีกครึ่งวิแล้วค่อยเช็คใหม่
-                return;
-            }
-
-            rockTimer = rapidFire ? 0.5f : rockThrowInterval;
+            rockTimer = rapidFire ? 0.5f : Mathf.Min(rockThrowInterval, 1.85f);
             StartCoroutine(ThrowRockRoutine());
         }
     }

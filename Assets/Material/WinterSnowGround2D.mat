@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: WinterSnowGround2D
+  m_Shader: {fileID: 4800000, guid: 2562d92bfb4848879b940e115dcbf56d, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - PixelSnap: 0
+    - _AirFlakeIntensity: 0.72
+    - _AspectRatio: 1.7778
+    - _DriftIntensity: 0.705
+    - _DriftSpeed: -2.88
+    - _FrostIntensity: 0.519
+    - _LandingDensity: 39.5
+    - _LandingIntensity: 1.003
+    - _LandingSpeed: 0.55
+    - _SnowMaxY: 0.5
+    - _SnowMinY: 0.685
+    - _SnowSoftness: 0.089
+    - _SparkleDensity: 63
+    - _SparkleIntensity: 1.351
+    - _SparkleSpeed: 3.52
+    m_Colors:
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _DriftColor: {r: 0.85, g: 0.94, b: 1, a: 1}
+    - _FrostColor: {r: 0.9, g: 0.96, b: 1, a: 1}
+    - _SnowGlowColor: {r: 0.94, g: 0.98, b: 1, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

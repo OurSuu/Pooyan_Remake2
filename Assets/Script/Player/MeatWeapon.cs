@@ -38,7 +38,9 @@ public class MeatWeapon : MonoBehaviour
     [Tooltip("ความแรงในการชะลอแกน X เมื่อลอยมาถึงเหนือหัวหมาป่าในคอลัมน์เดียวกัน")]
     [SerializeField] private float homingColumnBrakeAccel = 12.0f;
 
-    [Header("Bounds")]
+    [Header("Bounds & Ground Stop")]
+    [Tooltip("ระดับพื้นล่างสุด: หากเนื้อตกลงมาถึงพื้นจะหยุดทันที ไม่ลากกวาดหมาป่าที่เพิ่งเดินออกมา")]
+    [SerializeField] private float groundStopY = -3.45f;
     [Tooltip("พิกัดแกน Y ที่เนื้อหลุดขอบล่างจอแล้วทำลายทิ้ง")]
     [SerializeField] private float destroyY = -6f;
     [Tooltip("พิกัดแกน X ที่เนื้อหลุดขอบซ้ายจอแล้วทำลายทิ้ง")]
@@ -51,15 +53,20 @@ public class MeatWeapon : MonoBehaviour
     private readonly HashSet<Balloon> ignoredBalloons = new();
 
     private Rigidbody2D rb;
+    private Collider2D cachedCollider;
+    private SpriteRenderer cachedRenderer;
     private MeatAuraEffect auraEffect;
     private float elapsed;
     private float currentVx;
     private float currentVy;
+    private bool hasHitGround;
 
     private void Awake()
     {
         gameObject.tag = GameConstants.TagMeat;
         rb = GetComponent<Rigidbody2D>();
+        cachedCollider = GetComponent<Collider2D>();
+        cachedRenderer = GetComponentInChildren<SpriteRenderer>();
         auraEffect = GetComponentInChildren<MeatAuraEffect>();
 
         if (rb != null)
@@ -74,9 +81,17 @@ public class MeatWeapon : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (hasHitGround) return;
+
         if (GameManager.Instance != null && GameManager.Instance.DeathFreeze)
         {
             if (rb != null) rb.linearVelocity = Vector2.zero;
+            return;
+        }
+
+        if (transform.position.y <= groundStopY)
+        {
+            StopAtGround(groundStopY);
             return;
         }
 
@@ -118,7 +133,7 @@ public class MeatWeapon : MonoBehaviour
         for (int i = 0; i < wolves.Count; i++)
         {
             var w = wolves[i];
-            if (w == null || !w.IsActiveTarget || hitWolves.Contains(w)) continue;
+            if (w == null || w.State != WolfState.Floating || hitWolves.Contains(w) || w.transform.position.y <= groundStopY + 0.15f) continue;
 
             Vector3 targetPos = w.transform.position + new Vector3(0f, WolfTargetCenterOffsetY, 0f);
             float dx = targetPos.x - meatPos.x;
@@ -180,7 +195,7 @@ public class MeatWeapon : MonoBehaviour
         for (int i = 0; i < wolves.Count; i++)
         {
             var w = wolves[i];
-            if (w == null || !w.IsActiveTarget || hitWolves.Contains(w)) continue;
+            if (w == null || w.State != WolfState.Floating || hitWolves.Contains(w) || w.transform.position.y <= groundStopY + 0.15f) continue;
 
             Vector3 wPos = w.transform.position + new Vector3(0f, WolfTargetCenterOffsetY, 0f);
             float dx = wPos.x - refPos.x;
@@ -246,12 +261,66 @@ public class MeatWeapon : MonoBehaviour
 
     private void Update()
     {
+        if (!hasHitGround && transform.position.y <= groundStopY)
+        {
+            StopAtGround(groundStopY);
+            return;
+        }
+
         if (transform.position.y < destroyY || transform.position.x < destroyX)
             Destroy(gameObject);
     }
 
+    private void StopAtGround(float surfaceY)
+    {
+        if (hasHitGround) return;
+        hasHitGround = true;
+        currentVx = 0f;
+        currentVy = 0f;
+
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector2.zero;
+            rb.bodyType = RigidbodyType2D.Kinematic;
+        }
+        if (cachedCollider != null)
+        {
+            cachedCollider.enabled = false;
+        }
+
+        transform.position = new Vector3(transform.position.x, surfaceY, transform.position.z);
+        StartCoroutine(FadeOutOnGroundRoutine());
+    }
+
+    private System.Collections.IEnumerator FadeOutOnGroundRoutine()
+    {
+        float fadeTime = 0.25f;
+        float t = 0f;
+        Color startColor = cachedRenderer != null ? cachedRenderer.color : Color.white;
+        while (t < fadeTime)
+        {
+            t += Time.deltaTime;
+            if (cachedRenderer != null)
+            {
+                Color c = startColor;
+                c.a = Mathf.Lerp(startColor.a, 0f, t / fadeTime);
+                cachedRenderer.color = c;
+            }
+            yield return null;
+        }
+        Destroy(gameObject);
+    }
+
     private void OnTriggerEnter2D(Collider2D other)
     {
+        if (hasHitGround) return;
+
+        if (other.CompareTag("Ground") || other.gameObject.name.IndexOf("Ground", System.StringComparison.OrdinalIgnoreCase) >= 0)
+        {
+            StopAtGround(Mathf.Max(transform.position.y, groundStopY));
+            return;
+        }
+
         if (other.CompareTag(GameConstants.TagArrow) || other.CompareTag(GameConstants.TagMeat))
             return;
 
@@ -275,10 +344,12 @@ public class MeatWeapon : MonoBehaviour
             return;
         }
 
-        // กรณีชนตัวหมาป่า (หรือลูกโป่งที่ยังมีหมาป่าเกาะอยู่)
+        // กรณีชนตัวหมาป่า (หรือลูกโป่งที่ยังมีหมาป่าเกาะอยู่) — หมาป่าที่เพิ่งเดินบนพื้นล่างจะไม่โดนกวาด
         if (wolf != null && !hitWolves.Contains(wolf))
         {
             if (!wolf.IsActiveTarget)
+                return;
+            if (wolf.State == WolfState.WalkingBeforeDrop && wolf.transform.position.y <= groundStopY + 0.5f)
                 return;
 
             hitWolves.Add(wolf);

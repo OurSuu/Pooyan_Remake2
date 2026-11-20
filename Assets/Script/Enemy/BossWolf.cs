@@ -12,13 +12,25 @@ public class BossWolf : Wolf
 
     [Header("Boss Visuals (NES Pink Boss Wolf)")]
     [SerializeField] private Color bossBodyTint = new Color(1f, 0.68f, 0.85f, 1f); // สีชมพูตามต้นฉบับ NES (ボスオオカミ・ピンク)
-    [SerializeField] private float bossSpeedMultiplier = 1.48f; // ไวกว่าหมาป่าปกติชัดเจน (และไวกว่าเดิมอีกเล็กน้อย)
+    [SerializeField] private float bossSpeedMultiplier = 2.05f; // บอสลอยขึ้นเร็วตามด่านคู่ (บาลานซ์ให้ยิงไล่ตามทัน)
+    [SerializeField] private float minBossAscendSpeed = 1.80f; // ความเร็วขั้นต่ำตอนลอยขึ้นด่าน 2
+    [SerializeField] private float stage4MinBossAscendSpeed = 2.05f; // ความเร็วขั้นต่ำตอนลอยขึ้นด่าน 4+
+    [SerializeField] private float bossWalkSpeedMultiplier = 1.25f;
+
+    private float initialWalkSpeed = -1f;
 
     // ตอนเกิดเรียกฟังก์ชันนี้ ตั้งค่าสเตตัสต่างๆ
     public override void Initialize(LevelConfig config, bool descending, float speed, bool shield, bool rockThrow, float dropX = 0f, float[] lanes = null, int laneIndex = 0, int? overrideBalloonHP = null, BalloonColorType? overrideColorType = null)
     {
-        // บอสมีโล่เสมอ และเคลื่อนที่ไวขึ้น
-        base.Initialize(config, descending, speed * bossSpeedMultiplier, true, rockThrow, dropX, lanes, laneIndex, 1, BalloonColorType.PinkRed);
+        if (initialWalkSpeed < 0f) initialWalkSpeed = walkSpeed;
+        walkSpeed = initialWalkSpeed * bossWalkSpeedMultiplier;
+
+        int currentStage = GameManager.Instance != null ? GameManager.Instance.EffectiveDifficultyStage : 2;
+        float minSpeed = currentStage >= 4 ? stage4MinBossAscendSpeed : minBossAscendSpeed;
+        float bossAscendSpeed = Mathf.Max(speed * bossSpeedMultiplier, minSpeed);
+
+        // บอสมีโล่เสมอ และเคลื่อนที่ลอยขึ้นไวมาก
+        base.Initialize(config, descending, bossAscendSpeed, true, rockThrow, dropX, lanes, laneIndex, 1, BalloonColorType.PinkRed);
         remainingShieldHP = (config != null && config.bossShieldHP > 0) ? config.bossShieldHP : GameConstants.BossShieldHits;
         stageClearTriggered = false;
 
@@ -53,6 +65,11 @@ public class BossWolf : Wolf
             return true;
 
         return false;
+    }
+
+    public override void OnBalloonDamaged(int currentHP, int maxHP)
+    {
+        // บอสหมาป่าไม่ลดความเร็วตอนลอยขึ้นเมื่อโดนยิง
     }
 
     // ถ้าโดนเนื้อปาใส่ (เนื้อทะลุโล่ ตายทันทีในก้อนเดียว!)

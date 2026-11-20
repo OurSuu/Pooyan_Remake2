@@ -262,16 +262,17 @@ public class AudioManager : MonoBehaviour
              sceneName.IndexOf("Summer", StringComparison.OrdinalIgnoreCase) >= 0) && bgmSummer != null)
             return bgmSummer;
 
-        // เช็คจากเลขด่านปัจจุบันเป็นลำดับถัดมา (1=Autumn, 2=Spring, 3=Winter, 4=Rainy/Summer)
+        // เช็คจากเลขด่านปัจจุบันเป็นลำดับถัดมา (1=Autumn, 2=Spring, 3=Winter, 4=Rainy, 5=Summer)
         if (GameManager.Instance != null)
         {
-            int seasonIndex = (GameManager.Instance.CurrentStage - 1) % 4;
+            int seasonIndex = (GameManager.Instance.CurrentStage - 1) % 5;
             switch (seasonIndex)
             {
                 case 0: if (bgmAutumn != null) return bgmAutumn; break;
                 case 1: if (bgmSpring != null) return bgmSpring; break;
                 case 2: if (bgmWinter != null) return bgmWinter; break;
                 case 3:
+                case 4:
                     if (bgmSummer != null) return bgmSummer;
                     if (bgmMain != null) return bgmMain;
                     if (bgmSpring != null) return bgmSpring;
@@ -344,7 +345,7 @@ public class AudioManager : MonoBehaviour
 
     public AudioClip GetStageIntroBGM(int stage = 1)
     {
-        if (stage == 2 && bgmStage2Intro != null)
+        if (stage % 2 == 0 && bgmStage2Intro != null)
             return bgmStage2Intro;
         return bgmStageIntro;
     }

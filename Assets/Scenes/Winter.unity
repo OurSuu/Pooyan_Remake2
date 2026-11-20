@@ -365,6 +365,7 @@ MonoBehaviour:
   wolfPrefab: {fileID: 0}
   meatBonusSpawnPoints: []
   bonusDuration: 30
+  endTransitionDuration: 3
   useNESBonusOrder: 1
 --- !u!1 &46099338
 GameObject:
@@ -3857,6 +3858,63 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!1001 &910000100
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 8400000000000000001, guid: 58c89fd7c093491281bde74eec8161b8, type: 3}
+      propertyPath: m_Name
+      value: WinterFrostMistFX
+      objectReference: {fileID: 0}
+    - target: {fileID: 8400000000000000002, guid: 58c89fd7c093491281bde74eec8161b8, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8400000000000000002, guid: 58c89fd7c093491281bde74eec8161b8, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -3.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 8400000000000000002, guid: 58c89fd7c093491281bde74eec8161b8, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8400000000000000002, guid: 58c89fd7c093491281bde74eec8161b8, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8400000000000000002, guid: 58c89fd7c093491281bde74eec8161b8, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8400000000000000002, guid: 58c89fd7c093491281bde74eec8161b8, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8400000000000000002, guid: 58c89fd7c093491281bde74eec8161b8, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8400000000000000002, guid: 58c89fd7c093491281bde74eec8161b8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8400000000000000002, guid: 58c89fd7c093491281bde74eec8161b8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8400000000000000002, guid: 58c89fd7c093491281bde74eec8161b8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 58c89fd7c093491281bde74eec8161b8, type: 3}
 --- !u!1 &935804600
 GameObject:
   m_ObjectHideFlags: 0
@@ -4501,7 +4559,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 2223cfa41cf347a8ae557a965d142009, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -8292,6 +8350,10 @@ PrefabInstance:
       propertyPath: lineRenderer
       value: 
       objectReference: {fileID: 1569725731}
+    - target: {fileID: 2089167405058355881, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
+      propertyPath: customRopeMaterial
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 2834479417064150740, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
       propertyPath: moveSpeed
       value: 2.8
@@ -8504,3 +8566,4 @@ SceneRoots:
   - {fileID: 935804602}
   - {fileID: 1492543582}
   - {fileID: 450912373}
+  - {fileID: 910000100}

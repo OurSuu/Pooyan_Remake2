@@ -14,7 +14,7 @@ public class TreeTopBossWolf : MonoBehaviour
     [SerializeField] private float topY = 3.75f;             // ความสูงบนยอดไม้
 
     [Header("Fruit Attack (ปล่อยผลไม้ก่อกวน)")]
-    [SerializeField] private float fruitThrowInterval = 3.2f; // โยนผลไม้ทุกๆ กี่วินาที
+    [SerializeField] private float fruitThrowInterval = 6.5f; // โยนผลไม้ทุกๆ กี่วินาที (ปรับให้ทิ้งช่วงห่างขึ้นตาม NES)
     [SerializeField] private float fruitFallSpeed = 3.0f;     // ความเร็วผลไม้ร่วงลงมา
     [SerializeField] private GameObject fruitPrefab;          // พรีแฟบผลไม้
 
@@ -41,6 +41,7 @@ public class TreeTopBossWolf : MonoBehaviour
 
     private void Start()
     {
+        if (fruitThrowInterval < 5.5f) fruitThrowInterval = 6.5f;
         transform.position = new Vector3((walkMinX + walkMaxX) * 0.5f, topY, 0f);
         fruitTimer = fruitThrowInterval;
         PlayRunAnimation();
@@ -48,6 +49,7 @@ public class TreeTopBossWolf : MonoBehaviour
 
     private void OnEnable()
     {
+        if (fruitThrowInterval < 5.5f) fruitThrowInterval = 6.5f;
         fruitTimer = fruitThrowInterval;
         isThrowing = false;
         if (spriteRenderer != null)
@@ -107,7 +109,7 @@ public class TreeTopBossWolf : MonoBehaviour
         fruitTimer -= Time.deltaTime;
         if (fruitTimer > 0f || fruitPrefab == null) return;
 
-        fruitTimer = fruitThrowInterval + Random.Range(-0.4f, 0.5f);
+        fruitTimer = fruitThrowInterval + Random.Range(-0.8f, 1.5f);
         StartCoroutine(ThrowFruitRoutine());
     }
 

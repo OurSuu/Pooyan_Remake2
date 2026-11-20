@@ -15,8 +15,8 @@ MonoBehaviour:
   wolfCount: 40
   wolfSpeedRange: {x: 0.74, y: 1.02}
   shieldRatio: 0.25
-  rockThrowRatio: 0.25
-  spawnInterval: 2.4
+  rockThrowRatio: 0.36
+  spawnInterval: 1.85
   balloonHP: 1
   yellowBalloonRatio: 0
   hasBossWolf: 0

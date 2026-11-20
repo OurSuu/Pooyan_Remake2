@@ -151,7 +151,7 @@ public class WolfSpawner : MonoBehaviour
                 continue;
             }
 
-            float baseWait = Mathf.Max(2f, config.spawnInterval); // กันไว้ อย่างน้อยต้องห่างกัน 2 วิ
+            float baseWait = Mathf.Max(1.1f, config.spawnInterval); // รองรับการปล่อยเร็วขึ้นในด่านหลังๆ ที่หมาป่ามีจำนวนมากขึ้น
             float waitAfterWave = baseWait;
 
             // สำหรับด่านคู่ที่มีบอส (เช่น ด่าน 2 Spring):
@@ -184,9 +184,9 @@ public class WolfSpawner : MonoBehaviour
                 }
             }
 
-            // ถ้ามีหมาป่าในฉากเกิน 10 ตัว ให้รอก่อน อย่าเพิ่งเสกเยอะไปเดี๋ยวแลคและยากไป
+            // ถ้ามีหมาป่าในฉากเกิน 12 ตัว ให้รอก่อน อย่าเพิ่งเสกเยอะไปเดี๋ยวแลคและยากไป
             int activeWolves = Wolf.ActiveWolves.Count;
-            if (activeWolves > 10) 
+            if (activeWolves > 12) 
             {
                 yield return new WaitForSeconds(config.spawnInterval);
                 continue;
@@ -250,14 +250,21 @@ public class WolfSpawner : MonoBehaviour
                 wolvesSpawned++;
                 waitAfterWave = baseWait;
             }
-            else if (pattern == 1) // สองตัวลงเลนเดียวกัน! (ซ้อนระยะประชิด ~1.22 หน่วย บังคับยิงตัวบนก่อนตัวล่าง)
+            else if (pattern == 1) // ซ้อนกันลงในเลนเดียวกัน! (ด่าน 1-2 ซ้อน 2 ตัว, ด่าน 3 เป็นต้นไปซ้อนได้ถึง 2-4 ตัวตาม NES!)
             {
                 int lane = Random.Range(0, laneCount);
-                int count = Mathf.Min(2, spawnableNormalCount);
+                int currentStage = GameManager.Instance != null ? GameManager.Instance.EffectiveDifficultyStage : 1;
+                string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+                bool isStage3OrHigher = currentStage >= 3 ||
+                    sceneName.IndexOf("Winter", System.StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    sceneName.IndexOf("Rainy", System.StringComparison.OrdinalIgnoreCase) >= 0;
+
+                int maxStackInStage = isStage3OrHigher ? Random.Range(2, 5) : 2; // ด่าน 3+ สุ่มซ้อน 2 ถึง 4 ตัว
+                int count = Mathf.Min(maxStackInStage, spawnableNormalCount);
                 float sharedSpeed = isDescendingStage
                     ? uniformDescendingSpeed
                     : Random.Range(config.wolfSpeedRange.x, config.wolfSpeedRange.y);
-                float stackVerticalGap = 1.22f;
+                float stackVerticalGap = 1.68f;
                 float stackDelay = stackVerticalGap / Mathf.Max(0.55f, sharedSpeed);
 
                 for (int i = 0; i < count; i++)
@@ -266,14 +273,14 @@ public class WolfSpawner : MonoBehaviour
                     if (w != null)
                     {
                         w.DisableTeaseBounces();
-                        w.SetFormationLock(true); // ล็อกเลนไม่ให้ตัวที่ 2 หนีไปเลนอื่น
+                        w.SetFormationLock(true); // ล็อกเลนไม่ให้ตัวถัดไปหนีไปเลนอื่น
                     }
                     wolvesSpawned++;
                     
-                    // เว้นระยะให้หมาป่าตัวบนห้อยตัวลงมาบังลูกโป่งของหมาป่าตัวล่างพอดี
+                    // เว้นระยะให้หมาป่าตัวบนอยู่เหนือลูกโป่งของตัวล่างพอดี (ยิงตัวบนให้ลูกธนูร่วงใส่ลูกโป่งตัวล่างได้!)
                     if (i < count - 1) yield return new WaitForSeconds(stackDelay); 
                 }
-                waitAfterWave = baseWait * 1.15f;
+                waitAfterWave = baseWait * (1.05f + 0.12f * count);
             }
             else if (pattern == 2) // ทแยงมุม ลงมาเป็นสเต็ป
             {
@@ -580,8 +587,19 @@ public class WolfSpawner : MonoBehaviour
             BalloonColorType chosenColor = tubeColors[laneIndex % tubeColors.Length];
             balloon.InitializeStandalone(floatUpSpeed, hp: 1, colorType: chosenColor);
         }
+
+        if (cachedTubeAirBurstPrefab == null)
+            cachedTubeAirBurstPrefab = Resources.Load<GameObject>("FX/TubeAirBurstFX");
+        if (cachedTubeAirBurstPrefab != null)
+        {
+            var puffObj = Instantiate(cachedTubeAirBurstPrefab, new Vector3(spawnX, spawnY + 0.3f, 0f), Quaternion.identity);
+            Destroy(puffObj, 1.5f);
+        }
+
         return balloon;
     }
+
+    private GameObject cachedTubeAirBurstPrefab;
 
     public void ResetBossSpawned()
     {

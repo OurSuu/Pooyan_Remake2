@@ -114,7 +114,7 @@ public class NameEntryUI : MonoBehaviour
         }
 
         int finalScore = ScoreManager.Instance != null ? ScoreManager.Instance.Score : 0;
-        int finalStage = GameManager.Instance != null ? GameManager.Instance.CurrentStage : 1;
+        int finalStage = GameManager.Instance != null ? GameManager.Instance.EffectiveDifficultyStage : 1;
 
         // บันทึกลงระบบ
         ScoreManager.Instance?.AddNewHighScore(finalName, finalScore, finalStage);

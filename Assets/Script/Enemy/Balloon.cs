@@ -416,11 +416,11 @@ public class Balloon : MonoBehaviour
         if (isBossFlash)
             return new Color(0.95f, 0.25f, 0.88f, 1f);
 
-        // ลูกโป่ง 3 HP (สีฟ้า) คงสีฟ้าไว้ตลอดตอนโดนยิงตอดและหดขนาดลง
-        if (keepBlueColorWhenShrinking && maxHP == 3)
+        // ลูกโป่ง 3+ HP (สีฟ้า) คงสีฟ้าไว้ตลอดตอนโดนยิงตอดและหดขนาดลง
+        if (keepBlueColorWhenShrinking && maxHP >= 3)
             return blueColor;
 
-        if (hp >= 3) return blueColor;                  // 3 ทีแตก = สีฟ้า
+        if (hp >= 3) return blueColor;                  // 3+ ทีแตก = สีฟ้า
         if (hp == 2) return yellowColor;                // 2 ทีแตก = สีเหลือง/ส้ม
         return new Color(1f, 0.22f, 0.22f, 1f);         // 1 ทีแตก = สีแดง
     }
@@ -430,7 +430,7 @@ public class Balloon : MonoBehaviour
     {
         if (spriteRenderer == null) return;
 
-        // ลูกโป่งบอสจะไม่หดขนาดตอนโดนยิง ส่วนลูกโป่งด่านคู่ (3 HP) จะหดเล็กลงทีละขั้นชัดเจนตามต้นฉบับ NES
+        // ลูกโป่งบอสจะไม่หดขนาดตอนโดนยิง ส่วนลูกโป่งด่านคู่ (4-5 HP) จะหดเล็กลงทีละขั้นจนเล็กมากในนัดสุดท้ายเพื่อให้ยิงแตกยากขึ้น
         if (isBossFlash || maxHP <= 1)
         {
             currentBaseScale = initialScale;
@@ -438,7 +438,8 @@ public class Balloon : MonoBehaviour
         else
         {
             int hitsTaken = Mathf.Max(0, maxHP - currentHP);
-            float scaleMultiplier = Mathf.Clamp(1f - (hitsTaken * 0.22f), 0.45f, 1f);
+            float shrinkProgress = hitsTaken / (float)Mathf.Max(1, maxHP - 1);
+            float scaleMultiplier = Mathf.Lerp(1f, 0.36f, shrinkProgress);
             currentBaseScale = initialScale * scaleMultiplier;
         }
 
@@ -452,7 +453,7 @@ public class Balloon : MonoBehaviour
         if (assignedColorType == BalloonColorType.LightBlue && blueSprite != null) customColorSprite = blueSprite;
         else if (assignedColorType == BalloonColorType.YellowOrange && yellowSprite != null) customColorSprite = yellowSprite;
         else if (assignedColorType == BalloonColorType.PinkRed && pinkSprite != null) customColorSprite = pinkSprite;
-        else if (keepBlueColorWhenShrinking && maxHP == 3 && blueSprite != null) customColorSprite = blueSprite;
+        else if (keepBlueColorWhenShrinking && maxHP >= 3 && blueSprite != null) customColorSprite = blueSprite;
         else if (currentHP >= 4 && redSprite != null) customColorSprite = redSprite;
         else if (currentHP == 3 && blueSprite != null) customColorSprite = blueSprite;
         else if (currentHP == 2 && yellowSprite != null) customColorSprite = yellowSprite;

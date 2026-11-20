@@ -28,6 +28,7 @@ public class Arrow : MonoBehaviour
     private Action<Arrow> onDestroy; // callback ตอนลูกธนูโดนทำลาย จะได้ไปบอก ArrowShooter
     private Action<Arrow> onReturnToPool; // callback ตอนคืนลูกธนูกลับเข้า Pool
     private bool isDeflected; // โดนปัดทิ้งไปหรือยัง จะได้ไม่เช็คซ้ำซ้อน
+    private Wolf deflectedByWolf; // หมาป่าตัวที่เพิ่งงับ/ปัดลูกธนูดอกนี้ (กันไม่ให้ลูกธนูดอกเดิมโดนลูกโป่งของตัวที่เพิ่งปัด)
     private bool isStuckInGround; // ปักอยู่ที่พื้นแล้วหรือยัง
 
     private float initialSpeed;
@@ -111,6 +112,7 @@ public class Arrow : MonoBehaviour
         StopAllCoroutines();
         isDestroyed = false;
         isDeflected = false;
+        deflectedByWolf = null;
         isStuckInGround = false;
         speed = initialSpeed > 0f ? initialSpeed : GameConstants.ArrowSpeed;
         transform.rotation = Quaternion.identity;
@@ -211,16 +213,15 @@ public class Arrow : MonoBehaviour
         // ถ้าชนลูกโป่ง
         if (other.CompareTag(GameConstants.TagBalloon))
         {
-            if (isDeflected) return; // ถ้าลูกธนูโดนปัดไปแล้ว ไม่ให้เจาะลูกโป่งบอสซ้ำ
-
-            // เช็คก่อนว่านี่บอสหรือเปล่า ถ้าใช่ก็ให้บอสรับดาเมจไป
+            // เช็คก่อนว่านี่บอสหรือเปล่า ถ้าใช่ก็ให้บอสรับดาเมจไป (ลูกธนูที่โดนปัดแล้วจะไม่เจาะลูกโป่งบอสซ้ำ)
             var boss = other.GetComponentInParent<BossWolf>();
             if (boss != null)
             {
+                if (isDeflected) return;
                 if (!boss.TryTakeArrowHit(transform.position))
                 {
                     // โล่บอสยังกันไว้ได้ -> ลูกธนูถูกปัดร่วงลงพื้นเหมือนชนโล่!
-                    DeflectDown(isShield: true);
+                    DeflectDown(isShield: true, wolf: boss);
                     return;
                 }
                 DestroySelf();
@@ -228,16 +229,13 @@ public class Arrow : MonoBehaviour
             }
 
             // ถ้าไม่ใช่บอส ก็หาคอมโพเนนต์ลูกโป่งมาลดเลือด
+            // หมายเหตุตามต้นฉบับ NES: ลูกธนูที่โดนหมาป่าตัวบนงับ/ปัดจนร่วงดิ่งลงมา (isDeflected == true)
+            // สามารถปักเจาะลูกโป่งของหมาป่าตัวล่างที่ลอยซ้อนอยู่ข้างใต้ให้แตกได้! (ยกเว้นลูกโป่งของหมาป่าตัวที่เพิ่งปัดลูกธนูดอกนี้เอง)
             var balloon = other.GetComponent<Balloon>() ?? other.GetComponentInParent<Balloon>();
             if (balloon != null)
             {
-                // ถ้ามีหมาป่าตัวบนซ้อนอยู่ในเลนเดียวกันและลำตัวของตัวบนบังลูกโป่งของตัวล่างอยู่ -> ตัวบนจะงับ/บล็อกลูกธนู! (ต้องยิงลูกโป่งตัวบนให้ร่วงก่อน)
-                Wolf blockingUpperWolf = FindUpperWolfBlockingBalloon(balloon);
-                if (blockingUpperWolf != null)
-                {
-                    DeflectDown(isShield: false, wolf: blockingUpperWolf);
+                if (isDeflected && balloon.Owner != null && balloon.Owner == deflectedByWolf)
                     return;
-                }
 
                 balloon.TakeDamage(damage, transform.position);
             }
@@ -249,7 +247,8 @@ public class Arrow : MonoBehaviour
         if (other.CompareTag(GameConstants.TagShield))
         {
             if (isDeflected) return; // โดนปัดไปแล้ว ข้ามเลย
-            DeflectDown(isShield: true);
+            var shieldOwner = other.GetComponentInParent<Wolf>();
+            DeflectDown(isShield: true, wolf: shieldOwner);
             return;
         }
 
@@ -273,45 +272,14 @@ public class Arrow : MonoBehaviour
     }
 
     /// <summary>
-    /// ตรวจสอบว่ามีหมาป่าตัวบนที่ลอยซ้อนอยู่ในเลนเดียวกันและลำตัวบังลูกโป่งของหมาป่าตัวล่างอยู่หรือไม่
-    /// </summary>
-    private Wolf FindUpperWolfBlockingBalloon(Balloon targetBalloon)
-    {
-        if (targetBalloon == null || targetBalloon.Owner == null) return null;
-
-        Wolf lowerWolf = targetBalloon.Owner;
-        float arrowY = transform.position.y;
-        var wolves = Wolf.ActiveWolves;
-
-        for (int i = 0; i < wolves.Count; i++)
-        {
-            var w = wolves[i];
-            if (w == null || w == lowerWolf) continue;
-            if (w.State != WolfState.Floating && w.State != WolfState.BlowingBalloon) continue;
-
-            // อยู่เลนเดียวกัน (แกน X ตรงกัน) และเป็นตัวที่อยู่เหนือหมาป่าเจ้าของลูกโป่งนี้
-            if (Mathf.Abs(w.transform.position.x - lowerWolf.transform.position.x) > 0.45f) continue;
-            if (w.transform.position.y <= lowerWolf.transform.position.y + 0.25f) continue;
-
-            // เช็กว่าความสูงของลูกธนูตรงกับช่วงลำตัวของหมาป่าตัวบนที่ห้อยลงมาบังลูกโป่งตัวล่างพอดีหรือไม่
-            float upperBodyMinY = w.transform.position.y - 0.38f;
-            float upperBodyMaxY = w.transform.position.y + 0.85f;
-            if (arrowY >= upperBodyMinY && arrowY <= upperBodyMaxY)
-            {
-                return w;
-            }
-        }
-
-        return null;
-    }
-
-    /// <summary>
     /// สั่งให้ลูกธนูเสียหลักดิ่งลงพื้น (เมื่อโดนหมาป่างับ, ชนโล่, หรือชนโล่บอส)
+    /// พร้อมจัดแนวแกน X ให้ตรงกับแนวลูกโป่งของเลนนั้น เพื่อให้ลูกธนูที่ร่วงดิ่งลงไปสามารถเจาะลูกโป่งของหมาป่าตัวล่างที่ซ้อนอยู่ในช่องเดียวกันได้ตาม NES!
     /// </summary>
     private void DeflectDown(bool isShield, Wolf wolf = null)
     {
         if (isDeflected) return;
         isDeflected = true;
+        deflectedByWolf = wolf;
 
         // แจ้ง ArrowShooter ทันทีว่าลูกธนูนี้พ้นสภาพการยิงแล้ว ผู้เล่นจะได้ยิงนัดถัดไปได้ทันที ไม่ต้องรอลูกธนูปักพื้นเสร็จ
         if (onDestroy != null)
@@ -324,6 +292,14 @@ public class Arrow : MonoBehaviour
         if (cachedTrailFX != null)
         {
             cachedTrailFX.StopTrailForPool();
+        }
+
+        // จัดแนวแกน X ของลูกธนูตอนร่วงให้ตรงกับกึ่งกลางคอลัมน์ลูกโป่งของหมาป่าตัวที่ปัด
+        // เพื่อไม่ให้ลูกธนูร่วงเฉียดขอบขวาของลูกโป่งตัวล่างที่ซ้อนอยู่ในเลนเดียวกัน
+        if (wolf != null)
+        {
+            float columnX = wolf.GetBalloonColumnWorldX();
+            transform.position = new Vector3(columnX, transform.position.y, transform.position.z);
         }
 
         // หมุนลูกธนูให้หัวดิ่งลงพื้น

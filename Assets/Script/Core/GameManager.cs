@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour
 
     [Header("Stage")]
     [SerializeField] private int currentStage = 1;
+    [SerializeField] private int loopCount = 1;
     [SerializeField] private int lives = GameConstants.StartingLives;
 
     [Header("Editor Debug / Testing")]
@@ -22,6 +23,9 @@ public class GameManager : MonoBehaviour
 
     public GameState CurrentState { get; private set; } = GameState.MainMenu;
     public int CurrentStage => currentStage;
+    public int CycleLength => Application.CanStreamedLevelBeLoaded("Summer") ? 5 : 4;
+    public int LoopCount => 1 + (Mathf.Max(0, currentStage - 1) / CycleLength);
+    public int EffectiveDifficultyStage => currentStage;
     public int Lives => lives;
     
     public bool DeathFreeze { get; private set; }
@@ -53,23 +57,34 @@ public class GameManager : MonoBehaviour
     public void StartGame()
     {
         string activeScene = SceneManager.GetActiveScene().name;
-        bool isRainyScene = activeScene.IndexOf("Rainy", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                            activeScene.IndexOf("Summer", StringComparison.OrdinalIgnoreCase) >= 0;
+        bool isRainyScene = activeScene.IndexOf("Rainy", StringComparison.OrdinalIgnoreCase) >= 0;
+        bool isSummerScene = activeScene.IndexOf("Summer", StringComparison.OrdinalIgnoreCase) >= 0;
 
         if (GameSession.IsActive)
         {
             currentStage = GameSession.CurrentStage;
+            loopCount = Mathf.Max(1, GameSession.LoopCount);
             lives = GameSession.Lives;
             if (isRainyScene && currentStage < 4)
             {
                 currentStage = 4;
                 GameSession.CurrentStage = 4;
             }
+            else if (isSummerScene && currentStage < 5)
+            {
+                currentStage = 5;
+                GameSession.CurrentStage = 5;
+            }
         }
         else
         {
+            loopCount = 1;
             // กรณีเริ่มเกมครั้งแรก หรือกด Play เทสจาก Scene นั้นๆ โดยตรงใน Editor
-            if (isRainyScene)
+            if (isSummerScene)
+            {
+                if (currentStage < 5) currentStage = 5;
+            }
+            else if (isRainyScene)
             {
                 if (currentStage < 4) currentStage = 4;
             }
@@ -84,6 +99,7 @@ public class GameManager : MonoBehaviour
 
             GameSession.IsActive = true;
             GameSession.CurrentStage = currentStage;
+            GameSession.LoopCount = loopCount;
             GameSession.Lives = lives;
             GameSession.Score = 0;
         }
@@ -112,7 +128,7 @@ public class GameManager : MonoBehaviour
         OnLivesChanged?.Invoke(lives);
         OnStageChanged?.Invoke(currentStage);
 
-        // ถ้ามีคัทซีนก่อนเริ่มด่าน (เฉพาะด่าน 1 และ 2) ให้เข้าสู่สถานะ Cutscene และรอจนกว่าคัทซีนจะเล่นจบก่อนเริ่มเกมจริง!
+        // ถ้ามีคัทซีนก่อนเริ่มด่าน (ด่าน 1, 2 และ 4) ให้เข้าสู่สถานะ Cutscene และรอจนกว่าคัทซีนจะเล่นจบก่อนเริ่มเกมจริง!
         var cutscene = FindAnyObjectByType<StageCutsceneController>();
         if (cutscene != null && cutscene.HasIntroCutsceneForStage(currentStage) && !isBonusScene)
         {
@@ -208,6 +224,14 @@ public class GameManager : MonoBehaviour
         OnStageClear?.Invoke();
     }
 
+    public void GetNextStageInfo(out int nextStage, out int nextLoop)
+    {
+        nextStage = currentStage + 1;
+        nextLoop = 1 + (Mathf.Max(0, nextStage - 1) / CycleLength);
+    }
+
+    public int GetNextStageNumber() => currentStage + 1;
+
     public void AdvanceStage()
     {
         if (currentStage % 2 == 0)
@@ -217,6 +241,7 @@ public class GameManager : MonoBehaviour
             if (Application.CanStreamedLevelBeLoaded(bonusScene))
             {
                 GameSession.CurrentStage = currentStage;
+                GameSession.LoopCount = LoopCount;
                 GameSession.Lives = lives;
                 if (ScoreManager.Instance != null) GameSession.Score = ScoreManager.Instance.Score;
                 SceneManager.LoadScene(bonusScene);
@@ -228,13 +253,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            currentStage++;
-            GameSession.CurrentStage = currentStage;
-            GameSession.Lives = lives;
-            if (ScoreManager.Instance != null) GameSession.Score = ScoreManager.Instance.Score;
-            
-            // เปลี่ยน Scene เป็นด่านใหม่ตามฤดู
-            LoadStageScene(currentStage);
+            AdvanceToNextStageInLoop();
         }
     }
 
@@ -245,31 +264,37 @@ public class GameManager : MonoBehaviour
 
     public void CompleteBonusStage()
     {
-        currentStage++;
+        AdvanceToNextStageInLoop();
+    }
+
+    private void AdvanceToNextStageInLoop()
+    {
+        GetNextStageInfo(out int nextStage, out int nextLoop);
+        currentStage = nextStage;
+        loopCount = nextLoop;
         GameSession.CurrentStage = currentStage;
+        GameSession.LoopCount = loopCount;
         GameSession.Lives = lives;
         if (ScoreManager.Instance != null) GameSession.Score = ScoreManager.Instance.Score;
-        
+
+        // เปลี่ยน Scene: ด่าน 1-5 โชว์ตามลำดับฤดู จากนั้นสุ่มฉากตามประเภทคี่/คู่ไปเรื่อยๆ
         LoadStageScene(currentStage);
     }
 
     private void LoadStageScene(int stage)
     {
-        string targetScene = GetSceneNameForStage(stage);
-        // เช็คว่ามีฉากนี้ใน Build Settings มั้ย ถ้ายังไม่มี (เช่น Summer ด่าน 4 ยังไม่เสร็จ) ให้ข้ามไปฉากที่มีและตรงประเภทด่านคี่/คู่
+        string targetScene = SelectSceneNameForStage(stage);
+        // Fallback กรณีฉากยังไม่ถูกใส่ใน Build Settings
         if (!Application.CanStreamedLevelBeLoaded(targetScene))
         {
             if (stage % 2 == 0)
             {
-                // ถ้าเป็นด่านคู่ (เช่น ด่าน 4 Rainy/Summer) ให้หาฉากด่านคู่ที่มีอยู่ตามลำดับ
                 if (Application.CanStreamedLevelBeLoaded("Rainy")) targetScene = "Rainy";
-                else if (Application.CanStreamedLevelBeLoaded("Summer")) targetScene = "Summer";
                 else if (Application.CanStreamedLevelBeLoaded("Spring")) targetScene = "Spring";
                 else if (Application.CanStreamedLevelBeLoaded("Winter")) targetScene = "Winter";
             }
             else
             {
-                // ถ้าเป็นด่านคี่ ให้ใช้ฉากด่านคี่ที่มีอยู่ (Winter หรือ Autumn)
                 if (Application.CanStreamedLevelBeLoaded("Winter")) targetScene = "Winter";
                 else if (Application.CanStreamedLevelBeLoaded("Autumn")) targetScene = "Autumn";
             }
@@ -279,7 +304,12 @@ public class GameManager : MonoBehaviour
 
     private string GetBonusSceneNameForStage(int stage)
     {
-        string candidate = GetSceneNameForStage(stage) + "_Bonus";
+        // ให้ด่านคู่เข้า Bonus ของฉากปัจจุบันก่อนเสมอ (สำคัญมากสำหรับด่านสุ่มหลังจบด่าน 5)
+        string activeBonus = SceneManager.GetActiveScene().name + "_Bonus";
+        if (Application.CanStreamedLevelBeLoaded(activeBonus))
+            return activeBonus;
+
+        string candidate = GetShowcaseSceneName(stage) + "_Bonus";
         if (Application.CanStreamedLevelBeLoaded(candidate))
             return candidate;
         if (Application.CanStreamedLevelBeLoaded("Spring_Bonus"))
@@ -287,16 +317,45 @@ public class GameManager : MonoBehaviour
         return candidate;
     }
 
-    private string GetSceneNameForStage(int stage)
+    private string SelectSceneNameForStage(int stage)
     {
-        // 1=Autumn (ด่านคี่), 2=Spring (ด่านคู่), 3=Winter (ด่านคี่), 4=Rainy (ด่านคู่) (แล้ววนลูป)
-        int index = (stage - 1) % 4;
-        switch (index)
+        if (stage <= CycleLength)
         {
-            case 0: return "Autumn";
-            case 1: return "Spring";
-            case 2: return "Winter";
-            case 3: return "Rainy";
+            return GetShowcaseSceneName(stage);
+        }
+
+        // หลังเล่นครบชุดด่านแรกแล้ว (เช่น หลังด่าน 5): สุ่มธีมฉากโดยแยกฝั่งด่านคู่/ด่านคี่เพื่อไม่ให้ระบบสลับทิศชนกัน
+        string[] pool = (stage % 2 == 0)
+            ? new[] { "Spring", "Rainy" }
+            : new[] { "Autumn", "Winter", "Summer" };
+
+        string currentSceneName = SceneManager.GetActiveScene().name;
+        var valid = new System.Collections.Generic.List<string>();
+        foreach (string s in pool)
+        {
+            if (Application.CanStreamedLevelBeLoaded(s))
+                valid.Add(s);
+        }
+
+        if (valid.Count == 0)
+            return GetShowcaseSceneName(((stage - 1) % CycleLength) + 1);
+
+        if (valid.Count > 1)
+            valid.RemoveAll(s => string.Equals(s, currentSceneName, StringComparison.OrdinalIgnoreCase));
+
+        return valid[UnityEngine.Random.Range(0, valid.Count)];
+    }
+
+    private static string GetShowcaseSceneName(int stage)
+    {
+        // 1=Autumn (คี่), 2=Spring (คู่), 3=Winter (คี่), 4=Rainy (คู่), 5=Summer (คี่)
+        switch (stage)
+        {
+            case 1: return "Autumn";
+            case 2: return "Spring";
+            case 3: return "Winter";
+            case 4: return "Rainy";
+            case 5: return "Summer";
             default: return "Autumn";
         }
     }

@@ -61,8 +61,12 @@ public class StageCutsceneController : MonoBehaviour
     public AudioClip stage1IntroBGM;
     [Tooltip("เพลง BGM คัทซีนก่อนเริ่มด่าน 2 (Spring - วิ่งไล่กวดหมาป่า)")]
     public AudioClip stage2IntroBGM;
+    [Tooltip("เพลง BGM คัทซีนก่อนเริ่มด่าน 4 (Rainy - วิ่งไล่กวดหมาป่า ถ้าเว้นว่างจะใช้เพลงเดียวกับด่าน 2)")]
+    public AudioClip stage4IntroBGM;
     [Tooltip("เพลง BGM คัทซีนเคลียร์ด่าน 2 รวมญาติก่อนเข้าโบนัส (Stage Clear / Reunion)")]
     public AudioClip stage2ClearBGM;
+    [Tooltip("เพลง BGM คัทซีนเคลียร์ด่าน 4 รวมญาติก่อนเข้าโบนัส (ถ้าเว้นว่างจะใช้เพลงเดียวกับด่าน 2)")]
+    public AudioClip stage4ClearBGM;
     [Tooltip("เพลง BGM คัทซีนสำรองทั่วไป (หากช่องเฉพาะด้านบนว่างไว้ จะใช้เพลงนี้)")]
     public AudioClip defaultCutsceneBGM;
     [Tooltip("ให้เพลงคัทซีนเล่นวนลูปหรือไม่ (ถ้าไม่ติ๊กจะเล่นรอบเดียวแบบ Jingle)")]
@@ -89,18 +93,28 @@ public class StageCutsceneController : MonoBehaviour
     private void Awake()
     {
         Instance = this;
-        if (IsRainySceneActive())
+        if (IsBonusSceneActive())
         {
             enableCutscenes = false;
         }
     }
 
-    private static bool IsRainySceneActive()
+    private static bool IsBonusSceneActive()
     {
         string sceneName = SceneManager.GetActiveScene().name;
         return !string.IsNullOrEmpty(sceneName) &&
-               sceneName.IndexOf("Rainy", StringComparison.OrdinalIgnoreCase) >= 0;
+               sceneName.IndexOf("Bonus", StringComparison.OrdinalIgnoreCase) >= 0;
     }
+
+    private static bool IsActiveSceneNamed(string keyword)
+    {
+        string sceneName = SceneManager.GetActiveScene().name;
+        return !string.IsNullOrEmpty(sceneName) &&
+               sceneName.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0;
+    }
+
+    private static bool IsAutumnScene() => IsActiveSceneNamed("Autumn");
+    private static bool IsChaseCutsceneScene() => IsActiveSceneNamed("Spring") || IsActiveSceneNamed("Rainy");
 
     private void OnDestroy()
     {
@@ -113,21 +127,21 @@ public class StageCutsceneController : MonoBehaviour
     }
 
     /// <summary>
-    /// เช็คว่าด่านนี้มีคัทซีนก่อนเริ่มด่านหรือไม่ (เฉพาะด่าน 1 และด่าน 2 — ด่าน Rainy ปิดไว้ก่อน)
+    /// เช็คว่าด่านนี้มีคัทซีนก่อนเริ่มด่านหรือไม่ (อิงตามธีมของ Scene เพื่อรองรับทั้งด่าน 1-5 และด่านสุ่มหลังจบด่าน 5)
     /// </summary>
     public bool HasIntroCutsceneForStage(int stage)
     {
-        if (!enableCutscenes || IsRainySceneActive()) return false;
-        return stage == 1 || stage == 2;
+        if (!enableCutscenes || IsBonusSceneActive()) return false;
+        return IsAutumnScene() || IsChaseCutsceneScene();
     }
 
     /// <summary>
-    /// เช็คว่าด่านนี้มีคัทซีนตอนจบด่านหรือไม่ (เฉพาะด่าน 2 ที่ผ่านแล้วจะเข้าสู่ Bonus Stage — ด่าน Rainy ปิดไว้ก่อน)
+    /// เช็คว่าด่านนี้มีคัทซีนตอนจบด่านหรือไม่ (ด่านคู่: Spring / Rainy ก่อนเข้า Bonus Stage)
     /// </summary>
     public bool HasClearCutsceneForStage(int stage)
     {
-        if (!enableCutscenes || IsRainySceneActive()) return false;
-        return stage == 2;
+        if (!enableCutscenes || IsBonusSceneActive()) return false;
+        return (stage % 2 == 0) && IsChaseCutsceneScene();
     }
 
     /// <summary>
@@ -143,16 +157,16 @@ public class StageCutsceneController : MonoBehaviour
 
         if (activeCutsceneRoutine != null) StopCoroutine(activeCutsceneRoutine);
 
-        if (stage == 1)
+        if (IsAutumnScene())
             activeCutsceneRoutine = StartCoroutine(Stage1IntroRoutine(onComplete));
-        else if (stage == 2)
-            activeCutsceneRoutine = StartCoroutine(Stage2IntroRoutine(onComplete));
+        else if (IsChaseCutsceneScene())
+            activeCutsceneRoutine = StartCoroutine(StageChaseIntroRoutine(stage, onComplete));
         else
             onComplete?.Invoke();
     }
 
     /// <summary>
-    /// สั่งเล่นคัทซีนตอนจบด่าน (Reunion Cutscene หลังจบด่าน 2 ก่อนเข้าโบนัส)
+    /// สั่งเล่นคัทซีนตอนจบด่าน (Reunion Cutscene หลังจบด่าน 2 และด่าน 4 ก่อนเข้าโบนัส)
     /// </summary>
     public void PlayStageClearCutscene(int stage, Action onComplete)
     {
@@ -167,7 +181,7 @@ public class StageCutsceneController : MonoBehaviour
             StopCoroutine(activeCutsceneRoutine);
             activeCutsceneRoutine = null;
         }
-        activeCutsceneRoutine = StartCoroutine(Stage2ClearReunionRoutine(onComplete));
+        activeCutsceneRoutine = StartCoroutine(StageClearReunionRoutine(stage, onComplete));
     }
 
     // =========================================================================================
@@ -386,13 +400,13 @@ public class StageCutsceneController : MonoBehaviour
     }
 
     // =========================================================================================
-    // 2. คัทซีนก่อนเริ่มด่าน 2 (Stage 2 Intro):
+    // 2. คัทซีนวิ่งไล่กวดก่อนเริ่มด่าน 2 (ด่าน 1 -> 2) และด่าน 4 (ด่าน 3 -> 4):
     //    - หมาป่าวิ่งหนีตาตั้งไปทางซ้าย (หันหน้าไปทางซ้ายตามทิศวิ่ง)
     //    - แม่หมูกับลูกหมู 2 ตัว วิ่งไล่กวดหมาป่าไปทางซ้ายแบบช้าๆ คอมเมดี้
     //    - ขบวนวิ่ง: หมาป่า -> ลูกหมู 1 -> ลูกหมู 2 -> แม่หมู
     //    - แต่ละตัวเมื่อวิ่งถึงขอบซ้าย (เข้าป่า) จะหายตัวไปทีละตัวตามลำดับ 1, 2, 3, 4!
     // =========================================================================================
-    private IEnumerator Stage2IntroRoutine(Action onComplete)
+    private IEnumerator StageChaseIntroRoutine(int stage, Action onComplete)
     {
         IsPlayingCutscene = true;
         SetGameplayPlayerVisible(false);
@@ -402,13 +416,14 @@ public class StageCutsceneController : MonoBehaviour
 
         if (cutsceneBasket != null) cutsceneBasket.gameObject.SetActive(false);
 
-        // เล่นท่าแอนิเมชันสำหรับคัทซีนด่าน 2
+        // เล่นท่าแอนิเมชันสำหรับคัทซีนวิ่งไล่กวด
         PlayActorAnim(cutsceneWolf, wolfRunState, wolfCutsceneAnimator);
         PlayActorAnim(cutscenePiglet1, pigletWalkState, pigletCutsceneAnimator);
         PlayActorAnim(cutscenePiglet2, pigletWalkState, pigletCutsceneAnimator);
         PlayActorAnim(cutsceneMama, mamaWalkState, mamaCutsceneAnimator);
 
-        PlayCutsceneBGM(stage2IntroBGM, stage: 2, isClear: false);
+        AudioClip chaseBGM = (IsActiveSceneNamed("Rainy") && stage4IntroBGM != null) ? stage4IntroBGM : stage2IntroBGM;
+        PlayCutsceneBGM(chaseBGM, stage: stage, isClear: false);
 
         // ปรับความเร็วให้ช้าลงตามคำขอ (6.8 วินาที วิ่งไล่กันแบบช้าๆ ชิลๆ คอมเมดี้)
         float duration = 6.8f;
@@ -451,16 +466,17 @@ public class StageCutsceneController : MonoBehaviour
     }
 
     // =========================================================================================
-    // 3. คัทซีนตอนจบด่าน 2 (Stage 2 Clear Reunion Cutscene):
+    // 3. คัทซีนตอนจบด่านคู่ (Stage 2 / Stage 4 Clear Reunion Cutscene):
     //    - เฟส 1: กระเช้าที่แม่หมูนั่งอยู่เลื่อนลงมาล่างสุดจนถึงพื้น พร้อมเชือกที่เชื่อมต่ออยู่ตลอด
-    //    - เฟส 2: กระเช้ายังคงอยู่ที่พื้น ไม่หายไปไหน! แม่หมูก้าวออกจากกระเช้าด้วยแอนิเมชัน CutScene_Walk_Spring เดินไปหาลูกหมู
+    //    - เฟส 2: กระเช้ายังคงอยู่ที่พื้น ไม่หายไปไหน! แม่หมูก้าวออกจากกระเช้าเดินไปหาลูกหมู
     //    - เฟส 3: แม่หมูกับลูกหมูกระโดดดีใจทักทายคุยกันสักครู่
     //    - เฟส 4: แม่หมูเดินมุ่งหน้าต่อไปทางซ้ายเพื่อเข้าสู่ด่านโบนัส (ลูกหมูเดินตาม/ส่งแม่)
     // =========================================================================================
-    private IEnumerator Stage2ClearReunionRoutine(Action onComplete)
+    private IEnumerator StageClearReunionRoutine(int stage, Action onComplete)
     {
         IsPlayingCutscene = true;
-        PlayCutsceneBGM(stage2ClearBGM, stage: 2, isClear: true);
+        AudioClip clearBGM = (IsActiveSceneNamed("Rainy") && stage4ClearBGM != null) ? stage4ClearBGM : stage2ClearBGM;
+        PlayCutsceneBGM(clearBGM, stage: stage, isClear: true);
 
         // 1. จัดการตัวผู้เล่น (กระเช้า + แม่หมู) และเชือกให้พร้อม
         var player = FindFirstObjectByType<PlayerController>(FindObjectsInactive.Include);

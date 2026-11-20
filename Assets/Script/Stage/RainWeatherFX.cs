@@ -587,11 +587,12 @@ public class RainWeatherFX : MonoBehaviour
 
         bool modified = false;
 
-        // 1. ปิด Cutscene ในด่าน Rainy ทันที
+        // 1. เปิด Cutscene ในด่าน Rainy ปกติ (และปิดเฉพาะฉาก Bonus)
+        bool isBonusScene = activeScene.name.IndexOf("Bonus", StringComparison.OrdinalIgnoreCase) >= 0;
         var cutscene = FindFirstObjectByType<StageCutsceneController>(FindObjectsInactive.Include);
-        if (cutscene != null && cutscene.enableCutscenes)
+        if (cutscene != null && cutscene.enableCutscenes != !isBonusScene)
         {
-            cutscene.enableCutscenes = false;
+            cutscene.enableCutscenes = !isBonusScene;
             EditorUtility.SetDirty(cutscene);
             modified = true;
         }

@@ -2,6 +2,7 @@
 {
     public static bool IsActive = false;
     public static int CurrentStage = 1;
+    public static int LoopCount = 1;
     public static int Lives = 3;
     public static int Score = 0;
     
@@ -9,6 +10,7 @@
     {
         IsActive = true;
         CurrentStage = 1;
+        LoopCount = 1;
         Lives = 3; // GameConstants.StartingLives
         Score = 0;
     }

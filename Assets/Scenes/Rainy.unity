@@ -2021,7 +2021,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e289f871dba5036489c6a131b856a905, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StageCutsceneController
-  enableCutscenes: 0
+  enableCutscenes: 1
   groundY: -3.75
   actorScale: 0.26
   mamaYOffset: 0.25
