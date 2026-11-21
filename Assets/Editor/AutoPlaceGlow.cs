@@ -8,7 +8,7 @@ public class AutoPlaceGlow
     public static void PlaceWindows()
     {
         // 1. Create Soft Glow Texture
-        string texPath = "Assets/SoftGlow.png";
+        string texPath = "Assets/Common/Sprite/SoftGlow.png";
         if (!File.Exists(texPath))
         {
             Texture2D tex = new Texture2D(128, 128, TextureFormat.ARGB32, false);
@@ -21,7 +21,7 @@ public class AutoPlaceGlow
                 }
             }
             tex.Apply();
-            File.WriteAllBytes(Application.dataPath + "/SoftGlow.png", tex.EncodeToPNG());
+            File.WriteAllBytes(Application.dataPath + "/Common/Sprite/SoftGlow.png", tex.EncodeToPNG());
             AssetDatabase.Refresh();
             
             TextureImporter importer = (TextureImporter)AssetImporter.GetAtPath(texPath);
