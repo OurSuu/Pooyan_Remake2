@@ -57,7 +57,7 @@ public class NameEntryUI : MonoBehaviour
             if (currentSelectionIndex < 0) currentSelectionIndex = availableChars.Length - 1;
             inputCooldown = 0.15f; // หน่วงนิดนึงไม่ให้ตัวอักษรวิ่งรัวเกิน
             UpdateDisplay();
-            AudioManager.Instance?.PlayBalloonPop(); // ใช้เสียงลูกโป่งป๊อปแทนเสียงจิ้มเมนูไปก่อน
+            AudioManager.Instance?.PlayButtonClick();
         }
         else if (v < -0.5f)
         {
@@ -65,7 +65,7 @@ public class NameEntryUI : MonoBehaviour
             if (currentSelectionIndex >= availableChars.Length) currentSelectionIndex = 0;
             inputCooldown = 0.15f;
             UpdateDisplay();
-            AudioManager.Instance?.PlayBalloonPop();
+            AudioManager.Instance?.PlayButtonClick();
         }
 
         // จัดการกดยืนยัน (กดยิง)

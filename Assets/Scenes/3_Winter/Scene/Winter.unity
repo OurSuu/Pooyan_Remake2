@@ -1303,18 +1303,42 @@ MonoBehaviour:
   wolfYOffset: 0.66
   pigletYOffset: 0
   basketYOffset: 0.35
+  stage1CutsceneSpeed: 1
+  chaseWolfExtraGap: 1.6
+  chasePursuerSpacingMultiplier: 1
+  chaseCutsceneDuration: 4.6
+  chaseCutsceneSpeed: 1
+  chaseAnimSpeed: 1.25
+  clearCutsceneSpeed: 1
+  clearBasketLowerDuration: 2.2
+  clearMamaSlowSpeed: 1.25
+  clearPigletCatchUpSpeed: 2.05
+  clearGroupFastSpeed: 5.2
+  clearFormationSpacing: 1.15
+  playMainMenuLoop: 0
+  mainMenuLoopForever: 0
+  mainMenuWalkSpeed: 3.1
+  mainMenuCutsceneSpeed: 1
+  mainMenuAnimSpeed: 1.15
+  mainMenuFormationSpacing: 1.15
+  mainMenuBalloonFloatDuration: 1.65
+  mainMenuHeldBalloonOffset: {x: -0.35, y: 0.26}
+  mainMenuWolfLeadGap: 1.85
+  mainMenuWolfIsBoss: 0
+  mainMenuBossWolfColor: {r: 1, g: 0.68, b: 0.85, a: 1}
+  mainMenuBossWolfScaleMultiplier: 1.15
+  mainMenuLoopDelay: 0.8
+  mainMenuBalloonPrefab: {fileID: 0}
+  mainMenuBalloonSprite: {fileID: 0}
   wolfCutsceneAnimator: {fileID: 0}
   mamaCutsceneAnimator: {fileID: 0}
   pigletCutsceneAnimator: {fileID: 0}
   wolfRunState: Cutscene_Run
+  wolfStealState: CutScene_StealPiglet
+  hidePiglet2DuringSteal: 1
   mamaWalkState: Cutscene_Walk
   pigletWalkState: Cutscene_Walk
   pigletJumpState: Cutscene_Jump
-  stage1IntroBGM: {fileID: 0}
-  stage2IntroBGM: {fileID: 0}
-  stage2ClearBGM: {fileID: 0}
-  defaultCutsceneBGM: {fileID: 0}
-  loopCutsceneBGM: 0
 --- !u!1 &273302716
 GameObject:
   m_ObjectHideFlags: 0
@@ -1973,7 +1997,7 @@ MonoBehaviour:
   fruitPrefab: {fileID: 923139917039987540, guid: 6a5e74d9f5021bc46b63f2dbb7bf7d11, type: 3}
   spriteRenderer: {fileID: 450912372}
   animator: {fileID: 450912371}
-  bossTint: {r: 1, g: 0.68, b: 0.85, a: 1}
+  bossTint: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &450912370
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1999,7 +2023,7 @@ Animator:
   m_GameObject: {fileID: 450912368}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 316c4db6750e13b4395d9d2da8f60721, type: 2}
+  m_Controller: {fileID: 9100000, guid: 5a45bdd67f74ce941b5ec1861c55795d, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -2060,8 +2084,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 15
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 82417850842755009, guid: df451f1b8cda29a429bf3d0bed1bc644, type: 3}
-  m_Color: {r: 1, g: 0.68, b: 0.85, a: 1}
+  m_Sprite: {fileID: 3992667595222780342, guid: 2d51e7895c8372243b76417fdfadb903, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -6563,6 +6587,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   currentStage: 3
+  loopCount: 1
   lives: 3
   useInspectorStageInEditor: 1
   startAsBonusStage: 0

@@ -43,6 +43,9 @@ public class Wolf : MonoBehaviour
     [SerializeField] protected float fallSpeed = 4f;
     [SerializeField] protected float walkSpeed = 1.85f;
     [SerializeField] protected float climbSpeed = 1.05f;
+    [Header("Ground Run Audio")]
+    [SerializeField] protected bool playGroundRunSFX = true;
+    [SerializeField] protected float groundRunStepInterval = 0.22f;
     protected float targetDropX;
 
     [Header("Shield")]
@@ -607,11 +610,12 @@ public class Wolf : MonoBehaviour
     protected int currentLane = 0;
     protected float[] availableLanes;
 
-        protected void StartBlowingBalloon()
+    protected void StartBlowingBalloon()
     {
         state = WolfState.BlowingBalloon;
         if (animator != null && animator.enabled) animator.Play("BlowBalloon");
-        AudioManager.Instance?.PlayBalloonInflate();
+        BalloonColorType bColor = balloon != null ? balloon.AssignedColorType : BalloonColorType.AutoByHP;
+        AudioManager.Instance?.PlayBalloonInflateAt(transform.position.x, bColor, this is BossWolf);
         StartCoroutine(BlowBalloonRoutine());
     }
 
@@ -634,6 +638,11 @@ public class Wolf : MonoBehaviour
 
     protected virtual void UpdateWalkingBeforeDrop()
     {
+        // เล่นเสียงวิ่งเฉพาะตอนเดินบนหญ้าด้านล่าง (ด่านคู่) เท่านั้น ไม่เล่นตอนอยู่บนกิ่งไม้/ต้นไม้ด้านบน
+        if (!isDescendingStage)
+        {
+            TriggerGroundRunSFX(1.02f);
+        }
         transform.position = Vector3.MoveTowards(transform.position, new Vector3(targetDropX, transform.position.y, 0f), walkSpeed * Time.deltaTime);
         if (Mathf.Abs(transform.position.x - targetDropX) < 0.05f)
         {
@@ -960,6 +969,12 @@ public class Wolf : MonoBehaviour
         BoulderSystem.Instance?.RegisterWolfOnCliff(this);
     }
 
+    protected void TriggerGroundRunSFX(float pitchScale = 1f)
+    {
+        if (!playGroundRunSFX || Time.deltaTime <= 0f || AudioManager.Instance == null) return;
+        AudioManager.Instance.NotifyWolfGrassRun(GetInstanceID(), transform.position.x, pitchScale, groundRunStepInterval);
+    }
+
     protected void UpdateWalkToLadder()
     {
         if (animator != null && animator.enabled)
@@ -970,6 +985,7 @@ public class Wolf : MonoBehaviour
         var ladder = LadderSystem.Instance;
         if (ladder == null) { DestroyWolf(); return; }
 
+        TriggerGroundRunSFX(0.95f);
         float targetX = ladder.LadderX;
         transform.position = Vector3.MoveTowards(transform.position, new Vector3(targetX, groundY, 0f), walkSpeed * Time.deltaTime);
 

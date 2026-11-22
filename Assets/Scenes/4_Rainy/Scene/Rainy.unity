@@ -275,6 +275,7 @@ MonoBehaviour:
   wolfPrefab: {fileID: 0}
   meatBonusSpawnPoints: []
   bonusDuration: 30
+  endTransitionDuration: 3
   useNESBonusOrder: 1
 --- !u!1 &46099338
 GameObject:
@@ -1615,7 +1616,7 @@ GameObject:
   - component: {fileID: 517381041}
   - component: {fileID: 517381040}
   m_Layer: 0
-  m_Name: SpringPiglet1_0 (1)
+  m_Name: RainyPiglet1_0 (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2028,16 +2029,47 @@ MonoBehaviour:
   wolfYOffset: 0.25
   pigletYOffset: 0
   basketYOffset: 0.1
-  wolfCutsceneAnimator: {fileID: 9100000, guid: 19c7b46cf4d6d744cbae4638a76054b7, type: 2}
-  mamaCutsceneAnimator: {fileID: 9100000, guid: 06efb5deea71a37438cd9dd38a474b74, type: 2}
-  pigletCutsceneAnimator: {fileID: 9100000, guid: d0dd1e540141e754d99c93e12251857b, type: 2}
-  wolfRunState: CutScene_WolfWalk_Spring
-  mamaWalkState: CutScene_Walk_Spring
-  pigletWalkState: CutScene_WalkPiglet_Spring
-  pigletJumpState: CutScene_WalkPiglet_Spring
+  stage1CutsceneSpeed: 1
+  chaseWolfExtraGap: 1.6
+  chasePursuerSpacingMultiplier: 1
+  chaseCutsceneDuration: 4.6
+  chaseCutsceneSpeed: 1
+  chaseAnimSpeed: 1.25
+  clearCutsceneSpeed: 1
+  clearBasketLowerDuration: 2.2
+  clearMamaSlowSpeed: 1.25
+  clearPigletCatchUpSpeed: 2.05
+  clearGroupFastSpeed: 5.2
+  clearFormationSpacing: 1.15
+  playMainMenuLoop: 0
+  mainMenuLoopForever: 0
+  mainMenuWalkSpeed: 3.1
+  mainMenuCutsceneSpeed: 1
+  mainMenuAnimSpeed: 1.15
+  mainMenuFormationSpacing: 1.15
+  mainMenuBalloonFloatDuration: 1.65
+  mainMenuHeldBalloonOffset: {x: -0.35, y: 0.26}
+  mainMenuWolfLeadGap: 1.85
+  mainMenuWolfIsBoss: 0
+  mainMenuBossWolfColor: {r: 1, g: 0.68, b: 0.85, a: 1}
+  mainMenuBossWolfScaleMultiplier: 1.15
+  mainMenuLoopDelay: 0.8
+  mainMenuBalloonPrefab: {fileID: 0}
+  mainMenuBalloonSprite: {fileID: 0}
+  wolfCutsceneAnimator: {fileID: 9100000, guid: d8cf5370d4f781c42b0bdc8011451bc0, type: 2}
+  mamaCutsceneAnimator: {fileID: 9100000, guid: e9aba2cce0ba11242ac57e6c46b4a762, type: 2}
+  pigletCutsceneAnimator: {fileID: 9100000, guid: 181b10db38af73b459a9211def3dd556, type: 2}
+  wolfRunState: Walk
+  wolfStealState: CutScene_StealPiglet
+  hidePiglet2DuringSteal: 1
+  mamaWalkState: CutScene_PigWalk
+  pigletWalkState: CutScene_PigLetWalk
+  pigletJumpState: CutScene_PigLetWalk
   stage1IntroBGM: {fileID: 0}
-  stage2IntroBGM: {fileID: 8300000, guid: 27ad190b202110e46b328cd00bf962e1, type: 3}
-  stage2ClearBGM: {fileID: 8300000, guid: f3e346c9e1b3b1341be4812900ee4741, type: 3}
+  stage2IntroBGM: {fileID: 8300000, guid: c59263e0f708d1c40811373e4df6f1c4, type: 3}
+  stage4IntroBGM: {fileID: 0}
+  stage2ClearBGM: {fileID: 8300000, guid: 27f1af1614c1b204d965d38d58710408, type: 3}
+  stage4ClearBGM: {fileID: 0}
   defaultCutsceneBGM: {fileID: 0}
   loopCutsceneBGM: 0
 --- !u!1 &572242111
@@ -10496,6 +10528,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   currentStage: 4
+  loopCount: 1
   lives: 3
   useInspectorStageInEditor: 1
   startAsBonusStage: 0
@@ -17465,60 +17498,60 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 7182360502835906008, guid: 0fbb10c57bb2e6047b8ff33bfd9957d9, type: 3}
     - target: {fileID: 5228731410380546289, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
-      propertyPath: overrideSeasonArrowStyle
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5228731410380546289, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
-      propertyPath: trailMaterialOverride
-      value: 
-      objectReference: {fileID: 2100000, guid: e1a2b3c4d5e647f890123456789ab111, type: 2}
-    - target: {fileID: 5228731410380546289, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
-      propertyPath: trailColorOverride.r
-      value: 0.52
-      objectReference: {fileID: 0}
-    - target: {fileID: 5228731410380546289, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
-      propertyPath: trailColorOverride.g
-      value: 0.76
-      objectReference: {fileID: 0}
-    - target: {fileID: 5228731410380546289, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
-      propertyPath: trailColorOverride.b
-      value: 0.88
-      objectReference: {fileID: 0}
-    - target: {fileID: 5228731410380546289, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
-      propertyPath: trailColorOverride.a
-      value: 0.65
-      objectReference: {fileID: 0}
-    - target: {fileID: 5228731410380546289, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
-      propertyPath: sparkColorOverride.r
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 5228731410380546289, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
-      propertyPath: sparkColorOverride.g
-      value: 0.72
+      propertyPath: sparkColorOverride.a
+      value: 0.62
       objectReference: {fileID: 0}
     - target: {fileID: 5228731410380546289, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
       propertyPath: sparkColorOverride.b
       value: 0.86
       objectReference: {fileID: 0}
     - target: {fileID: 5228731410380546289, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
-      propertyPath: sparkColorOverride.a
-      value: 0.62
+      propertyPath: sparkColorOverride.g
+      value: 0.72
       objectReference: {fileID: 0}
     - target: {fileID: 5228731410380546289, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
-      propertyPath: muzzleColorOverride.r
-      value: 0.56
+      propertyPath: sparkColorOverride.r
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 5228731410380546289, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
-      propertyPath: muzzleColorOverride.g
-      value: 0.78
+      propertyPath: trailColorOverride.a
+      value: 0.65
+      objectReference: {fileID: 0}
+    - target: {fileID: 5228731410380546289, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
+      propertyPath: trailColorOverride.b
+      value: 0.88
+      objectReference: {fileID: 0}
+    - target: {fileID: 5228731410380546289, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
+      propertyPath: trailColorOverride.g
+      value: 0.76
+      objectReference: {fileID: 0}
+    - target: {fileID: 5228731410380546289, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
+      propertyPath: trailColorOverride.r
+      value: 0.52
+      objectReference: {fileID: 0}
+    - target: {fileID: 5228731410380546289, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
+      propertyPath: muzzleColorOverride.a
+      value: 0.72
       objectReference: {fileID: 0}
     - target: {fileID: 5228731410380546289, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
       propertyPath: muzzleColorOverride.b
       value: 0.9
       objectReference: {fileID: 0}
     - target: {fileID: 5228731410380546289, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
-      propertyPath: muzzleColorOverride.a
-      value: 0.72
+      propertyPath: muzzleColorOverride.g
+      value: 0.78
+      objectReference: {fileID: 0}
+    - target: {fileID: 5228731410380546289, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
+      propertyPath: muzzleColorOverride.r
+      value: 0.56
+      objectReference: {fileID: 0}
+    - target: {fileID: 5228731410380546289, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
+      propertyPath: trailMaterialOverride
+      value: 
+      objectReference: {fileID: 2100000, guid: e1a2b3c4d5e647f890123456789ab111, type: 2}
+    - target: {fileID: 5228731410380546289, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
+      propertyPath: overrideSeasonArrowStyle
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5920384439964923808, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
       propertyPath: m_Radius

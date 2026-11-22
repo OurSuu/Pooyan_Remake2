@@ -106,9 +106,12 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    private bool isGameplayHudVisible = true;
+
     public void UpdateRemainingWolves(int remaining)
     {
-        if (wolfIcon != null) wolfIcon.SetActive(true);
+        if (wolfIcon != null && isGameplayHudVisible && (GameManager.Instance == null || !GameManager.Instance.IsBonusSceneActive))
+            wolfIcon.SetActive(true);
         if (remainingWolvesText != null)
         {
             if (wolfIcon != null)
@@ -178,10 +181,34 @@ public class UIManager : MonoBehaviour
     {
         // ด่านเลขคู่ถึงจะโชว์ตัวเลขหน้าผานะเฟ้ย
         if (cliffCounterPanel != null)
-            cliffCounterPanel.SetActive(GameManager.Instance != null && !GameManager.Instance.IsOddStage);
+            cliffCounterPanel.SetActive(isGameplayHudVisible && GameManager.Instance != null && !GameManager.Instance.IsOddStage && !GameManager.Instance.IsBonusSceneActive);
 
         if (cliffCounterText != null)
             cliffCounterText.text = $"{count}/{threshold}";
+    }
+
+    public void SetGameplayHudVisible(bool visible)
+    {
+        isGameplayHudVisible = visible;
+        bool isBonus = GameManager.Instance != null && GameManager.Instance.IsBonusSceneActive;
+        bool hasIcons = (lifeIcons != null && lifeIcons.Count > 0) || livesContainer != null;
+
+        if (scoreText != null) scoreText.gameObject.SetActive(visible);
+        if (highScoreText != null) highScoreText.gameObject.SetActive(visible);
+        if (stageText != null) stageText.gameObject.SetActive(visible);
+        if (livesContainer != null) livesContainer.gameObject.SetActive(visible);
+        if (livesText != null) livesText.gameObject.SetActive(visible && !hasIcons);
+
+        if (wolfIcon != null) wolfIcon.SetActive(visible && !isBonus);
+        if (remainingWolvesText != null) remainingWolvesText.gameObject.SetActive(visible);
+        if (remainingWolvesText != null && remainingWolvesText.transform.parent != null &&
+            remainingWolvesText.transform.parent.name == "RemainingWolvesContainer")
+        {
+            remainingWolvesText.transform.parent.gameObject.SetActive(visible);
+        }
+
+        if (cliffCounterPanel != null)
+            cliffCounterPanel.SetActive(visible && GameManager.Instance != null && !GameManager.Instance.IsOddStage && !isBonus);
     }
 
     private void HandleStateChanged(GameState state)
@@ -194,13 +221,15 @@ public class UIManager : MonoBehaviour
                 if (titleScreen != null) titleScreen.SetActive(true);
                 break;
             case GameState.Cutscene:
+                SetGameplayHudVisible(false);
+                break;
             case GameState.Playing:
-                if (cliffCounterPanel != null)
-                    cliffCounterPanel.SetActive(GameManager.Instance != null && !GameManager.Instance.IsOddStage && !GameManager.Instance.IsBonusSceneActive);
+                SetGameplayHudVisible(true);
                 if (stageText != null && GameManager.Instance != null)
                     stageText.text = GameManager.Instance.IsBonusSceneActive ? "BONUS STAGE" : $"STAGE: {GameManager.Instance.CurrentStage}";
                 break;
             case GameState.BonusStage:
+                SetGameplayHudVisible(true);
                 if (stageText != null) stageText.text = "BONUS STAGE";
                 if (cliffCounterPanel != null) cliffCounterPanel.SetActive(false);
                 if (wolfIcon != null) wolfIcon.SetActive(false);
@@ -221,6 +250,7 @@ public class UIManager : MonoBehaviour
         // ถ้าเป็นด่าน 2 และมีคัทซีนก่อนเข้าโบนัส (กระเช้าเลื่อนลงมาถึงพื้น แม่หมูเดินไปหาลูกหมูกระโดดดีใจ) ให้เล่นคัทซีนก่อน!
         if (StageCutsceneController.Instance != null && StageCutsceneController.Instance.HasClearCutsceneForStage(stage))
         {
+            SetGameplayHudVisible(false);
             StageCutsceneController.Instance.PlayStageClearCutscene(stage, AdvanceAfterClear);
             return;
         }

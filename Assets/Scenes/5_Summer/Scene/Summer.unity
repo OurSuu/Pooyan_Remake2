@@ -634,7 +634,7 @@ Animator:
   m_GameObject: {fileID: 137768361}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: a5ee77cd043f73e4fb6749530cffac1a, type: 2}
+  m_Controller: {fileID: 9100000, guid: cd23f6ae97fda5440ac0a71558d87037, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -695,7 +695,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 2
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -6823970786897866706, guid: f2d4a90d573cd464caf47ee47ca24757, type: 3}
+  m_Sprite: {fileID: 4723107735738678597, guid: 5a4b044680ba9ef4d939d12b950b2c66, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -1303,20 +1303,42 @@ MonoBehaviour:
   wolfYOffset: 0.66
   pigletYOffset: 0
   basketYOffset: 0.35
+  stage1CutsceneSpeed: 1
+  chaseWolfExtraGap: 1.6
+  chasePursuerSpacingMultiplier: 1
+  chaseCutsceneDuration: 4.6
+  chaseCutsceneSpeed: 1
+  chaseAnimSpeed: 1.25
+  clearCutsceneSpeed: 1
+  clearBasketLowerDuration: 2.2
+  clearMamaSlowSpeed: 1.25
+  clearPigletCatchUpSpeed: 2.05
+  clearGroupFastSpeed: 5.2
+  clearFormationSpacing: 1.15
+  playMainMenuLoop: 0
+  mainMenuLoopForever: 0
+  mainMenuWalkSpeed: 3.1
+  mainMenuCutsceneSpeed: 1
+  mainMenuAnimSpeed: 1.15
+  mainMenuFormationSpacing: 1.15
+  mainMenuBalloonFloatDuration: 1.65
+  mainMenuHeldBalloonOffset: {x: -0.35, y: 0.26}
+  mainMenuWolfLeadGap: 1.85
+  mainMenuWolfIsBoss: 0
+  mainMenuBossWolfColor: {r: 1, g: 0.68, b: 0.85, a: 1}
+  mainMenuBossWolfScaleMultiplier: 1.15
+  mainMenuLoopDelay: 0.8
+  mainMenuBalloonPrefab: {fileID: 0}
+  mainMenuBalloonSprite: {fileID: 0}
   wolfCutsceneAnimator: {fileID: 0}
   mamaCutsceneAnimator: {fileID: 0}
   pigletCutsceneAnimator: {fileID: 0}
   wolfRunState: Cutscene_Run
+  wolfStealState: CutScene_StealPiglet
+  hidePiglet2DuringSteal: 1
   mamaWalkState: Cutscene_Walk
   pigletWalkState: Cutscene_Walk
   pigletJumpState: Cutscene_Jump
-  stage1IntroBGM: {fileID: 0}
-  stage2IntroBGM: {fileID: 0}
-  stage4IntroBGM: {fileID: 0}
-  stage2ClearBGM: {fileID: 0}
-  stage4ClearBGM: {fileID: 0}
-  defaultCutsceneBGM: {fileID: 0}
-  loopCutsceneBGM: 0
 --- !u!1 &273302716
 GameObject:
   m_ObjectHideFlags: 0
@@ -1975,7 +1997,7 @@ MonoBehaviour:
   fruitPrefab: {fileID: 923139917039987540, guid: 6a5e74d9f5021bc46b63f2dbb7bf7d11, type: 3}
   spriteRenderer: {fileID: 450912372}
   animator: {fileID: 450912371}
-  bossTint: {r: 1, g: 0.68, b: 0.85, a: 1}
+  bossTint: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &450912370
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6715,7 +6737,7 @@ Animator:
   m_GameObject: {fileID: 1727043219}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: a5ee77cd043f73e4fb6749530cffac1a, type: 2}
+  m_Controller: {fileID: 9100000, guid: cd23f6ae97fda5440ac0a71558d87037, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -6776,7 +6798,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 2
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -6823970786897866706, guid: f2d4a90d573cd464caf47ee47ca24757, type: 3}
+  m_Sprite: {fileID: 4723107735738678597, guid: 5a4b044680ba9ef4d939d12b950b2c66, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -8480,11 +8502,11 @@ PrefabInstance:
     - target: {fileID: 3764982662661058767, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 4950942727140024256, guid: 6878b570fe712874999383784e6ee585, type: 3}
+      objectReference: {fileID: -8873184178551757384, guid: 26752516ee3ef0d498013cda85a8c8ae, type: 3}
     - target: {fileID: 3945159494078052215, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: e3910ada4e44ae840a9c961abebc1f3c, type: 2}
+      objectReference: {fileID: 9100000, guid: 08beca2d689539d4cb42babeb631c45c, type: 2}
     - target: {fileID: 4864520950129748755, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
       propertyPath: m_LocalPosition.x
       value: 5.1607
@@ -8543,7 +8565,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6979305749362809233, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
       propertyPath: m_Name
-      value: WinterMamaPig
+      value: SummerMamaPig
       objectReference: {fileID: 0}
     - target: {fileID: 7094560693510279500, guid: 8c78a628ea0bd8f438b25cbe157c760f, type: 3}
       propertyPath: m_Name

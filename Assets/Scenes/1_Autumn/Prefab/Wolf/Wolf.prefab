@@ -177,6 +177,8 @@ MonoBehaviour:
   fallSpeed: 4.5
   walkSpeed: 1.85
   climbSpeed: 1.05
+  playGroundRunSFX: 1
+  groundRunStepInterval: 0.22
   shieldToggleInterval: 1.4
   rockThrowInterval: 3.2
   walkGroundY: -4.2

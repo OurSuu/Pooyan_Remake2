@@ -8482,6 +8482,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   currentStage: 1
+  loopCount: 1
   lives: 3
   useInspectorStageInEditor: 1
   startAsBonusStage: 0
@@ -16251,24 +16252,48 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StageCutsceneController
   enableCutscenes: 1
-  groundY: -3.75
+  groundY: -3.9
   actorScale: 0.26
   mamaYOffset: 0.38
   wolfYOffset: 0.38
-  pigletYOffset: 0.2
+  pigletYOffset: 0.38
   basketYOffset: 0.1
+  stage1CutsceneSpeed: 1
+  chaseWolfExtraGap: 1.6
+  chasePursuerSpacingMultiplier: 1
+  chaseCutsceneDuration: 4.6
+  chaseCutsceneSpeed: 1
+  chaseAnimSpeed: 1.25
+  clearCutsceneSpeed: 1
+  clearBasketLowerDuration: 2.2
+  clearMamaSlowSpeed: 1.25
+  clearPigletCatchUpSpeed: 2.05
+  clearGroupFastSpeed: 5.2
+  clearFormationSpacing: 1.15
+  playMainMenuLoop: 0
+  mainMenuLoopForever: 0
+  mainMenuWalkSpeed: 3.1
+  mainMenuCutsceneSpeed: 1
+  mainMenuAnimSpeed: 1.15
+  mainMenuFormationSpacing: 1.15
+  mainMenuBalloonFloatDuration: 1.65
+  mainMenuHeldBalloonOffset: {x: -0.35, y: 0.26}
+  mainMenuWolfLeadGap: 1.85
+  mainMenuWolfIsBoss: 0
+  mainMenuBossWolfColor: {r: 1, g: 0.68, b: 0.85, a: 1}
+  mainMenuBossWolfScaleMultiplier: 1.15
+  mainMenuLoopDelay: 0.8
+  mainMenuBalloonPrefab: {fileID: 0}
+  mainMenuBalloonSprite: {fileID: 0}
   wolfCutsceneAnimator: {fileID: 9100000, guid: f26dd99843b02694aa5d2c564d2f43d8, type: 2}
   mamaCutsceneAnimator: {fileID: 9100000, guid: 143972cf4c38e3a4e84717e3a234d15e, type: 2}
   pigletCutsceneAnimator: {fileID: 9100000, guid: 4268a7f311fb8a8459a1289bd8c76165, type: 2}
   wolfRunState: CutScene_WalkWolf
+  wolfStealState: CutScene_StealPiglet
+  hidePiglet2DuringSteal: 1
   mamaWalkState: CutScene_Walk
   pigletWalkState: CutScene_WalkPiglet
   pigletJumpState: Cutscene_Jump
-  stage1IntroBGM: {fileID: 8300000, guid: 27d0a5804ab383f49b0053a6d2b91718, type: 3}
-  stage2IntroBGM: {fileID: 0}
-  stage2ClearBGM: {fileID: 0}
-  defaultCutsceneBGM: {fileID: 0}
-  loopCutsceneBGM: 0
 --- !u!1 &1367539169
 GameObject:
   m_ObjectHideFlags: 0

@@ -29,7 +29,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/5_Summer/Scene/Summer.unity
     guid: 7abf0cc4986ee564bb64a0c6c50e6a1b
-  - enabled: 1
+  - enabled: 0
     path: Assets/Rainy/Config/Scene/Rainy_Bonus.unity
     guid: 30299be37412f324793b159c2b4aca62
   - enabled: 0

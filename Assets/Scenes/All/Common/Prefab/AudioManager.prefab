@@ -47,7 +47,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10ca58dd8fecdbb4a8f2d75eabdfe628, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AudioManager
-  bgmMainMenu: {fileID: 8300000, guid: 848db7f86b05e0c439a0e6db5beddbc8, type: 3}
+  bgmMainMenu: {fileID: 0}
   bgmAutumn: {fileID: 8300000, guid: 3a41ec1a809ec8e408be5825ee39a730, type: 3}
   bgmSpring: {fileID: 8300000, guid: a7b99d86c5a41724fa97bbbb5ee5eebe, type: 3}
   bgmWinter: {fileID: 8300000, guid: 2500444a9251bce4e86e832113b45fa2, type: 3}
@@ -56,41 +56,62 @@ MonoBehaviour:
   bgmBonus: {fileID: 0}
   bgmBonusMeat: {fileID: 0}
   bgmBonusFruit: {fileID: 0}
-  bgmStageIntro: {fileID: 8300000, guid: 27d0a5804ab383f49b0053a6d2b91718, type: 3}
-  bgmStage2Intro: {fileID: 8300000, guid: 27ad190b202110e46b328cd00bf962e1, type: 3}
-  bgmStageClear: {fileID: 8300000, guid: f3e346c9e1b3b1341be4812900ee4741, type: 3}
-  bgmStage2Clear: {fileID: 8300000, guid: f3e346c9e1b3b1341be4812900ee4741, type: 3}
+  bgmMainMenuCutscene: {fileID: 0}
+  seMainMenuBalloonRelease: {fileID: 0}
+  seMainMenuBalloonDock: {fileID: 0}
+  bgmStageIntro: {fileID: 8300000, guid: 4bfc6fb43143e944384f4c3310b68f29, type: 3}
+  bgmStage2Intro: {fileID: 8300000, guid: c59263e0f708d1c40811373e4df6f1c4, type: 3}
+  bgmStage4Intro: {fileID: 0}
+  bgmStageClear: {fileID: 8300000, guid: 27f1af1614c1b204d965d38d58710408, type: 3}
+  bgmStage2Clear: {fileID: 8300000, guid: 27f1af1614c1b204d965d38d58710408, type: 3}
+  bgmStage4Clear: {fileID: 0}
+  bgmDefaultCutscene: {fileID: 0}
+  loopCutsceneBGM: 0
+  pauseMainMenuBgmDuringCutscene: 1
+  cutsceneFadeOutDuration: 1.1
   bgmGameOver: {fileID: 0}
-  seArrowFire: {fileID: 8300000, guid: 3401462112dc02c49b37486dd3de8b60, type: 3}
-  seMeatPickup: {fileID: 8300000, guid: ba211aa0dee6fb84482d5dc80ae92525, type: 3}
-  seMeatThrow: {fileID: 0}
-  seMeatHit: {fileID: 0}
+  seArrowFire: {fileID: 8300000, guid: a4040bda1ec2336448839de4ed762a46, type: 3}
+  seMeatPickup: {fileID: 8300000, guid: e62209edf658cdf448d901ce5a80d1d5, type: 3}
+  seMeatThrow: {fileID: 8300000, guid: 4315761159574074a8065c1b6c037153, type: 3}
+  seMeatHit: {fileID: 8300000, guid: 7c5f5d82fef456f4389d8de00e57cfde, type: 3}
   seMeatBounce: {fileID: 0}
-  seRopePull: {fileID: 8300000, guid: 7c87af63d65444c48a94db881cb7fa11, type: 3}
-  sePlayerFall: {fileID: 8300000, guid: bc2cf422f73cec64ab2493aaed6c9d49, type: 3}
+  seRopePull: {fileID: 8300000, guid: da2db176d5c9f054cb2a2470766c9858, type: 3}
+  sePlayerFall: {fileID: 8300000, guid: 5f5ab5242f57ec8418ff3cb44ca2b7d2, type: 3}
   seExtraLife: {fileID: 0}
-  seBalloonInflate: {fileID: 0}
-  seBalloonPop: {fileID: 8300000, guid: f788e11354b852e40b5da2a912293de5, type: 3}
-  seBalloonDamage: {fileID: 8300000, guid: 794269e43dc6c2c4aa294971b8a4b43b, type: 3}
+  seBalloonInflate: {fileID: 8300000, guid: 4703717fb61155d4a8bf1c0e447eb625, type: 3}
+  seBalloonPop: {fileID: 8300000, guid: 5739c0d407f35004b95da84631fea496, type: 3}
+  seBalloonDamage: {fileID: 8300000, guid: 7c2fb3c15f1f89a49b6ae80467021dfc, type: 3}
   seWolfFall: {fileID: 8300000, guid: bc2cf422f73cec64ab2493aaed6c9d49, type: 3}
-  seShieldBlock: {fileID: 8300000, guid: f45837ee94e5c0e4e80c319564ed6759, type: 3}
-  seLadderClimb: {fileID: 8300000, guid: 3c854ccca8bcb9546b8c76f00775b394, type: 3}
-  seWolfBite: {fileID: 8300000, guid: efd8ce8ee30b8594eb38bb99f242f034, type: 3}
-  seRockThrow: {fileID: 8300000, guid: 622384e37b8a9e142a86ae18a8b58bb6, type: 3}
-  seRockHit: {fileID: 8300000, guid: 5b755c0fe6d7add438d37e5d3a5acf8c, type: 3}
-  seRockDestroy: {fileID: 8300000, guid: 6b7f3481c6fd1f84daeb90420c2f6b6f, type: 3}
-  seBoulderPush: {fileID: 8300000, guid: cdd28cc201dee4f45a9f6aecc9bed9b7, type: 3}
+  seShieldBlock: {fileID: 8300000, guid: 09cf385efd2e0454ca3bfedfafed177d, type: 3}
+  seLadderClimb: {fileID: 8300000, guid: a44075345b8e5714ca41c92aefaf4970, type: 3}
+  seWolfBite: {fileID: 8300000, guid: 35e5d579f59783549921632560e52126, type: 3}
+  seRockThrow: {fileID: 8300000, guid: a6aee8fb4e5d8684f8b760efcf3de596, type: 3}
+  seRockHit: {fileID: 8300000, guid: 7a41617c327b6fb458c45b328761774b, type: 3}
+  seRockDestroy: {fileID: 8300000, guid: 70cbf1d582a7da34a8a7b0094281a9ef, type: 3}
+  seBoulderPush: {fileID: 8300000, guid: 541a8126492f809438a0d94ece01ee56, type: 3}
   seBoulderFall: {fileID: 0}
   seBoulderHit: {fileID: 8300000, guid: fceba56aa9d34d44cad07cfbf448314d, type: 3}
-  seFruitDrop: {fileID: 0}
-  seFruitHit: {fileID: 0}
-  seButtonClick: {fileID: 0}
+  seFruitDrop: {fileID: 8300000, guid: 8ea297f54fe155644a7c28096e948042, type: 3}
+  seFruitHit: {fileID: 8300000, guid: e07102f3eb7e1c24ba3a2d9c372f030e, type: 3}
+  seButtonClick: {fileID: 8300000, guid: 598ed925ebfe7454d876f0aa315cd5bb, type: 3}
+  seGroundRun: {fileID: 8300000, guid: 5e0d01f6aa34f9b47af377b9ea655169, type: 3}
+  groundRunMinInterval: 0.14
+  playCutsceneGroundRunSFX: 1
+  cutsceneFootstepInterval: 0.22
   bgmSource: {fileID: 812698098138415274}
   sfxSource: {fileID: 3875713040282341428}
   ropeLoopSource: {fileID: 8706137738314456517}
+  cutsceneSource: {fileID: 0}
+  groundRunSource: {fileID: 0}
   bgmVolume: 0.427
-  sfxVolume: 0.763
-  ropePullVolume: 0.08
+  sfxVolume: 0.706
+  ropePullVolume: 0.635
+  cutsceneVolume: 0.85
+  groundRunVolume: 0.85
+  grassStereoPanStrength: 0.85
+  balloonInflateVolume: 0.9
+  balloonInflateSweepDuration: 0.48
+  balloonInflateStereoPan: 0.85
 --- !u!82 &812698098138415274
 AudioSource:
   m_ObjectHideFlags: 0
@@ -106,7 +127,7 @@ AudioSource:
   m_PlayOnAwake: 0
   m_Volume: 0.7
   m_Pitch: 1
-  Loop: 1
+  Loop: 0
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0

@@ -51,6 +51,15 @@ public class ElevatorRope : MonoBehaviour
             lineRenderer.enabled = visible;
             lineRenderer.gameObject.SetActive(visible);
         }
+        SetTopPigletsVisible(visible);
+    }
+
+    public void SetTopPigletsVisible(bool visible)
+    {
+        if (piglet1 != null)
+            piglet1.gameObject.SetActive(visible);
+        if (piglet2 != null)
+            piglet2.gameObject.SetActive(visible);
     }
 
     private void Start()

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class MainMenuController : MonoBehaviour
 {
@@ -22,10 +23,77 @@ public class MainMenuController : MonoBehaviour
 
     private int selectedOption = 0; // 0 = 1 Player, 1 = 2 Players
     private bool isShowingLeaderboard = false;
+    private bool hasCutsceneDeliveredBalloon = true;
     private float toggleTimer = 0f;
     private float toggleInterval = 8f; // สลับหน้าทุกๆ 8 วินาที (Attract Mode)
 
     private float inputCooldown = 0f;
+    private Image balloonCursorImage;
+    private Coroutine balloonPopRoutine;
+
+    public bool IsTitleVisible => titlePanel != null && titlePanel.activeInHierarchy;
+    public bool HasCutsceneDeliveredBalloon => hasCutsceneDeliveredBalloon;
+    public RectTransform BalloonCursorRect => balloonCursor;
+
+    public Sprite GetBalloonCursorSprite()
+    {
+        if (balloonCursor == null) return null;
+        if (balloonCursorImage == null) balloonCursorImage = balloonCursor.GetComponent<Image>();
+        return balloonCursorImage != null ? balloonCursorImage.sprite : null;
+    }
+
+    public void SetCutsceneBalloonWaiting(bool waiting)
+    {
+        hasCutsceneDeliveredBalloon = !waiting;
+        if (balloonCursor == null) return;
+        if (balloonCursorImage == null) balloonCursorImage = balloonCursor.GetComponent<Image>();
+        if (balloonCursorImage != null)
+        {
+            balloonCursorImage.enabled = !waiting;
+        }
+    }
+
+    public void CompleteCutsceneBalloonDelivery()
+    {
+        hasCutsceneDeliveredBalloon = true;
+        if (balloonCursor == null) return;
+        if (balloonCursorImage == null) balloonCursorImage = balloonCursor.GetComponent<Image>();
+        balloonCursor.gameObject.SetActive(true);
+        if (balloonCursorImage != null)
+        {
+            balloonCursorImage.enabled = true;
+        }
+        UpdateMenuSelection();
+        if (gameObject.activeInHierarchy)
+        {
+            if (balloonPopRoutine != null) StopCoroutine(balloonPopRoutine);
+            balloonPopRoutine = StartCoroutine(PopBalloonCursorRoutine());
+        }
+    }
+
+    private IEnumerator PopBalloonCursorRoutine()
+    {
+        if (balloonCursor == null) yield break;
+        float t = 0f;
+        const float duration = 0.16f;
+        while (t < duration)
+        {
+            t += Time.deltaTime;
+            float s = Mathf.Lerp(1.28f, 1.0f, Mathf.SmoothStep(0f, 1f, t / duration));
+            balloonCursor.localScale = new Vector3(s, s, 1f);
+            yield return null;
+        }
+        balloonCursor.localScale = Vector3.one;
+        balloonPopRoutine = null;
+    }
+
+    private void Awake()
+    {
+        var cutscene = FindFirstObjectByType<StageCutsceneController>(FindObjectsInactive.Include);
+        bool waitCutsceneBalloon = cutscene != null && cutscene.enableCutscenes && cutscene.playMainMenuLoop
+                                   && PlayerPrefs.GetInt("ShowLeaderboardFirst", 0) != 1;
+        SetCutsceneBalloonWaiting(waitCutsceneBalloon);
+    }
 
     private void Start()
     {
@@ -56,33 +124,32 @@ public class MainMenuController : MonoBehaviour
             else ShowLeaderboard();
         }
 
-        // ถ้ายุ่งอยู่กับหน้า Leaderboard กดปุ่มอะไรก็จะกลับมาหน้า Title ทันที (หรือกดเริ่มเกมเลย)
+        // ถ้ายุ่งอยู่กับหน้า Leaderboard กดปุ่มคีย์บอร์ดใดๆ เพื่อกลับมาหน้า Title (ไม่นับการคลิกเมาส์)
         if (isShowingLeaderboard)
         {
-            if (Input.anyKeyDown)
+            bool mouseClick = Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1) || Input.GetMouseButtonDown(2);
+            if (Input.anyKeyDown && !mouseClick)
             {
                 ShowTitle();
-                    inputCooldown = 0.2f;
+                inputCooldown = 0.2f;
             }
             return;
         }
 
-        // จัดการเลื่อนเมนู 1 Player / 2 Player
-        float v = Input.GetAxisRaw("Vertical");
-        if (inputCooldown <= 0f)
+        // ใช้ปุ่ม Shift ในการสลับตัวเลือก 1 Player / 2 Players (รองรับลูกศรขึ้น-ลงเสริมด้วย)
+        bool shiftPressed = Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift);
+        bool arrowPressed = inputCooldown <= 0f && (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.S));
+        if (shiftPressed || arrowPressed)
         {
-            if (v > 0.5f || v < -0.5f)
-            {
-                selectedOption = selectedOption == 0 ? 1 : 0;
-                UpdateMenuSelection();
-                inputCooldown = 0.2f;
-                AudioManager.Instance?.PlayBalloonPop();
-                toggleTimer = toggleInterval; // รีเซ็ตเวลาสลับหน้า จะได้ไม่เปลี่ยนหน้าตอนเรากำลังเลือก
-            }
+            selectedOption = selectedOption == 0 ? 1 : 0;
+            UpdateMenuSelection();
+            inputCooldown = 0.2f;
+            AudioManager.Instance?.PlayButtonClick();
+            toggleTimer = toggleInterval; // รีเซ็ตเวลาสลับหน้า จะได้ไม่เปลี่ยนหน้าตอนเรากำลังเลือก
         }
 
-        // กดยืนยันเริ่มเกม!
-        if (Input.GetButtonDown("Fire1") || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return))
+        // กดปุ่ม Enter เพื่อยืนยันเริ่มเกม (ไม่มีคลิกซ้ายเพื่อไปต่อ)
+        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
         {
             StartGame();
         }
@@ -97,7 +164,9 @@ public class MainMenuController : MonoBehaviour
 
         if (balloonCursor != null)
         {
+            if (balloonCursorImage == null) balloonCursorImage = balloonCursor.GetComponent<Image>();
             balloonCursor.gameObject.SetActive(true);
+            if (balloonCursorImage != null) balloonCursorImage.enabled = hasCutsceneDeliveredBalloon;
             TextMeshProUGUI targetText = selectedOption == 0 ? player1Text : player2Text;
             if (targetText != null)
             {
@@ -122,6 +191,11 @@ public class MainMenuController : MonoBehaviour
     private void ShowLeaderboard()
     {
         isShowingLeaderboard = true;
+        if (!hasCutsceneDeliveredBalloon)
+        {
+            hasCutsceneDeliveredBalloon = true;
+            if (balloonCursorImage != null) balloonCursorImage.enabled = true;
+        }
         titlePanel.SetActive(false);
         leaderboardPanel.SetActive(true);
         toggleTimer = toggleInterval;

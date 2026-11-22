@@ -27,12 +27,12 @@ Material:
     m_Floats:
     - _BUILTIN_QueueControl: 0
     - _BUILTIN_QueueOffset: 0
-    - _RingRadius: 0.36
-    - _WobbleAmount: 0.015
     - _CoreThickness: 0.035
+    - _RingRadius: 0.36
     - _RingThickness: 0.08
+    - _WobbleAmount: 0.015
     m_Colors:
-    - _RingColor: {r: 2.6, g: 2.35, b: 1.6, a: 1.0}
+    - _RingColor: {r: 2.6, g: 2.35, b: 1.6, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &9031517151182152698
