@@ -439,7 +439,7 @@ public class Balloon : MonoBehaviour
         {
             int hitsTaken = Mathf.Max(0, maxHP - currentHP);
             float shrinkProgress = hitsTaken / (float)Mathf.Max(1, maxHP - 1);
-            float scaleMultiplier = Mathf.Lerp(1f, 0.36f, shrinkProgress);
+            float scaleMultiplier = Mathf.Lerp(1f, 0.44f, shrinkProgress);
             currentBaseScale = initialScale * scaleMultiplier;
         }
 

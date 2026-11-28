@@ -129,7 +129,9 @@ public class WolfSpawner : MonoBehaviour
         yield return new WaitForSeconds(1f); // รอแป๊บนึงก่อนดรอป
 
         int laneCount = (dropPoints != null && dropPoints.Length > 0) ? dropPoints.Length : ((flyPoints != null && flyPoints.Length > 0) ? flyPoints.Length : 5);
-        bool hasStageBoss = GameManager.Instance != null && !GameManager.Instance.IsOddStage && config.hasBossWolf;
+        bool isSpringScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name
+            .IndexOf("Spring", System.StringComparison.OrdinalIgnoreCase) >= 0;
+        bool hasStageBoss = GameManager.Instance != null && !GameManager.Instance.IsOddStage && config.hasBossWolf && !isSpringScene;
 
         while (spawning)
         {

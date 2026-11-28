@@ -302,6 +302,14 @@ public static class CartoonFXHelper
 
     private static int warmupSceneHandle = -1;
 
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStaticPool()
+    {
+        pool.Clear();
+        poolSceneHandle = -1;
+        warmupSceneHandle = -1;
+    }
+
     public static void Prewarm(int count = 12)
     {
         SyncScenePool();
@@ -324,8 +332,6 @@ public static class CartoonFXHelper
         int activeHandle = SceneManager.GetActiveScene().handle;
         if (warmupSceneHandle == activeHandle) return;
         warmupSceneHandle = activeHandle;
-
-        Shader.WarmupAllShaders();
 
         var unique = new HashSet<Material>();
         Material ring = GetSharedRingMaterial();

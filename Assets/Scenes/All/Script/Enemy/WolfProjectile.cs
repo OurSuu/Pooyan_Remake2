@@ -181,6 +181,14 @@ public class WolfProjectile : MonoBehaviour
         if (other.CompareTag(GameConstants.TagPlayer))
         {
             var player = other.GetComponent<PlayerController>() ?? other.GetComponentInParent<PlayerController>();
+            if (player != null && player.IsInvincible)
+            {
+                player.OnProjectileHit();
+                SpawnHitBasketEffect(transform.position);
+                DeflectDown(fromShield: true);
+                return;
+            }
+
             if (player != null)
             {
                 player.TakeDamage(); // โดนตัวเต็มๆ ตายสถานเดียว

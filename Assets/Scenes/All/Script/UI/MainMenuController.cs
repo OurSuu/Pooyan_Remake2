@@ -30,6 +30,7 @@ public class MainMenuController : MonoBehaviour
     private float inputCooldown = 0f;
     private Image balloonCursorImage;
     private Coroutine balloonPopRoutine;
+    private bool isStartingGame = false;
 
     public bool IsTitleVisible => titlePanel != null && titlePanel.activeInHierarchy;
     public bool HasCutsceneDeliveredBalloon => hasCutsceneDeliveredBalloon;
@@ -114,6 +115,8 @@ public class MainMenuController : MonoBehaviour
 
     private void Update()
     {
+        if (isStartingGame) return;
+
         inputCooldown -= Time.deltaTime;
         toggleTimer -= Time.deltaTime;
 
@@ -206,10 +209,30 @@ public class MainMenuController : MonoBehaviour
 
     private void StartGame()
     {
+        if (isStartingGame) return;
+        isStartingGame = true;
+        StartCoroutine(LoadStage1AsyncRoutine());
+    }
+
+    private IEnumerator LoadStage1AsyncRoutine()
+    {
         AudioManager.Instance?.PlayArrowFire();
         PlayerPrefs.SetInt("PlayerMode", selectedOption + 1);
         GameSession.ResetSession();
-        SceneManager.LoadScene("Autumn"); 
+
+        yield return null;
+
+        AsyncOperation loadOp = SceneManager.LoadSceneAsync("Autumn");
+        if (loadOp == null)
+        {
+            isStartingGame = false;
+            yield break;
+        }
+
+        while (!loadOp.isDone)
+        {
+            yield return null;
+        }
     }
 }
 

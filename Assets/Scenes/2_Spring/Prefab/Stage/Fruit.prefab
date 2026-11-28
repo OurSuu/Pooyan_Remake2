@@ -146,9 +146,9 @@ MonoBehaviour:
   fallSpeed: 3
   useArcTrajectory: 1
   gravity: 9.8
-  strawberrySprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
-  cherrySprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
-  peachSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  strawberrySprite: {fileID: 6878167426039329454, guid: 44604557a9dc5c546993994f552a4440, type: 3}
+  cherrySprite: {fileID: -3163018611674899778, guid: 3ea5ab6d7f89c224c835e3a36cef0e58, type: 3}
+  peachSprite: {fileID: 4454790485583186603, guid: 689cd0e6303411240af3932e83deaaaf, type: 3}
   glowAuraParticles: {fileID: 4519573523199109633}
   sparkleTrailParticles: {fileID: 2717355242597155859}
   popFXPrefab: {fileID: 7318433431144806349, guid: e0e044e10d1eecd43beccdadbd434491, type: 3}

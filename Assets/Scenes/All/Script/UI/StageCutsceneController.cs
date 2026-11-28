@@ -28,6 +28,9 @@ public class StageCutsceneController : MonoBehaviour
     [Tooltip("ขนาดสเกลของตัวละครคัทซีน (มาตรฐานเกมคือ 0.26)")]
     public float actorScale = 0.26f;
 
+    [Tooltip("ตัวคูณขนาดของลูกหมูในคัทซีนเทียบกับ actorScale (1.0 = เท่าเดิม เช่นด่าน Rainy ที่สไปรท์ลูกหมูเล็กอยู่แล้ว, ~0.65 = ย่อให้เล็กกว่าแม่หมู)")]
+    public float pigletScaleMultiplier = 1.0f;
+
     [Header("Character Ground Offsets (ปรับแต่งความสูงรายตัวละคร)")]
     [Tooltip("ออฟเซ็ตความสูงแม่หมูจาก groundY")]
     public float mamaYOffset = 0.70f;
@@ -1109,7 +1112,20 @@ public class StageCutsceneController : MonoBehaviour
             UpdateActorAnimator(cutsceneWolf, wolfCutsceneAnimator);
         }
 
+        ApplyActorScales();
         cutsceneRoot.SetActive(false);
+    }
+
+    private void ApplyActorScales()
+    {
+        float baseScale = Mathf.Max(0.05f, actorScale);
+        float pigletScale = baseScale * Mathf.Max(0.1f, pigletScaleMultiplier);
+
+        if (cutsceneMama != null) cutsceneMama.transform.localScale = new Vector3(baseScale, baseScale, 1f);
+        if (cutsceneWolf != null) cutsceneWolf.transform.localScale = new Vector3(baseScale, baseScale, 1f);
+        if (cutsceneBasket != null) cutsceneBasket.transform.localScale = new Vector3(baseScale, baseScale, 1f);
+        if (cutscenePiglet1 != null) cutscenePiglet1.transform.localScale = new Vector3(pigletScale, pigletScale, 1f);
+        if (cutscenePiglet2 != null) cutscenePiglet2.transform.localScale = new Vector3(pigletScale, pigletScale, 1f);
     }
 
     private void UpdateActorAnimator(SpriteRenderer actor, RuntimeAnimatorController controller)

@@ -222,6 +222,27 @@ public class GameManager : MonoBehaviour
         if (CurrentState == GameState.StageClear || CurrentState == GameState.GameOver) return;
         SetState(GameState.StageClear);
         OnStageClear?.Invoke();
+
+        // AudioManager อาจ Subscribe OnStageClear อยู่แล้ว แต่ไม่มี UIManager คอยเรียก AdvanceStage()
+        // จึงต้องเช็ค UIManager โดยตรง เพื่อไม่ให้ฉากที่ไม่มี GameCanvas/UIManager (เช่น Rainy) ค้างอยู่ที่ StageClear
+        var uiManager = FindAnyObjectByType<UIManager>();
+        if (uiManager == null || !uiManager.isActiveAndEnabled)
+        {
+            if (StageCutsceneController.Instance != null && StageCutsceneController.Instance.HasClearCutsceneForStage(currentStage))
+            {
+                StageCutsceneController.Instance.PlayStageClearCutscene(currentStage, AdvanceStage);
+            }
+            else
+            {
+                StartCoroutine(FallbackAdvanceAfterClearRoutine());
+            }
+        }
+    }
+
+    private IEnumerator FallbackAdvanceAfterClearRoutine()
+    {
+        yield return new WaitForSeconds(2f);
+        AdvanceStage();
     }
 
     public void GetNextStageInfo(out int nextStage, out int nextLoop)

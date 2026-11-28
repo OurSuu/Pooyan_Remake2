@@ -85,8 +85,11 @@ public class LevelManager : MonoBehaviour
 
         if (stage % 2 == 0)
         {
-            config.hasBossWolf = true;    // ด่านคู่ (Spring / Rainy) มีบอสหมาป่าลอยขึ้นไวท้ายด่าน
-            config.balloonHP = Mathf.Max(config.balloonHP, stage >= 4 ? 5 : 4);
+            bool isSpringScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name
+                .IndexOf("Spring", System.StringComparison.OrdinalIgnoreCase) >= 0;
+            config.hasBossWolf = !isSpringScene; // เฉพาะด่าน Spring ให้เอาบอสออกชั่วคราว ตัวสุดท้ายเป็นหมาป่าธรรมดา (ด่านคู่อื่นอย่าง Rainy ยังมีบอสปกติ)
+            config.balloonHP = config.balloonHP > 0 ? Mathf.Clamp(config.balloonHP, 3, 4) : 4;
+            config.bossShieldHP = config.bossShieldHP > 0 ? Mathf.Clamp(config.bossShieldHP, 1, 5) : GameConstants.BossShieldHits;
         }
     }
 }

@@ -48,14 +48,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AudioManager
   bgmMainMenu: {fileID: 0}
-  bgmAutumn: {fileID: 8300000, guid: 3a41ec1a809ec8e408be5825ee39a730, type: 3}
-  bgmSpring: {fileID: 8300000, guid: a7b99d86c5a41724fa97bbbb5ee5eebe, type: 3}
-  bgmWinter: {fileID: 8300000, guid: 2500444a9251bce4e86e832113b45fa2, type: 3}
-  bgmSummer: {fileID: 0}
+  bgmAutumn: {fileID: 8300000, guid: cb896e66c383356478c896184d3b7a2b, type: 3}
+  bgmSpring: {fileID: 8300000, guid: a13eaaf994994f9458ce6346f4aa3eaa, type: 3}
+  bgmWinter: {fileID: 8300000, guid: 6e381f4ef9ba7ff4e8d374c70da04f61, type: 3}
+  bgmRainy: {fileID: 8300000, guid: 43ac6f487b6397f49be15706007517d3, type: 3}
+  bgmSummer: {fileID: 8300000, guid: 79e12dd06afac8a48b71f4811b9fcf97, type: 3}
   bgmMain: {fileID: 0}
   bgmBonus: {fileID: 0}
-  bgmBonusMeat: {fileID: 0}
-  bgmBonusFruit: {fileID: 0}
+  bgmBonusMeat: {fileID: 8300000, guid: 0c7ab3c9b436f6a46b3d41766b68966c, type: 3}
+  bgmBonusFruit: {fileID: 8300000, guid: 0c7ab3c9b436f6a46b3d41766b68966c, type: 3}
   bgmMainMenuCutscene: {fileID: 0}
   seMainMenuBalloonRelease: {fileID: 0}
   seMainMenuBalloonDock: {fileID: 0}
@@ -74,7 +75,7 @@ MonoBehaviour:
   seMeatPickup: {fileID: 8300000, guid: e62209edf658cdf448d901ce5a80d1d5, type: 3}
   seMeatThrow: {fileID: 8300000, guid: 4315761159574074a8065c1b6c037153, type: 3}
   seMeatHit: {fileID: 8300000, guid: 7c5f5d82fef456f4389d8de00e57cfde, type: 3}
-  seMeatBounce: {fileID: 0}
+  seMeatBounce: {fileID: 8300000, guid: 1af976a708339cb45846efde10c77f51, type: 3}
   seRopePull: {fileID: 8300000, guid: da2db176d5c9f054cb2a2470766c9858, type: 3}
   sePlayerFall: {fileID: 8300000, guid: 5f5ab5242f57ec8418ff3cb44ca2b7d2, type: 3}
   seExtraLife: {fileID: 0}
@@ -95,6 +96,11 @@ MonoBehaviour:
   seFruitHit: {fileID: 8300000, guid: e07102f3eb7e1c24ba3a2d9c372f030e, type: 3}
   seButtonClick: {fileID: 8300000, guid: 598ed925ebfe7454d876f0aa315cd5bb, type: 3}
   seGroundRun: {fileID: 8300000, guid: 5e0d01f6aa34f9b47af377b9ea655169, type: 3}
+  seGroundRunRainy: {fileID: 8300000, guid: 7006ed597f4fa7c408c1c28fad336769, type: 3}
+  rainyGroundRunVolumeMultiplier: 1
+  seGroundRunWinter: {fileID: 8300000, guid: 27880200c265d1a4486d40360bd2c87e, type: 3}
+  winterGroundRunVolumeMultiplier: 1.9
+  useSynthesizedSnowIfEmpty: 1
   groundRunMinInterval: 0.14
   playCutsceneGroundRunSFX: 1
   cutsceneFootstepInterval: 0.22
@@ -108,10 +114,16 @@ MonoBehaviour:
   ropePullVolume: 0.635
   cutsceneVolume: 0.85
   groundRunVolume: 0.85
+  arrowFireVolumeScale: 0.4
+  balloonPopVolumeScale: 1.85
   grassStereoPanStrength: 0.85
   balloonInflateVolume: 0.9
   balloonInflateSweepDuration: 0.48
   balloonInflateStereoPan: 0.85
+  seRainAmbience: {fileID: 8300000, guid: a15774d1590734242a3a3d8a9748d3d0, type: 3}
+  rainAmbienceVolume: 0.675
+  rainCutsceneVolumeMultiplier: 0.693
+  useSynthesizedRainIfEmpty: 1
 --- !u!82 &812698098138415274
 AudioSource:
   m_ObjectHideFlags: 0

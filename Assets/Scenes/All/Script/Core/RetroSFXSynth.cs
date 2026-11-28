@@ -19,6 +19,8 @@ public static class RetroSFXSynth
     private static AudioClip cachedFruitHit;
     private static AudioClip cachedButtonClick;
     private static AudioClip cachedGroundRun;
+    private static AudioClip cachedSnowRun;
+    private static AudioClip cachedRainAmbience;
 
     public static AudioClip GetMeatThrow() => cachedMeatThrow != null ? cachedMeatThrow : (cachedMeatThrow = BuildMeatThrow());
     public static AudioClip GetMeatHit() => cachedMeatHit != null ? cachedMeatHit : (cachedMeatHit = BuildMeatHit());
@@ -30,6 +32,8 @@ public static class RetroSFXSynth
     public static AudioClip GetFruitHit() => cachedFruitHit != null ? cachedFruitHit : (cachedFruitHit = BuildFruitHit());
     public static AudioClip GetButtonClick() => cachedButtonClick != null ? cachedButtonClick : (cachedButtonClick = BuildButtonClick());
     public static AudioClip GetGroundRun() => cachedGroundRun != null ? cachedGroundRun : (cachedGroundRun = BuildGroundRun());
+    public static AudioClip GetSnowRun() => cachedSnowRun != null ? cachedSnowRun : (cachedSnowRun = BuildSnowRun());
+    public static AudioClip GetRainAmbience() => cachedRainAmbience != null ? cachedRainAmbience : (cachedRainAmbience = BuildRainAmbience());
 
     private static AudioClip BuildMeatThrow()
     {
@@ -277,6 +281,103 @@ public static class RetroSFXSynth
         }
 
         return CreateClip("SFX_GroundRun_Retro", samples);
+    }
+
+    private static AudioClip BuildSnowRun()
+    {
+        const float duration = 0.095f;
+        int count = Mathf.CeilToInt(SampleRate * duration);
+        float[] samples = new float[count];
+        float phase = 0f;
+        uint rng = 0x7C4F29B1u;
+        float lpLow = 0f;
+        float lpHigh = 0f;
+
+        for (int i = 0; i < count; i++)
+        {
+            float t = i / (float)SampleRate;
+            float u = t / duration;
+            float freq = Mathf.Lerp(155f, 68f, u);
+            phase += freq / SampleRate;
+
+            // เหยียบหิมะแบบ 2 จังหวะเบาๆ (จิกหิมะ + บดเกล็ดหิมะกรุบๆ)
+            float crestA = Mathf.Exp(-Mathf.Pow((u - 0.18f) / 0.17f, 2f));
+            float crestB = Mathf.Exp(-Mathf.Pow((u - 0.54f) / 0.24f, 2f)) * 0.85f;
+            float crunchShape = crestA + crestB;
+
+            float white = NextNoise(ref rng);
+            lpLow = Mathf.Lerp(lpLow, white, 0.06f);
+            lpHigh = Mathf.Lerp(lpHigh, white, 0.36f);
+            float crispBand = lpHigh - lpLow;
+
+            // เกล็ดหิมะแตกตัวเล็กๆ
+            float grain = ((rng & 0x1Fu) == 0u) ? white * 0.45f : 0f;
+            float softThud = TriangleWave(phase) * 0.28f * (1f - u * 0.7f);
+
+            float env = Envelope(t, duration, 0.004f, 0.032f);
+            samples[i] = Mathf.Clamp((softThud + (crispBand * 1.35f + grain) * crunchShape) * env * 0.68f, -0.9f, 0.9f);
+        }
+
+        return CreateClip("SFX_SnowRun_Retro", samples);
+    }
+
+    private static AudioClip BuildRainAmbience()
+    {
+        const float duration = 3.0f;
+        int count = Mathf.CeilToInt(SampleRate * duration);
+        float[] raw = new float[count];
+        uint rng = 0x9E3779B9u;
+        float lpBed = 0f;
+        float lpWarm = 0f;
+        float lpAir = 0f;
+
+        // หยดน้ำตกกระทบเป็นระยะเบาๆ เพิ่มมิติฝนธรรมชาติ
+        float dropEnv = 0f;
+        float dropPhase = 0f;
+        float dropFreq = 1100f;
+        int nextDropSample = 1800;
+
+        for (int i = 0; i < count; i++)
+        {
+            float white = NextNoise(ref rng);
+            lpBed = Mathf.Lerp(lpBed, white, 0.025f);
+            lpWarm = Mathf.Lerp(lpWarm, lpBed, 0.08f);
+            lpAir = Mathf.Lerp(lpAir, white, 0.22f);
+            float rainWash = lpWarm * 0.62f + (lpAir - lpBed) * 0.22f;
+
+            if (i >= nextDropSample)
+            {
+                dropEnv = 0.22f + (((rng & 0xFFu) / 255f) * 0.25f);
+                dropFreq = 850f + (((rng >> 8) & 0xFFu) / 255f) * 950f;
+                dropPhase = 0f;
+                nextDropSample = i + 900 + (int)((rng >> 16) & 0xFFFu);
+            }
+
+            float dropSig = 0f;
+            if (dropEnv > 0.001f)
+            {
+                dropPhase += dropFreq / SampleRate;
+                dropSig = Mathf.Sin(dropPhase * Mathf.PI * 2f) * dropEnv * 0.18f;
+                dropEnv *= 0.9965f;
+            }
+
+            raw[i] = Mathf.Clamp((rainWash + dropSig) * 0.42f, -0.85f, 0.85f);
+        }
+
+        // Crossfade ปลาย-ต้นคลิป (0.25s) เพื่อให้วนลูป Rain Ambience ได้เนียนไม่มีรอยต่อ
+        int xfadeSamples = Mathf.Min(count / 4, Mathf.CeilToInt(SampleRate * 0.25f));
+        float[] samples = new float[count - xfadeSamples];
+        Array.Copy(raw, xfadeSamples, samples, 0, samples.Length);
+        for (int i = 0; i < xfadeSamples; i++)
+        {
+            float t = i / (float)xfadeSamples;
+            float fadeIn = Mathf.Sin(t * Mathf.PI * 0.5f);
+            float fadeOut = Mathf.Cos(t * Mathf.PI * 0.5f);
+            int tailIdx = samples.Length - xfadeSamples + i;
+            samples[tailIdx] = samples[tailIdx] * fadeOut + raw[i] * fadeIn;
+        }
+
+        return CreateClip("AMB_Rainy_Loop", samples);
     }
 
     private static AudioClip CreateClip(string clipName, float[] samples)

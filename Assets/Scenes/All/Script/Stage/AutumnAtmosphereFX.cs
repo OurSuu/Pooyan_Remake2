@@ -36,7 +36,7 @@ public class AutumnAtmosphereFX : MonoBehaviour
 
     [Header("2. Flowing Wind Streaks (เส้นลมพัดพริ้ว - Shader Graph)")]
     [Tooltip("เปิด/ปิด เลเยอร์เส้นลมพัดพริ้ว")]
-    public bool enableWindStreaks = true;
+    public bool enableWindStreaks = false;
 
     [Tooltip("Sorting Order ของเส้นลม (-1 = อยู่หน้าแสงแดด -2 แต่อยู่หลังพื้นและตัวละคร 0..2)")]
     public int windStreaksSortingOrder = -1;
@@ -117,11 +117,11 @@ public class AutumnAtmosphereFX : MonoBehaviour
         }
 
 #if UNITY_EDITOR
-        if (EnsureEditorMaterial(ref sunbeamsMaterial, SunbeamsMaterialPath, SunbeamsShaderPath))
+        if (enableSunbeams && EnsureEditorMaterial(ref sunbeamsMaterial, SunbeamsMaterialPath, SunbeamsShaderPath))
         {
             changed = true;
         }
-        if (EnsureEditorMaterial(ref windStreaksMaterial, WindStreaksMaterialPath, WindStreaksShaderPath))
+        if (enableWindStreaks && EnsureEditorMaterial(ref windStreaksMaterial, WindStreaksMaterialPath, WindStreaksShaderPath))
         {
             changed = true;
         }
@@ -141,14 +141,19 @@ public class AutumnAtmosphereFX : MonoBehaviour
 
     private bool SyncQuadLayer(string layerName, bool enabledLayer, int sortingOrder, Material material)
     {
+        if (!enabledLayer)
+        {
+            return RemoveLayerChildren(layerName);
+        }
+
         bool changed = false;
         Transform child = FindOrCleanChild(layerName, out bool childCreatedOrCleaned);
         if (childCreatedOrCleaned) changed = true;
 
         GameObject go = child.gameObject;
-        if (go.activeSelf != enabledLayer)
+        if (!go.activeSelf)
         {
-            go.SetActive(enabledLayer);
+            go.SetActive(true);
             changed = true;
         }
 
@@ -171,16 +176,15 @@ public class AutumnAtmosphereFX : MonoBehaviour
             changed = true;
         }
 
-        Mesh quadMesh = GetQuadMesh();
         MeshFilter mf = go.GetComponent<MeshFilter>();
         if (mf == null)
         {
             mf = go.AddComponent<MeshFilter>();
             changed = true;
         }
-        if (mf.sharedMesh != quadMesh)
+        if (mf.sharedMesh == null)
         {
-            mf.sharedMesh = quadMesh;
+            mf.sharedMesh = GetQuadMesh();
             changed = true;
         }
 
@@ -248,6 +252,19 @@ public class AutumnAtmosphereFX : MonoBehaviour
         return changed;
     }
 
+    private bool RemoveLayerChildren(string layerName)
+    {
+        bool removed = false;
+        for (int i = transform.childCount - 1; i >= 0; i--)
+        {
+            Transform c = transform.GetChild(i);
+            if (!string.Equals(c.name, layerName, StringComparison.Ordinal)) continue;
+            DestroyObjectSafe(c.gameObject);
+            removed = true;
+        }
+        return removed;
+    }
+
     private Transform FindOrCleanChild(string layerName, out bool modified)
     {
         modified = false;
@@ -279,11 +296,61 @@ public class AutumnAtmosphereFX : MonoBehaviour
 
     private static Mesh GetQuadMesh()
     {
+        if (cachedQuadMesh != null) return cachedQuadMesh;
+
+        GameObject tempQuad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        if (tempQuad != null)
+        {
+            MeshFilter tempFilter = tempQuad.GetComponent<MeshFilter>();
+            if (tempFilter != null && tempFilter.sharedMesh != null)
+            {
+                cachedQuadMesh = tempFilter.sharedMesh;
+            }
+            DestroyObjectSafe(tempQuad);
+        }
+
         if (cachedQuadMesh == null)
         {
-            cachedQuadMesh = Resources.GetBuiltinResource<Mesh>("Quad.mesh");
+            cachedQuadMesh = CreateFallbackQuadMesh();
         }
+
         return cachedQuadMesh;
+    }
+
+    private static Mesh CreateFallbackQuadMesh()
+    {
+        var mesh = new Mesh
+        {
+            name = "AutumnAtmosphereQuad"
+        };
+
+        mesh.vertices = new[]
+        {
+            new Vector3(-0.5f, -0.5f, 0f),
+            new Vector3( 0.5f, -0.5f, 0f),
+            new Vector3(-0.5f,  0.5f, 0f),
+            new Vector3( 0.5f,  0.5f, 0f)
+        };
+
+        mesh.uv = new[]
+        {
+            new Vector2(0f, 0f),
+            new Vector2(1f, 0f),
+            new Vector2(0f, 1f),
+            new Vector2(1f, 1f)
+        };
+
+        mesh.normals = new[]
+        {
+            Vector3.back,
+            Vector3.back,
+            Vector3.back,
+            Vector3.back
+        };
+
+        mesh.triangles = new[] { 0, 2, 1, 2, 3, 1 };
+        mesh.RecalculateBounds();
+        return mesh;
     }
 
     private static void DestroyObjectSafe(UnityEngine.Object obj)
@@ -328,69 +395,7 @@ public class AutumnAtmosphereFX : MonoBehaviour
         return changed;
     }
 
-    [InitializeOnLoadMethod]
-    private static void InitEditorSync()
-    {
-        EditorApplication.delayCall += SyncOpenAutumnSceneInEditor;
-        EditorSceneManager.sceneOpened += (scene, mode) => SyncOpenAutumnSceneInEditor();
-    }
-
-    private static void SyncOpenAutumnSceneInEditor()
-    {
-        if (Application.isPlaying) return;
-
-        Scene activeScene = SceneManager.GetActiveScene();
-        if (!activeScene.IsValid() || string.IsNullOrEmpty(activeScene.name)) return;
-        if (!string.Equals(activeScene.name, "Autumn", StringComparison.OrdinalIgnoreCase)) return;
-
-        bool modified = false;
-        AutumnAtmosphereFX fx = FindFirstObjectByType<AutumnAtmosphereFX>(FindObjectsInactive.Include);
-        if (fx == null)
-        {
-            GameObject go = new GameObject("AutumnAtmosphereFX");
-            fx = go.AddComponent<AutumnAtmosphereFX>();
-            EditorUtility.SetDirty(go);
-            modified = true;
-        }
-
-        if (fx.SyncLayers())
-        {
-            EditorUtility.SetDirty(fx);
-            modified = true;
-        }
-
-        if (modified && !Application.isPlaying)
-        {
-            EditorSceneManager.MarkSceneDirty(activeScene);
-        }
-    }
+    // ปิดการสร้าง AutumnAtmosphereFX อัตโนมัติใน Editor / Runtime แล้ว
+    // หากต้องการใช้งาน ให้วาง Component นี้ใน Scene ด้วยตัวเองและติ๊กเปิดเลเยอร์ที่ต้องการใน Inspector
 #endif
-
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    private static void AutoEnsureOnSceneLoad()
-    {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
-        SceneManager.sceneLoaded += OnSceneLoaded;
-        EnsureInActiveSceneIfNeeded();
-    }
-
-    private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        EnsureInActiveSceneIfNeeded();
-    }
-
-    public static void EnsureInActiveSceneIfNeeded()
-    {
-        Scene activeScene = SceneManager.GetActiveScene();
-        if (!activeScene.IsValid() || string.IsNullOrEmpty(activeScene.name)) return;
-        if (!string.Equals(activeScene.name, "Autumn", StringComparison.OrdinalIgnoreCase)) return;
-
-        AutumnAtmosphereFX existing = FindFirstObjectByType<AutumnAtmosphereFX>();
-        if (existing == null)
-        {
-            GameObject go = new GameObject("AutumnAtmosphereFX");
-            existing = go.AddComponent<AutumnAtmosphereFX>();
-        }
-        existing.SyncLayers();
-    }
 }

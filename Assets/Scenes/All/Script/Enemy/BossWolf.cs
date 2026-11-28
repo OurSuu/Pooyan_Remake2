@@ -8,13 +8,16 @@ using UnityEngine;
 public class BossWolf : Wolf
 {
     private int remainingShieldHP; // เลือดของโล่บอส
+    private int maxShieldHP;
     private bool stageClearTriggered = false;
 
     [Header("Boss Visuals (NES Pink Boss Wolf)")]
     [SerializeField] private Color bossBodyTint = new Color(1f, 0.68f, 0.85f, 1f); // สีชมพูตามต้นฉบับ NES (ボスオオカミ・ピンク)
-    [SerializeField] private float bossSpeedMultiplier = 2.05f; // บอสลอยขึ้นเร็วตามด่านคู่ (บาลานซ์ให้ยิงไล่ตามทัน)
-    [SerializeField] private float minBossAscendSpeed = 1.80f; // ความเร็วขั้นต่ำตอนลอยขึ้นด่าน 2
-    [SerializeField] private float stage4MinBossAscendSpeed = 2.05f; // ความเร็วขั้นต่ำตอนลอยขึ้นด่าน 4+
+    [SerializeField] private float bossSpeedMultiplier = 1.75f; // ตัวคูณความเร็วลอยขึ้นของบอส (ลดจาก 2.05 ลงเล็กน้อยให้ยังท้าทาย)
+    [SerializeField] private float minBossAscendSpeed = 1.55f; // ความเร็วขั้นต่ำตอนลอยขึ้นด่าน 2
+    [SerializeField] private float stage4MinBossAscendSpeed = 1.70f; // ความเร็วขั้นต่ำตอนลอยขึ้นด่าน 4+
+    [SerializeField] private float maxBossAscendSpeed = 1.95f; // เพดานความเร็วสูงสุดตอนลอยขึ้นของบอส
+    [SerializeField] private int maxBossShieldHits = 5; // จำนวนครั้งสูงสุดที่โล่กันธนูได้ (รวมลูกโป่ง 1 นัด = 6 นัด)
     [SerializeField] private float bossWalkSpeedMultiplier = 1.25f;
 
     private float initialWalkSpeed = -1f;
@@ -27,11 +30,14 @@ public class BossWolf : Wolf
 
         int currentStage = GameManager.Instance != null ? GameManager.Instance.EffectiveDifficultyStage : 2;
         float minSpeed = currentStage >= 4 ? stage4MinBossAscendSpeed : minBossAscendSpeed;
-        float bossAscendSpeed = Mathf.Max(speed * bossSpeedMultiplier, minSpeed);
+        float maxSpeed = currentStage >= 4 ? maxBossAscendSpeed : Mathf.Min(maxBossAscendSpeed, 1.85f);
+        float bossAscendSpeed = Mathf.Clamp(speed * bossSpeedMultiplier, minSpeed, maxSpeed);
 
-        // บอสมีโล่เสมอ และเคลื่อนที่ลอยขึ้นไวมาก
+        // บอสมีโล่เสมอ แต่คุมสปีดและเลือดโล่ให้อยู่ในระยะที่ยิงทัน
         base.Initialize(config, descending, bossAscendSpeed, true, rockThrow, dropX, lanes, laneIndex, 1, BalloonColorType.PinkRed);
-        remainingShieldHP = (config != null && config.bossShieldHP > 0) ? config.bossShieldHP : GameConstants.BossShieldHits;
+        int rawShieldHP = (config != null && config.bossShieldHP > 0) ? config.bossShieldHP : GameConstants.BossShieldHits;
+        maxShieldHP = Mathf.Clamp(rawShieldHP, 1, Mathf.Max(1, maxBossShieldHits));
+        remainingShieldHP = maxShieldHP;
         stageClearTriggered = false;
 
         if (balloon != null)
@@ -51,10 +57,12 @@ public class BossWolf : Wolf
     /// </summary>
     public bool TryTakeArrowHit(Vector3? arrowPos = null)
     {
-        // โล่ยังไม่แตกก็ลดเลือดโล่ไปก่อน พร้อมเล่นท่าปัดลูกธนูและเสียงโล่
+        // โล่ยังไม่แตกก็ลดเลือดโล่ไปก่อน พร้อมเล่นท่าปัดลูกธนู เสียงโล่ และชะลอความเร็วลอยขึ้นเพียงเล็กน้อย
         if (remainingShieldHP > 0)
         {
             remainingShieldHP--;
+            float shieldRatio = Mathf.Clamp01((float)remainingShieldHP / Mathf.Max(1, maxShieldHP));
+            floatSpeed = baseFloatSpeed * Mathf.Lerp(0.88f, 1f, shieldRatio);
             AudioManager.Instance?.PlayShieldBlock(); // เสียงติ๊งๆ โดนโล่
             PlayDeflectAnimation();                   // เล่นท่าปัดป้อง
             return false;

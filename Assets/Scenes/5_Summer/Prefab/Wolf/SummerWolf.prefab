@@ -50,7 +50,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Wolf
   balloon: {fileID: 6282082725391001847}
-  balloonPrefab: {fileID: 0}
+  balloonPrefab: {fileID: 6324338069917964038}
   shieldTransform: {fileID: 0}
   rockPrefab: {fileID: 1926483307685132397, guid: 34cd0122affc40848b25901f10d3ba12, type: 3}
   spriteDrop: {fileID: 1781254230411818056, guid: cee994d7dfef3054da12b5cd76a71975, type: 3}
@@ -63,10 +63,12 @@ MonoBehaviour:
   fallSpeed: 4.5
   walkSpeed: 1.85
   climbSpeed: 1.05
+  playGroundRunSFX: 1
+  groundRunStepInterval: 0.22
   shieldToggleInterval: 1.4
   rockThrowInterval: 3.2
   walkGroundY: -4.2
-  deadGroundY: -4.5
+  deadGroundY: -4
   cliffHitY: 3.5
   groundDustPrefab: {fileID: 0}
   biteArrowFXPrefab: {fileID: 0}

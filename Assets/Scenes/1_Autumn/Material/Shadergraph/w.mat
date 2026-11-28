@@ -40,11 +40,11 @@ Material:
     m_Floats:
     - _BUILTIN_QueueControl: 0
     - _BUILTIN_QueueOffset: 0
-    - _Opacity: 0.041
-    - _StreakScaleY: 9.9
-    - _StreakThickness: 0.128
-    - _WaveStrength: 0.0551
-    - _WindSpeed: 1
+    - _Opacity: 0
+    - _StreakScaleY: 4.7
+    - _StreakThickness: 0.02
+    - _WaveStrength: 0
+    - _WindSpeed: -1.5
     m_Colors:
     - _WindColor: {r: 1, g: 1, b: 1, a: 0.39607844}
   m_BuildTextureStacks: []

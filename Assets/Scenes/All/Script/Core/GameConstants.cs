@@ -33,7 +33,7 @@ public static class GameConstants
     public const int BoulderWolfThreshold = 6;    // หมาป่ายืนดันหน้าผาได้ 5 ตัว ตัวที่ 6 ถึงจะผลักหินกลิ้งลงมา (ตามต้นฉบับ NES)
     public const int BoulderWolvesAfterDeath = 4; // ถ้าตายแล้ว หมาป่าจะเหลือ 4 ตัว
     public const int BossEscapeExtraWolves = 4;
-    public const int BossShieldHits = 7;          // บอสต้องโดนยิงรวม 8 ทีถึงลูกโป่งแตก (กัน 7 ที + แตกในทีที่ 8 ตามต้นฉบับ NES)
+    public const int BossShieldHits = 5;          // บอสกันด้วยโล่ 5 ที + ลูกโป่ง 1 ที (รวม 6 นัดแตก)
     public const float ArrowSpeed = 12.5f;        // สปีดธนู (ลดความเร็วลงให้เห็นวิถีชัดเจนขึ้น)
     public const float RapidShootCooldown = 0.12f; // ดีเลย์ระหว่างนัดที่ 1 กับนัดที่ 2 (0.12s) ง้างปล่อยไว ยิงเบิ้ล 2 ดอกติดกันได้ตามต้นฉบับ
     public const float ReloadShootCooldown = 0.40f; // คูลดาวน์หลังยิงครบ 2 นัด (0.40s) จังหวะดึงลูกธนูชุดใหม่ขึ้นมาง้าง ป้องกันสแปมปืนกล

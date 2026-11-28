@@ -19,7 +19,9 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private AudioClip bgmSpring;
     [Tooltip("เพลงประจำด่าน 3 - ฤดูหนาว (Winter Scene)")]
     [SerializeField] private AudioClip bgmWinter;
-    [Tooltip("เพลงประจำด่าน 4 - ฤดูฝน / ฤดูร้อน (Rainy / Summer Scene)")]
+    [Tooltip("เพลงประจำด่าน 4 - ฤดูฝน (Rainy Scene)")]
+    [SerializeField] private AudioClip bgmRainy;
+    [Tooltip("เพลงประจำด่าน 5 - ฤดูร้อน (Summer Scene)")]
     [SerializeField] private AudioClip bgmSummer;
     [Tooltip("เพลงประจำฉากนี้ (ใส่ช่องนี้ได้ถ้าตั้งแยกแต่ละ Scene หรือใช้เป็นเพลงสำรอง)")]
     [SerializeField] private AudioClip bgmMain;
@@ -115,8 +117,18 @@ public class AudioManager : MonoBehaviour
     [Header("6. เสียง UI & การวิ่งบนพื้น (Menu & Ground Run SFX)")]
     [Tooltip("เสียงกดปุ่มเมนู / เลือกตัวอักษร")]
     [SerializeField] private AudioClip seButtonClick;
-    [Tooltip("เสียงตอนวิ่ง / เดินบนพื้น (หมาป่า, ลูกหมู, แม่หมู — เล่นผ่าน groundRunSource แยกจาก Cutscene และ BGM)")]
+    [Tooltip("เสียงตอนวิ่ง / เดินบนพื้นหญ้าทั่วไป (หมาป่า, ลูกหมู, แม่หมู — เล่นผ่าน groundRunSource แยกจาก Cutscene และ BGM)")]
     [SerializeField] private AudioClip seGroundRun;
+    [Tooltip("เสียงตอนวิ่งบนพื้นแฉะ/น้ำขัง สำหรับด่าน Rainy (ถ้าเว้นว่าง จะใช้ seGroundRun แทน)")]
+    [SerializeField] private AudioClip seGroundRunRainy;
+    [Tooltip("ตัวคูณความดังเสียงวิ่งด่าน Rainy")]
+    [Range(0.2f, 2.0f)] [SerializeField] private float rainyGroundRunVolumeMultiplier = 1.0f;
+    [Tooltip("เสียงตอนวิ่งบนหิมะ สำหรับด่าน Winter (ถ้าเว้นว่างไว้จะใช้เสียงเหยียบหิมะสำรองให้ หรือลากไฟล์จริงมาใส่แทนได้)")]
+    [SerializeField] private AudioClip seGroundRunWinter;
+    [Tooltip("ตัวคูณความดังเสียงวิ่งบนหิมะด่าน Winter")]
+    [Range(0.2f, 2.0f)] [SerializeField] private float winterGroundRunVolumeMultiplier = 1.0f;
+    [Tooltip("สร้างเสียงเหยียบหิมะกรุบๆ อัตโนมัติกรณีไม่ได้ลากไฟล์ใส่ seGroundRunWinter")]
+    [SerializeField] private bool useSynthesizedSnowIfEmpty = true;
     [Tooltip("ระยะห่างขั้นต่ำระหว่างเสียงก้าวเท้าบนพื้นแต่ละครั้ง (วินาที)")]
     [Range(0.05f, 0.6f)] [SerializeField] private float groundRunMinInterval = 0.14f;
     [Tooltip("เปิดเสียงฝีเท้าตอนวิ่งบนพื้นระหว่างเล่น Cutscene หรือไม่")]
@@ -135,6 +147,10 @@ public class AudioManager : MonoBehaviour
     [Range(0f, 1f)] [SerializeField] private float ropePullVolume = 0.6f;
     [Range(0f, 1f)] [SerializeField] private float cutsceneVolume = 0.85f;
     [Range(0f, 1f)] [SerializeField] private float groundRunVolume = 0.85f;
+    [Tooltip("ตัวคูณความดังเสียงยิงธนูของแม่หมู (ลดลงไม่ให้กลบเสียงโดนเป้า)")]
+    [Range(0f, 1.5f)] [SerializeField] private float arrowFireVolumeScale = 0.40f;
+    [Tooltip("ตัวคูณความดังเสียงยิงโดน / ลูกโป่งแตก (เพิ่มให้ได้ยินชัดเจน)")]
+    [Range(0f, 3.0f)] [SerializeField] private float balloonPopVolumeScale = 1.85f;
 
     public enum GroundRunnerRole
     {
@@ -173,6 +189,19 @@ public class AudioManager : MonoBehaviour
     private AudioSource[] balloonInflateVoices;
     private Coroutine[] balloonInflateRoutines;
     private int nextBalloonInflateVoice = 0;
+
+    [Header("9. เสียงบรรยากาศฝนด่าน Rainy (Rainy Ambience)")]
+    [Tooltip("ไฟล์เสียงฝนตกต่อเนื่องสำหรับด่าน Rainy (หากเว้นว่างไว้จะใช้เสียงฝนธรรมชาติสำรองให้โดยอัตโนมัติ)")]
+    [SerializeField] private AudioClip seRainAmbience;
+    [Tooltip("ระดับความดังเสียงฝนในด่าน Rainy")]
+    [Range(0f, 1f)] [SerializeField] private float rainAmbienceVolume = 0.42f;
+    [Tooltip("ลดความดังเสียงฝนลงช่วงเล่นคัทซีน / เคลียร์ด่าน")]
+    [Range(0f, 1f)] [SerializeField] private float rainCutsceneVolumeMultiplier = 0.55f;
+    [Tooltip("สร้างเสียงฝนซ่าเบาๆ อัตโนมัติกรณีไม่ได้ลากไฟล์ใส่ seRainAmbience")]
+    [SerializeField] private bool useSynthesizedRainIfEmpty = true;
+
+    private AudioSource rainLoopSource;
+    private Coroutine rainFadeRoutine;
     private bool audioSourcesInitialized = false;
     private Coroutine cutsceneFadeRoutine;
     private bool isCutsceneFadingOut = false;
@@ -203,11 +232,26 @@ public class AudioManager : MonoBehaviour
         if (seBoulderFall == null) seBoulderFall = RetroSFXSynth.GetBoulderFall();
         if (seButtonClick == null) seButtonClick = RetroSFXSynth.GetButtonClick();
         if (seGroundRun == null) seGroundRun = RetroSFXSynth.GetGroundRun();
+        if (IsWinterActive() && seGroundRunWinter == null && useSynthesizedSnowIfEmpty)
+            seGroundRunWinter = RetroSFXSynth.GetSnowRun();
+        if (IsRainyActive() && seRainAmbience == null && useSynthesizedRainIfEmpty)
+            seRainAmbience = RetroSFXSynth.GetRainAmbience();
     }
 
     // โหลดข้อมูลเสียง SFX ทั้งหมดเข้าหน่วยความจำล่วงหน้าตอนเริ่มด่าน ป้องกันอาการกระตุก (Disk Decode Spike) ตอนยิงธนูโดนเป้าครั้งแรก
     private void PreloadAllSFXClips()
     {
+        PreloadClip(GetCurrentSeasonBGM());
+        if (IsRainyActive())
+        {
+            PreloadClip(bgmRainy);
+            PreloadClip(seGroundRunRainy);
+            PreloadClip(seRainAmbience);
+        }
+        if (IsWinterActive())
+        {
+            PreloadClip(seGroundRunWinter);
+        }
         PreloadClip(bgmMainMenuCutscene);
         PreloadClip(seMainMenuBalloonRelease);
         PreloadClip(seMainMenuBalloonDock);
@@ -344,6 +388,23 @@ public class AudioManager : MonoBehaviour
             }
         }
 
+        if (rainLoopSource == null)
+        {
+            Transform rainTransform = transform.Find("[RainAmbienceVoice]");
+            GameObject rainObj = rainTransform != null ? rainTransform.gameObject : new GameObject("[RainAmbienceVoice]");
+            if (rainTransform == null)
+            {
+                rainObj.transform.SetParent(transform, false);
+            }
+            rainLoopSource = rainObj.GetComponent<AudioSource>();
+            if (rainLoopSource == null) rainLoopSource = rainObj.AddComponent<AudioSource>();
+            rainLoopSource.loop = true;
+            rainLoopSource.playOnAwake = false;
+            rainLoopSource.spatialBlend = 0f;
+            rainLoopSource.mute = false;
+            rainLoopSource.volume = 0f;
+        }
+
         EnsureAudioListener();
     }
 
@@ -385,6 +446,8 @@ public class AudioManager : MonoBehaviour
             // กรณีอยู่ในหน้า MainMenu ที่ไม่มี GameManager
             PlayMainMenuBGM();
         }
+
+        UpdateRainAmbienceForState(GameManager.Instance != null ? GameManager.Instance.CurrentState : GameState.MainMenu);
     }
 
     private void OnDestroy()
@@ -416,10 +479,124 @@ public class AudioManager : MonoBehaviour
                 PlayBGM(GetCurrentBonusBGM(), true);
                 break;
         }
+
+        UpdateRainAmbienceForState(state);
     }
 
+    private void UpdateRainAmbienceForState(GameState state)
+    {
+        if (!IsRainyActive())
+        {
+            SetRainAmbienceTarget(false, 0f, 0.4f);
+            return;
+        }
+
+        switch (state)
+        {
+            case GameState.Playing:
+                SetRainAmbienceTarget(true, 1.0f, 0.85f);
+                break;
+            case GameState.Cutscene:
+            case GameState.StageClear:
+                SetRainAmbienceTarget(true, rainCutsceneVolumeMultiplier, 0.65f);
+                break;
+            case GameState.BonusStage:
+                SetRainAmbienceTarget(true, 0.72f, 0.65f);
+                break;
+            case GameState.GameOver:
+            case GameState.NameEntry:
+                SetRainAmbienceTarget(false, 0f, 1.2f);
+                break;
+            default:
+                SetRainAmbienceTarget(false, 0f, 0.4f);
+                break;
+        }
+    }
+
+    public void SetRainAmbienceTarget(bool active, float volumeMultiplier = 1f, float fadeDuration = 0.7f)
+    {
+        if (active && seRainAmbience == null && useSynthesizedRainIfEmpty)
+            seRainAmbience = RetroSFXSynth.GetRainAmbience();
+
+        EnsureAudioSources();
+        if (rainLoopSource == null) return;
+
+        if (rainFadeRoutine != null)
+        {
+            StopCoroutine(rainFadeRoutine);
+            rainFadeRoutine = null;
+        }
+
+        if (!active || seRainAmbience == null)
+        {
+            if (!rainLoopSource.isPlaying) return;
+            if (!gameObject.activeInHierarchy || fadeDuration <= 0.05f)
+            {
+                rainLoopSource.Stop();
+                rainLoopSource.volume = 0f;
+                return;
+            }
+            rainFadeRoutine = StartCoroutine(FadeRainAmbienceRoutine(0f, fadeDuration, stopAtZero: true));
+            return;
+        }
+
+        float targetVol = Mathf.Clamp01(rainAmbienceVolume * volumeMultiplier);
+        if (!rainLoopSource.isPlaying || rainLoopSource.clip != seRainAmbience)
+        {
+            rainLoopSource.clip = seRainAmbience;
+            rainLoopSource.loop = true;
+            rainLoopSource.volume = 0f;
+            rainLoopSource.Play();
+        }
+
+        if (!gameObject.activeInHierarchy || fadeDuration <= 0.05f)
+        {
+            rainLoopSource.volume = targetVol;
+            return;
+        }
+
+        rainFadeRoutine = StartCoroutine(FadeRainAmbienceRoutine(targetVol, fadeDuration, stopAtZero: false));
+    }
+
+    private System.Collections.IEnumerator FadeRainAmbienceRoutine(float targetVolume, float duration, bool stopAtZero)
+    {
+        float startVol = rainLoopSource != null ? rainLoopSource.volume : 0f;
+        float elapsed = 0f;
+        float dur = Mathf.Max(0.05f, duration);
+
+        while (elapsed < dur && rainLoopSource != null)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / dur));
+            rainLoopSource.volume = Mathf.Lerp(startVol, targetVolume, t);
+            yield return null;
+        }
+
+        if (rainLoopSource != null)
+        {
+            rainLoopSource.volume = targetVolume;
+            if (stopAtZero && targetVolume <= 0.001f && rainLoopSource.isPlaying)
+            {
+                rainLoopSource.Stop();
+            }
+        }
+        rainFadeRoutine = null;
+    }
+
+    private static bool IsSeasonActive(string seasonKeyword, int seasonIndex)
+    {
+        string sceneName = SceneManager.GetActiveScene().name;
+        if (sceneName.IndexOf(seasonKeyword, StringComparison.OrdinalIgnoreCase) >= 0)
+            return true;
+        return GameManager.Instance != null && ((GameManager.Instance.CurrentStage - 1) % 5) == seasonIndex;
+    }
+
+    private static bool IsRainyActive() => IsSeasonActive("Rainy", 3);
+
+    private static bool IsWinterActive() => IsSeasonActive("Winter", 2);
+
     /// <summary>
-    /// เลือกเพลง BGM ตามฤดูของ Scene ปัจจุบัน (Autumn / Spring / Winter / Summer)
+    /// เลือกเพลง BGM ตามฤดูของ Scene ปัจจุบัน (Autumn / Spring / Winter / Rainy / Summer)
     /// รองรับทั้งการใส่แยกช่องตามฤดู และการใส่ช่อง bgmMain ประจำแต่ละ Scene
     /// </summary>
     public AudioClip GetCurrentSeasonBGM()
@@ -432,8 +609,12 @@ public class AudioManager : MonoBehaviour
             return bgmSpring;
         if (sceneName.IndexOf("Winter", StringComparison.OrdinalIgnoreCase) >= 0 && bgmWinter != null)
             return bgmWinter;
-        if ((sceneName.IndexOf("Rainy", StringComparison.OrdinalIgnoreCase) >= 0 ||
-             sceneName.IndexOf("Summer", StringComparison.OrdinalIgnoreCase) >= 0) && bgmSummer != null)
+        if (sceneName.IndexOf("Rainy", StringComparison.OrdinalIgnoreCase) >= 0)
+        {
+            if (bgmRainy != null) return bgmRainy;
+            if (bgmSummer != null) return bgmSummer;
+        }
+        if (sceneName.IndexOf("Summer", StringComparison.OrdinalIgnoreCase) >= 0 && bgmSummer != null)
             return bgmSummer;
 
         // เช็คจากเลขด่านปัจจุบันเป็นลำดับถัดมา (1=Autumn, 2=Spring, 3=Winter, 4=Rainy, 5=Summer)
@@ -446,6 +627,11 @@ public class AudioManager : MonoBehaviour
                 case 1: if (bgmSpring != null) return bgmSpring; break;
                 case 2: if (bgmWinter != null) return bgmWinter; break;
                 case 3:
+                    if (bgmRainy != null) return bgmRainy;
+                    if (bgmSummer != null) return bgmSummer;
+                    if (bgmMain != null) return bgmMain;
+                    if (bgmSpring != null) return bgmSpring;
+                    break;
                 case 4:
                     if (bgmSummer != null) return bgmSummer;
                     if (bgmMain != null) return bgmMain;
@@ -479,12 +665,15 @@ public class AudioManager : MonoBehaviour
     private void HandleGameOver()
     {
         SetRopePullSound(false);
+        SetRainAmbienceTarget(false, 0f, 1.2f);
         PlayBGM(bgmGameOver, false);
     }
 
     private void HandleStageClear()
     {
         SetRopePullSound(false);
+        if (IsRainyActive())
+            SetRainAmbienceTarget(true, rainCutsceneVolumeMultiplier, 0.5f);
         PlayBGM(bgmStageClear, false);
     }
 
@@ -643,7 +832,7 @@ public class AudioManager : MonoBehaviour
     {
         if (!playCutsceneGroundRunSFX) return;
         float baseInterval = Mathf.Max(0.08f, cutsceneFootstepInterval * cadenceScale);
-        TriggerGrassRunnerVoice((int)role, role, worldX, baseInterval, pitchScale, volumeMultiplier, 0);
+        TriggerGrassRunnerVoice((int)role, role, worldX, baseInterval, pitchScale, volumeMultiplier, 0, isCutscene: true);
     }
 
     public void NotifyCutsceneGroundRun(float intervalScale = 1f, float pitchScale = 1f)
@@ -656,7 +845,7 @@ public class AudioManager : MonoBehaviour
         int hash = wolfId & 0x7FFFFFFF;
         int slot = hash % GroundRunVoiceCount;
         float interval = stepIntervalOverride > 0f ? stepIntervalOverride : Mathf.Max(0.08f, groundRunMinInterval);
-        TriggerGrassRunnerVoice(slot, GroundRunnerRole.Wolf, worldX, interval, pitchScale, 0.9f, hash);
+        TriggerGrassRunnerVoice(slot, GroundRunnerRole.Wolf, worldX, interval, pitchScale, 0.9f, hash, isCutscene: false);
     }
 
     public void NotifyWolfGroundRun(float pitchScale = 1f, float stepIntervalOverride = -1f)
@@ -824,7 +1013,7 @@ public class AudioManager : MonoBehaviour
     public void PlaySFX(AudioClip clip) => PlayOneShot(clip);
 
     // ฝั่งแม่หมู & ลูกหมู
-    public void PlayArrowFire() => PlayOneShot(seArrowFire);
+    public void PlayArrowFire() => PlayOneShot(seArrowFire, arrowFireVolumeScale);
     public void PlayMeatPickup() => PlayOneShot(seMeatPickup);
     public void PlayMeatThrow() => PlayOneShot(seMeatThrow);
     public void PlayMeatHit() => PlayOneShot(seMeatHit);
@@ -938,8 +1127,8 @@ public class AudioManager : MonoBehaviour
             balloonInflateRoutines[voiceIdx] = null;
         }
     }
-    public void PlayBalloonPop() => PlayOneShot(seBalloonPop);
-    public void PlayBalloonDamage() => PlayOneShot(seBalloonDamage != null ? seBalloonDamage : seBalloonPop);
+    public void PlayBalloonPop() => PlayOneShot(seBalloonPop, balloonPopVolumeScale);
+    public void PlayBalloonDamage() => PlayOneShot(seBalloonDamage != null ? seBalloonDamage : seBalloonPop, balloonPopVolumeScale);
     public void PlayWolfFall() => PlayOneShot(seWolfFall);
     public void PlayShieldBlock() => PlayOneShot(seShieldBlock);
     public void PlayLadderClimb() => PlayOneShot(seLadderClimb);
@@ -961,7 +1150,23 @@ public class AudioManager : MonoBehaviour
     public void PlayGroundRunStep(float minIntervalOverride = -1f, float pitchScale = 1f)
     {
         float interval = minIntervalOverride > 0f ? minIntervalOverride : Mathf.Max(0.05f, groundRunMinInterval);
-        TriggerGrassRunnerVoice(0, GroundRunnerRole.Wolf, 0f, interval, pitchScale, 1f, 0);
+        TriggerGrassRunnerVoice(0, GroundRunnerRole.Wolf, 0f, interval, pitchScale, 1f, 0, isCutscene: false);
+    }
+
+    private AudioClip GetActiveGroundRunClip(out float extraVolMult)
+    {
+        if (IsRainyActive() && seGroundRunRainy != null)
+        {
+            extraVolMult = rainyGroundRunVolumeMultiplier;
+            return seGroundRunRainy;
+        }
+        if (IsWinterActive() && seGroundRunWinter != null)
+        {
+            extraVolMult = winterGroundRunVolumeMultiplier;
+            return seGroundRunWinter;
+        }
+        extraVolMult = 1f;
+        return seGroundRun;
     }
 
     private static RunnerAcousticProfile GetRunnerProfile(GroundRunnerRole role)
@@ -979,9 +1184,10 @@ public class AudioManager : MonoBehaviour
         }
     }
 
-    private void TriggerGrassRunnerVoice(int slot, GroundRunnerRole role, float worldX, float baseInterval, float pitchScale, float volumeMultiplier, int instanceVariant)
+    private void TriggerGrassRunnerVoice(int slot, GroundRunnerRole role, float worldX, float baseInterval, float pitchScale, float volumeMultiplier, int instanceVariant, bool isCutscene)
     {
-        if (seGroundRun == null) return;
+        AudioClip runClip = GetActiveGroundRunClip(out float surfaceVolMult);
+        if (runClip == null) return;
         EnsureAudioSources();
         if (groundRunVoices == null || slot < 0 || slot >= groundRunVoices.Length) return;
         AudioSource src = groundRunVoices[slot];
@@ -994,7 +1200,9 @@ public class AudioManager : MonoBehaviour
 
         // แยกมิติซ้าย-ขวา (Stereo Pan) และค่อยๆ จางเมื่อวิ่งเข้าใกล้/พ้นขอบจอ
         float pan = Mathf.Clamp(worldX / 7.5f, -1f, 1f) * grassStereoPanStrength;
-        float edgeAttenuation = Mathf.InverseLerp(8.5f, 4.8f, Mathf.Abs(worldX));
+        float edgeAttenuation = isCutscene
+            ? Mathf.InverseLerp(8.5f, 4.8f, Mathf.Abs(worldX))
+            : Mathf.Max(0.55f, Mathf.InverseLerp(10.5f, 7.0f, Mathf.Abs(worldX)));
         if (edgeAttenuation <= 0.001f) return;
 
         int activeCount = 0;
@@ -1005,25 +1213,32 @@ public class AudioManager : MonoBehaviour
         float ensembleMix = activeCount > 1 ? Mathf.Lerp(1f, 1f / Mathf.Sqrt(activeCount), 0.6f) : 1f;
         float variantPitch = instanceVariant > 0 ? 1f + (((instanceVariant % 5) - 2) * 0.03f) : 1f;
 
-        // 1) คลิปเสียงวิ่งยาว (> 0.45s เช่น ไฟล์ Loop วิ่งบนหญ้า): แยก voice ต่อตัวละครพร้อม offset ไม่ตรงกัน
-        if (seGroundRun.length > 0.45f)
+        // 1) คลิปเสียงวิ่งแบบ Loop ยาว (>= 1.5s): แยก voice ต่อตัวละคร (เริ่มจาก 0.0s สำหรับตัวแรก และเหลื่อม offset เฉพาะตอนวิ่งหลายตัว)
+        if (runClip.length >= 1.5f)
         {
+            if (runClip.loadState == AudioDataLoadState.Unloaded)
+                runClip.LoadAudioData();
+
             src.panStereo = pan;
             src.pitch = Mathf.Clamp(profile.basePitch * pitchScale * variantPitch, 0.55f, 1.65f);
-            src.volume = Mathf.Clamp01(groundRunVolume * profile.volumeWeight * edgeAttenuation * ensembleMix * volumeMultiplier);
+            src.volume = Mathf.Clamp01(groundRunVolume * profile.volumeWeight * edgeAttenuation * ensembleMix * volumeMultiplier * surfaceVolMult);
 
-            if (!src.isPlaying || src.clip != seGroundRun || !src.loop)
+            if (!src.isPlaying || src.clip != runClip || !src.loop)
             {
-                src.clip = seGroundRun;
+                src.clip = runClip;
                 src.loop = true;
-                float normOffset = (profile.loopOffsetNorm + (instanceVariant % 7) * 0.13f) % 1f;
-                src.time = seGroundRun.length * normOffset;
                 src.Play();
+                if (activeCount > 1)
+                {
+                    float normOffset = (profile.loopOffsetNorm + (instanceVariant % 7) * 0.13f) % 1f;
+                    if (normOffset > 0.001f)
+                        src.time = Mathf.Clamp(runClip.length * normOffset, 0f, Mathf.Max(0f, runClip.length - 0.15f));
+                }
             }
             return;
         }
 
-        // 2) คลิปเสียงก้าวเท้าสั้น (<= 0.45s): เหลื่อมจังหวะเหยียบแต่ละตัว + สลับน้ำหนักซ้าย/ขวาทุกก้าว
+        // 2) คลิปเสียงก้าวเท้าสั้น-กลาง (< 1.5s): เล่น PlayOneShot ตั้งแต่ 0.0s ตามจังหวะก้าวและรองรับตัวคูณความดัง > 1.0
         if (src.loop && src.isPlaying)
         {
             src.Stop();
@@ -1032,7 +1247,9 @@ public class AudioManager : MonoBehaviour
 
         if (!wasPreviouslyActive || voiceNextStepTime[slot] <= 0f)
         {
-            float stagger = profile.phaseStagger + (instanceVariant > 0 ? (instanceVariant % 4) * 0.035f : 0f);
+            float stagger = isCutscene
+                ? profile.phaseStagger + (instanceVariant > 0 ? (instanceVariant % 4) * 0.035f : 0f)
+                : 0f;
             voiceNextStepTime[slot] = now + stagger;
         }
 
@@ -1048,14 +1265,14 @@ public class AudioManager : MonoBehaviour
         src.volume = 1f;
         src.panStereo = pan;
         src.pitch = Mathf.Clamp(profile.basePitch * pitchScale * variantPitch * stepPitchJitter, 0.5f, 1.85f);
-        float finalVol = Mathf.Clamp01(groundRunVolume * profile.volumeWeight * edgeAttenuation * ensembleMix * volumeMultiplier * stepVolJitter);
-        src.PlayOneShot(seGroundRun, finalVol);
+        float finalVol = Mathf.Clamp(groundRunVolume * profile.volumeWeight * edgeAttenuation * ensembleMix * volumeMultiplier * surfaceVolMult * stepVolJitter, 0f, 2.5f);
+        src.PlayOneShot(runClip, finalVol);
     }
 
-    private void PlayOneShot(AudioClip clip)
+    private void PlayOneShot(AudioClip clip, float volumeScale = 1f)
     {
         if (clip == null || sfxSource == null) return;
-        sfxSource.volume = sfxVolume;
-        sfxSource.PlayOneShot(clip, 1f);
+        sfxSource.volume = 1f;
+        sfxSource.PlayOneShot(clip, Mathf.Clamp(sfxVolume * volumeScale, 0f, 2.5f));
     }
 }

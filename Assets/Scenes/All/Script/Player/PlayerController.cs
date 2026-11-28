@@ -43,9 +43,26 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Sprite secretLeafSprite;
     [SerializeField] private float secretLeafRequiredMoveTime = 4.0f;
 
+    [Header("Cheat / Debug")]
+    [Tooltip("อนุญาตให้กดปุ่ม Cheat เปิด/ปิดโหมดอมตะได้หรือไม่")]
+    [SerializeField] private bool enableCheatToggleKey = true;
+    [Tooltip("ปุ่มกดสลับเปิด/ปิดโหมดอมตะ (กด 1 ครั้งเปิด, กดอีกครั้งปิด)")]
+    [SerializeField] private KeyCode invincibleToggleKey = KeyCode.F7;
+    [Tooltip("สีเรืองทองอ่อนๆ เพื่อแสดงให้รู้ว่าโหมดอมตะกำลังทำงานอยู่")]
+    [SerializeField] private Color invincibleTintColor = new Color(1f, 0.92f, 0.45f, 1f);
+
     public static PlayerController Instance { get; private set; } // Singleton อ้างอิงแม่หมูได้ทันทีโดยไม่ต้องใช้ FindAnyObjectByType ทุกเฟรม
 
+    private static bool cheatInvincibleActive = false;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStaticCheatState()
+    {
+        cheatInvincibleActive = false;
+    }
+
     public PlayerState State { get; private set; } = PlayerState.Normal;
+    public bool IsInvincible => cheatInvincibleActive;
     public float MinY => minY;
     public float MaxY => maxY;
     
@@ -65,6 +82,8 @@ public class PlayerController : MonoBehaviour
     private Vector3 initialMamaPigLocalPos;
     private int initialMamaPigSortingOrder;
     private bool hasSavedMamaPigPos = false;
+    private Color initialMamaPigColor = Color.white;
+    private bool hasSavedMamaPigColor = false;
 
     private void Awake()
     {
@@ -172,16 +191,26 @@ public class PlayerController : MonoBehaviour
             initialMamaPigSortingOrder = mamaPigRenderer.sortingOrder;
             hasSavedMamaPigPos = true;
         }
+
+        if (mamaPigRenderer != null && !hasSavedMamaPigColor)
+        {
+            initialMamaPigColor = mamaPigRenderer.color;
+            hasSavedMamaPigColor = true;
+        }
     }
 
     private void Start()
     {
         CacheMamaPigReference();
         FindAnimator();
+        ApplyInvincibilityVisual();
     }
 
     private void Update()
     {
+        HandleCheatToggleInput();
+        UpdateInvincibilityVisual();
+
         // ถ้าเกมหยุด หรืออยู่ในฉากโบนัส ไม่ต้องทำอะไร
         if (GameManager.Instance != null && !GameManager.Instance.IsPlaying && !GameManager.Instance.IsBonus)
             return;
@@ -192,6 +221,42 @@ public class PlayerController : MonoBehaviour
         HandleMovement();
         HandleFireInput();
         UpdateIdleAnimation(); // ปรับท่าทางยืนเฉยๆ
+    }
+
+    private void HandleCheatToggleInput()
+    {
+        if (!enableCheatToggleKey || invincibleToggleKey == KeyCode.None) return;
+
+        if (Input.GetKeyDown(invincibleToggleKey))
+        {
+            cheatInvincibleActive = !cheatInvincibleActive;
+            ApplyInvincibilityVisual();
+            Debug.Log($"[Cheat] โหมดอมตะ (God Mode): {(cheatInvincibleActive ? "เปิด (ON) - โดนหิน/ศัตรูไม่ตาย!" : "ปิด (OFF)")}");
+        }
+    }
+
+    private void ApplyInvincibilityVisual()
+    {
+        CacheMamaPigReference();
+        if (mamaPigRenderer == null) return;
+
+        if (cheatInvincibleActive)
+        {
+            mamaPigRenderer.color = invincibleTintColor;
+        }
+        else if (hasSavedMamaPigColor)
+        {
+            mamaPigRenderer.color = initialMamaPigColor;
+        }
+    }
+
+    private void UpdateInvincibilityVisual()
+    {
+        if (!cheatInvincibleActive || mamaPigRenderer == null) return;
+
+        float pulse = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 8f);
+        Color baseColor = hasSavedMamaPigColor ? initialMamaPigColor : Color.white;
+        mamaPigRenderer.color = Color.Lerp(baseColor, invincibleTintColor, 0.35f + 0.65f * pulse);
     }
 
     // จัดการเปลี่ยน Sprite แบบไม่ง้อ Animator (เอาไว้ใช้เคสที่ใส่แค่รูป)
@@ -436,13 +501,18 @@ public class PlayerController : MonoBehaviour
 
     public void SetDiedFromBoulder(bool value)
     {
+        if (IsInvincible && value)
+        {
+            diedFromBoulder = false;
+            return;
+        }
         diedFromBoulder = value;
     }
 
     // โดนดาเมจ! ร่วงกระเช้าตาย!
     public void TakeDamage()
     {
-        if (State == PlayerState.Dead) return; // ตายซ้ำไม่ได้นะ
+        if (State == PlayerState.Dead || IsInvincible) return; // ตายซ้ำไม่ได้ และถ้าเปิดอมตะอยู่ห้ามตาย
 
         State = PlayerState.Dead;
         AudioManager.Instance?.SetRopePullSound(false);
@@ -566,6 +636,8 @@ public class PlayerController : MonoBehaviour
         {
             arrowShooter.SetCanShoot(true); // ปลดล็อกปืน เอ้ย! ปลดล็อกธนู
         }
+
+        ApplyInvincibilityVisual();
     }
 
     // โดนก้อนหินหรือโปรเจกไทล์ศัตรูปาใส่

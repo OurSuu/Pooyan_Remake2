@@ -263,14 +263,28 @@ public class BoulderSystem : MonoBehaviour
 
         AudioManager.Instance?.PlayBoulderHit(); // เสียงหินยักษ์ตกกระแทกกระเช้าแม่หมู!
 
-        if (player != null)
+        if (player != null && !player.IsInvincible)
         {
             player.SetDiedFromBoulder(true); // เซ็ตสถานะให้ตายเพราะหิน
             player.TakeDamage(); // เรียบร้อย ตายชัวร์
         }
         else
         {
+            var pendingApproaching = new List<Wolf>(approachingWolves);
+            for (int i = wolvesOnCliff.Count - 1; i >= 0; i--)
+            {
+                if (wolvesOnCliff[i] != null)
+                {
+                    Destroy(wolvesOnCliff[i].gameObject);
+                }
+            }
+
             ResetCliff();
+
+            foreach (var wolf in pendingApproaching)
+            {
+                if (wolf != null) RegisterWolfOnCliff(wolf);
+            }
         }
     }
 

@@ -472,7 +472,7 @@ public class Wolf : MonoBehaviour
         if (maxHP > 1)
         {
             int currentStage = GameManager.Instance != null ? GameManager.Instance.EffectiveDifficultyStage : 2;
-            float minFactor = currentStage >= 4 ? 0.68f : 0.58f;
+            float minFactor = currentStage >= 4 ? 0.64f : 0.56f;
             float hpRatio = Mathf.Clamp01((float)currentHP / Mathf.Max(1, maxHP));
             floatSpeed = baseFloatSpeed * Mathf.Lerp(minFactor, 1f, hpRatio);
         }
@@ -1083,7 +1083,7 @@ public class Wolf : MonoBehaviour
     public bool IsPlayerInBiteRange()
     {
         var player = PlayerController.Instance != null ? PlayerController.Instance : FindAnyObjectByType<PlayerController>();
-        if (player == null || player.State == PlayerState.Dead) return false;
+        if (player == null || player.State == PlayerState.Dead || player.IsInvincible) return false;
 
         float wolfX = transform.position.x;
         float playerX = player.transform.position.x;
@@ -1325,6 +1325,8 @@ public class Wolf : MonoBehaviour
     public void TriggerBite()
     {
         if (state != WolfState.WaitingOnLadder) return;
+        var player = PlayerController.Instance != null ? PlayerController.Instance : FindAnyObjectByType<PlayerController>();
+        if (player != null && player.IsInvincible) return;
         state = WolfState.Biting;
         AudioManager.Instance?.PlayWolfBite();
         SpawnLadderBiteFX(isHit: true);

@@ -18,6 +18,8 @@ public class BonusBossWolf : MonoBehaviour
     [Header("Visuals & Animation")]
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private Animator animator;
+    [SerializeField] private string runAnimName = "Run";
+    [SerializeField] private string throwFruitAnimName = "ThrowFruit";
     [SerializeField] private Sprite[] throwSprites;        // เฟรมท่าปา (ถ้ามี)
     [SerializeField] private Sprite idleSprite;
 
@@ -85,14 +87,23 @@ public class BonusBossWolf : MonoBehaviour
     {
         isThrowing = true;
 
-        // ถ้ามี Animator ให้เล่นท่า ThrowRock ชั่วคราว หรือถ้ามีสไปรท์ก็สลับ
+        // ถ้ามี Animator ให้เล่นท่า ThrowFruit (ถ้าไม่มี State นี้ใน Animator ให้ปล่อยผลไม้ต่อโดยไม่ใช้ท่า ThrowRock)
         if (animator != null && animator.enabled)
         {
-            animator.Play("ThrowRock", 0, 0f);
-            yield return new WaitForSeconds(0.2f);
-            onDropCallback?.Invoke();
-            yield return new WaitForSeconds(0.2f);
-            SetRunAnimation(true);
+            int throwHash = !string.IsNullOrEmpty(throwFruitAnimName) ? Animator.StringToHash(throwFruitAnimName) : 0;
+            if (!string.IsNullOrEmpty(throwFruitAnimName) && animator.HasState(0, throwHash))
+            {
+                animator.Play(throwHash, 0, 0f);
+                yield return new WaitForSeconds(0.2f);
+                onDropCallback?.Invoke();
+                yield return new WaitForSeconds(0.2f);
+                SetRunAnimation(true);
+            }
+            else
+            {
+                onDropCallback?.Invoke();
+                yield return new WaitForSeconds(0.15f);
+            }
         }
         else if (throwSprites != null && throwSprites.Length > 4 && spriteRenderer != null)
         {
@@ -113,9 +124,13 @@ public class BonusBossWolf : MonoBehaviour
 
     private void SetRunAnimation(bool running)
     {
-        if (animator != null && animator.enabled)
+        if (animator != null && animator.enabled && !string.IsNullOrEmpty(runAnimName))
         {
-            animator.Play("Run", 0, 0f);
+            int runHash = Animator.StringToHash(runAnimName);
+            if (animator.HasState(0, runHash))
+            {
+                animator.Play(runHash, 0, 0f);
+            }
         }
         UpdateFacing();
     }
